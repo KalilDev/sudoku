@@ -1,8 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:sudoku/core/bidimensional_list.dart';
+import 'package:test/test.dart';
+import 'package:sudoku_core/sudoku_core.dart';
 import 'package:collection/collection.dart';
-import 'package:sudoku/core/solver.dart';
-import 'package:sudoku/core/sudoku_state.dart';
 
 final _listEquality = ListEquality();
 final _iterEquality = IterableEquality();

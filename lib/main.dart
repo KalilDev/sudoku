@@ -20,6 +20,8 @@ import 'package:provider/provider.dart';
 
 void main() {
   BlocSupervisor.delegate = CustomBlocDelegate();
+  final String? maybeNull = null;
+  print(maybeNull is String);
   runApp(MultiRepositoryProvider(
       providers: [
         RepositoryProvider<BoardRepository>(

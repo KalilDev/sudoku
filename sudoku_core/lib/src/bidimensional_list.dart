@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'nnbd_helper.dart';
 
 class BidimensionalList<T> extends ListBase<List<T>> {
   int _resizeCounter = 0;
