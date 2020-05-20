@@ -1,6 +1,6 @@
-import 'package:sudoku/core/sudoku_state.dart';
-import 'package:sudoku/presentation/sudoku_bloc/state.dart';
-import '../common.dart';
+import 'package:sudoku_core/sudoku_core.dart';
+import 'package:sudoku_presentation/src/sudoku_configuration.dart';
+import 'package:sudoku_presentation/src/sudoku_bloc/state.dart';
 
 abstract class BoardRepository {
   Future<SudokuState> loadSudoku(int side, SudokuDifficulty difficulty);

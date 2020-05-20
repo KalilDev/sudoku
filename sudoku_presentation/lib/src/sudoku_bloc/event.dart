@@ -1,4 +1,4 @@
-import 'package:sudoku/core/sudoku_state.dart';
+import 'package:sudoku_core/sudoku_core.dart';
 import 'package:meta/meta.dart';
 import 'state.dart' show MarkType;
 
@@ -18,6 +18,8 @@ class LoadedEvent extends SudokuEvent {
   final SudokuState state;
   LoadedEvent(this.state);
 }
+
+class DeleteSudoku extends SudokuEvent {}
 
 class SquareTap extends SudokuEvent {
   final int x;

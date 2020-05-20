@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
-import 'package:sudoku/core/bidimensional_list.dart';
-import 'package:sudoku/presentation/main_menu_bloc/bloc.dart';
-import 'package:sudoku/presentation/repository/board_repository.dart';
-import 'package:sudoku/presentation/repository/preferences_repository.dart';
+import 'package:sudoku_core/sudoku_core.dart';
+import 'package:sudoku_presentation/src/repository/board_repository.dart';
+import 'package:sudoku_presentation/src/repository/preferences_repository.dart';
 import '../common.dart';
+import '../sudoku_configuration.dart';
 import 'event.dart';
 import 'state.dart';
 
@@ -13,7 +13,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
   MainMenuBloc(this.boardRepository, this.preferencesRepository);
 
   Future<BidimensionalList<SudokuConfiguration>> loadConfigurations() async {
-    final sudokuConfigurations = BidimensionalList<SudokuConfiguration>(SudokuDifficulty.values.length, height: SudokuConfiguration.factories.length);
+    final sudokuConfigurations = BidimensionalList<SudokuConfiguration?>.filled(SudokuDifficulty.values.length, null, height: SudokuConfiguration.factories.length);
     for (var y = 0; y < sudokuConfigurations.height; y++) {
       final factory = SudokuConfiguration.factories[y];
       final side = SudokuConfiguration.factorySide[y];
@@ -24,21 +24,21 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
         sudokuConfigurations[y][x] = configuration;
       }
     }
-    return sudokuConfigurations;
+    return sudokuConfigurations.castInner<SudokuConfiguration>();
   }
 
   Future<void> initialize() async {
     final sudokuConfigurations = await loadConfigurations();
     final savedX = await preferencesRepository.getMainMenuX() ?? 0;
     final savedY = await preferencesRepository.getMainMenuY() ?? 1;
-    final state = MainMenuState(sudokuConfigurations, savedX, savedY);
+    final state = MainMenuSnap(sudokuConfigurations, savedX, savedY);
     add(LoadedEvent(state));
   }
 
   @override
   MainMenuState get initialState {
     initialize();
-    return MainMenuState.loading();
+    return LoadingMainMenu();
   }
 
   @override
@@ -48,14 +48,14 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
     }
     if (event is ChangeX) {
       preferencesRepository.updateMainMenuX(event.x);
-      yield state.copyWith(difficultyX: event.x);
+      yield (state as MainMenuSnap).copyWith(difficultyX: event.x);
     }
     if (event is ChangeY) {
       preferencesRepository.updateMainMenuY(event.y);
-      yield state.copyWith(sideY: event.y);
+      yield (state as MainMenuSnap).copyWith(sideY: event.y);
     }
     if (event is ReloadConfigurations) {
-      yield state.copyWith(configurations: await loadConfigurations());
+      yield (state as MainMenuSnap).copyWith(configurations: await loadConfigurations());
     }
   }
 

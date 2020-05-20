@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
-import 'package:sudoku/presentation/repository/preferences_repository.dart';
-import 'package:sudoku/presentation/sudoku_bloc/state.dart' show AnimationOptions;
-import 'package:sudoku/theme.dart';
+import 'package:sudoku_presentation/src/repository/preferences_repository.dart';
+import 'package:sudoku_presentation/src/animation_options.dart';
+import 'package:sudoku_presentation/src/theme.dart';
 
 class PrefsEvent<T> {
   final T v;
@@ -16,15 +16,16 @@ enum PrefsEventType {
   loadedState,
 }
 
-class PrefsState {
-  final SudokuTheme theme;
+abstract class PrefsState {}
+class LoadingPrefsState extends PrefsState {}
+
+class PrefsSnap extends PrefsState {
+  final AvailableTheme theme;
   final AnimationOptions animationOptions;
-  final bool isLoading;
 
-  PrefsState.loading() : theme = null, animationOptions = null, isLoading = true;
-  PrefsState(this.theme, this.animationOptions) : isLoading = false;
+  PrefsSnap(this.theme, this.animationOptions);
 
-  PrefsState copyWith({SudokuTheme theme, AnimationOptions animationOptions}) => PrefsState(theme ?? this.theme, animationOptions ?? this.animationOptions);
+  PrefsSnap copyWith({AvailableTheme? theme, AnimationOptions? animationOptions}) => PrefsSnap(theme ?? this.theme, animationOptions ?? this.animationOptions);
 }
 
 class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
@@ -34,16 +35,16 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
 
   Future<void> initialize() async {
     final themeName = await preferencesRepository.getCurrentTheme();
-    final theme = themeName != null ? SudokuTheme.parse(themeName): SudokuTheme.defaultTheme;
+    final theme = parseAvailableTheme(themeName ?? '');
     final animOpts = await preferencesRepository.getAnimationOptions() ?? AnimationOptions.defaultOptions;
-    final state = PrefsState(theme, animOpts);
-    add(PrefsEvent<PrefsState>(state, PrefsEventType.loadedState));
+    final state = PrefsSnap(theme, animOpts);
+    add(PrefsEvent<PrefsSnap>(state, PrefsEventType.loadedState));
   }
 
   @override
   PrefsState get initialState {
     initialize();
-    return PrefsState.loading();
+    return LoadingPrefsState();
   }
 
   void updateTheme(AvailableTheme theme) {
@@ -59,11 +60,11 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
   Stream<PrefsState> mapEventToState(PrefsEvent event) async* {
     switch (event.type) {
       case PrefsEventType.animUpdate:
-        yield state.copyWith(animationOptions: event.v as AnimationOptions);
+        yield (state as PrefsSnap).copyWith(animationOptions: event.v as AnimationOptions);
         updateAnim(event.v as AnimationOptions);
         break;
       case PrefsEventType.themeUpdate:
-        yield state.copyWith(theme: SudokuTheme.availableThemeMap[event.v as AvailableTheme]);
+        yield (state as PrefsSnap).copyWith(theme: event.v as AvailableTheme);
         updateTheme(event.v as AvailableTheme);
         break;
       case PrefsEventType.loadedState: yield event.v as PrefsState; break;

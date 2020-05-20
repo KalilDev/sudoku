@@ -1,20 +1,22 @@
-import 'package:sudoku/core/bidimensional_list.dart';
+import 'package:sudoku_core/sudoku_core.dart';
 import 'package:meta/meta.dart';
-import '../common.dart';
+import '../sudoku_configuration.dart';
+
+abstract class MainMenuState {}
+
+class LoadingMainMenu extends MainMenuState {}
 
 @immutable
-class MainMenuState {
+class MainMenuSnap extends MainMenuState {
   final BidimensionalList<SudokuConfiguration> configurations;
   final int difficultyX;
   final int sideY;
-  final bool isLoading;
 
-  MainMenuState(this.configurations, this.difficultyX, this.sideY) : isLoading = false;
-  MainMenuState.loading() : isLoading = true, configurations = null, difficultyX = null, sideY = null;
+  MainMenuSnap(this.configurations, this.difficultyX, this.sideY);
 
   MainMenuState copyWith({
-      BidimensionalList<SudokuConfiguration> configurations,
-      int difficultyX,
-      int sideY}) => MainMenuState(configurations ?? this.configurations,
+      BidimensionalList<SudokuConfiguration>? configurations,
+      int? difficultyX,
+      int? sideY}) => MainMenuSnap(configurations ?? this.configurations,
       difficultyX ?? this.difficultyX, sideY ?? this.sideY);
 }
