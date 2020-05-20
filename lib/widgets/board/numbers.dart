@@ -3,7 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku/presentation/sudoku_bloc/bloc.dart';
+import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/sudoku_bloc.dart';
 import 'package:sudoku/theme.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +12,7 @@ class SudokuNumbers extends StatelessWidget {
   final List<NumberInfo> state;
   final bool isPortrait;
 
-  const SudokuNumbers({Key key, this.state, this.isPortrait}) : super(key: key);
+  const SudokuNumbers({Key? key, @required this.state, @required this.isPortrait}) : super(key: key);
 
   Widget renderNumber(NumberInfo info, BuildContext context) {
     void onTap() {
@@ -22,7 +23,7 @@ class SudokuNumbers extends StatelessWidget {
     if (info.isSelected) {
       textStyle =  textStyle.copyWith(color: Theme.of(context).colorScheme.onSecondary);
     }
-    final textOrIcon = info.number == 0 || info.number == null ? Padding(padding: EdgeInsets.all(2.5),child: Icon(Icons.clear, color: textStyle.color,)) : Text(info.number.toString(), style: textStyle,);
+    final textOrIcon = info.number == 0 ? Padding(padding: EdgeInsets.all(2.5),child: Icon(Icons.clear, color: textStyle.color,)) : Text(info.number.toString(), style: textStyle,);
     return AspectRatio(
       aspectRatio: 1,
       child: Padding(

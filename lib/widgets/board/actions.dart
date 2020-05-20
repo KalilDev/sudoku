@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku/presentation/sudoku_bloc/bloc.dart';
 import 'package:sudoku/theme.dart';
+import 'package:sudoku_presentation/sudoku_bloc.dart';
 import 'package:provider/provider.dart';
 
 class SudokuActions extends StatelessWidget {
@@ -9,10 +9,10 @@ class SudokuActions extends StatelessWidget {
   final MarkType markType;
   final bool isPortrait;
 
-  const SudokuActions({Key key, this.canRewind, this.markType, this.isPortrait})
+  const SudokuActions({Key key, @required this.canRewind, @required this.markType, @required this.isPortrait})
       : super(key: key);
 
-  Widget buildAction(IconData icon, VoidCallback onTap, BuildContext context,
+  Widget buildAction(IconData icon, VoidCallback? onTap, BuildContext context,
       {bool colored = false}) {
     final theme = Provider.of<SudokuTheme>(context);
     final isDisabled = onTap == null;
@@ -38,7 +38,7 @@ class SudokuActions extends StatelessWidget {
             constraints: iconConstraints,
               child: AspectRatio(
                 aspectRatio: aspectRatio,
-                              child: Padding(
+                  child: Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: FittedBox(
                     fit: BoxFit.contain,

@@ -1,13 +1,14 @@
 import 'dart:math' show sqrt;
 
 import 'package:flutter/material.dart';
-import 'package:sudoku/core/bidimensional_list.dart';
+import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku/presentation/sudoku_bloc/bloc.dart';
+import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/sudoku_bloc.dart';
 import 'package:provider/provider.dart';
 
-getColor(SquareInfo info, BuildContext context) {
+Color? getColor(SquareInfo info, BuildContext context) {
   final theme = Provider.of<SudokuTheme>(context);
   if (info.isValid == false) {
     return theme.invalid;
@@ -20,23 +21,23 @@ getColor(SquareInfo info, BuildContext context) {
   return info.isSelected ? Provider.of<SudokuTheme>(context).secondary : null;
 }
 
-getText(SquareInfo info) {
-  final noMainNumber = info.number == 0 || info.number == null;
+String getText(SquareInfo info) {
+  final noMainNumber = info.number == 0;
   return noMainNumber
-      ? info.possibleNumbers?.join() ?? ''
+      ? info.possibleNumbers.join()
       : info.number.toString();
 }
 
-getTextAlignment(SquareInfo info) {
-  final noMainNumber = info.number == 0 || info.number == null;
+Alignment getTextAlignment(SquareInfo info) {
+  final noMainNumber = info.number == 0;
   if (noMainNumber) {
     return Alignment.bottomCenter;
   }
   return Alignment.center;
 }
 
-getTextStyle(SquareInfo info, BuildContext context) {
-  final noMainNumber = info.number == 0 || info.number == null;
+TextStyle getTextStyle(SquareInfo info, BuildContext context) {
+  final noMainNumber = info.number == 0;
   final style = noMainNumber
       ? Theme.of(context).textTheme.overline
       : Theme.of(context).textTheme.headline4;
@@ -52,7 +53,7 @@ class SudokuStaticSquare extends StatelessWidget {
   final SquareInfo info;
   final int x;
   final int y;
-  const SudokuStaticSquare({@required Key key, this.info, this.x, this.y})
+  const SudokuStaticSquare({@required Key key, @required this.info, @required this.x, @required this.y})
       : super(key: key);
 
   @override
@@ -83,7 +84,7 @@ class SudokuAnimatedSquare extends StatefulWidget {
   final AnimationOptions animationOptions;
 
   const SudokuAnimatedSquare(
-      {@required Key key, this.info, this.x, this.y, this.animationOptions})
+      {@required Key key, @required this.info, @required this.x, @required this.y, @required this.animationOptions})
       : super(key: key);
 
   @override
@@ -93,7 +94,7 @@ class SudokuAnimatedSquare extends StatefulWidget {
 class _SquareState {
   final double textPos; // 0.0 -> oldInfo text, 1.0 -> info text
   final Alignment textAlign;
-  final Color squareColor;
+  final Color? squareColor;
   final double decorationSize;
   final TextStyle style;
   _SquareState._(this.textPos, this.squareColor, this.decorationSize,
@@ -145,17 +146,15 @@ class _SquareTween extends Tween<_SquareState> {
 
 class _SudokuSquareState extends State<SudokuAnimatedSquare>
     with SingleTickerProviderStateMixin {
-  SquareInfo oldInfo;
-  SquareInfo targetInfo;
-  AnimationController controller;
-  _SquareTween tween;
-  Widget cache;
+  SquareInfo oldInfo = SquareInfo.empty;
+  SquareInfo? targetInfo;
+  AnimationController? controller;
+  _SquareTween? tween;
 
   @override
   void initState() {
-    oldInfo = SquareInfo.empty;
     updateControllerIfNeeded();
-    controller.addStatusListener((status) {
+    controller!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         oldInfo = widget.info;
       }
@@ -180,7 +179,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         break;
     }
     controller ??= AnimationController(vsync: this, duration: duration);
-    controller.duration = duration;
+    controller!.duration = duration;
   }
 
   void onTap() {
@@ -192,7 +191,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     super.didUpdateWidget(oldWidget);
   }
 
-  static createState(SquareInfo info, BuildContext context, bool isEnd) {
+  static _SquareState createState(SquareInfo info, BuildContext context, bool isEnd) {
     final color = getColor(info, context);
     final align = getTextAlignment(info);
     final style = getTextStyle(info, context);
@@ -201,11 +200,11 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
   }
 
   Widget buildWidget(BuildContext context) {
-    final state = tween.transform(controller.value);
+    final state = tween!.transform(controller!.value);
     TextStyle textStyle;
     if (widget.animationOptions.hasTextStyleAnimations) {
       textStyle = state.style;
-      final targetStyle = getTextStyle(targetInfo, context);
+      final targetStyle = getTextStyle(targetInfo!, context);
       if (!widget.animationOptions.textSize) {
         textStyle = textStyle.copyWith(fontSize: targetStyle.fontSize);
       }
@@ -213,16 +212,16 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         textStyle = textStyle.copyWith(color: targetStyle.color);
       }
     } else {
-      textStyle = getTextStyle(targetInfo, context);
+      textStyle = getTextStyle(targetInfo!, context);
     }
     Widget text;
     if (state.textPos == 0.0 ||
         state.textPos == 1.0 ||
         !widget.animationOptions.textOpacity) {
-      text = Text(state.textPos == 0.0 ? getText(oldInfo) : getText(targetInfo),
+      text = Text(state.textPos == 0.0 ? getText(oldInfo) : getText(targetInfo!),
           style: textStyle);
     } else {
-      final oldOpacity = (1 - 2.0 * state.textPos).clamp(0, 1);
+      final oldOpacity = (1 - 2.0 * state.textPos).clamp(0.0, 1.0) as double; // idk why this type isn't inferred
       text = Stack(fit: StackFit.loose, children: [
         if (oldOpacity != 0)
           Opacity(
@@ -234,7 +233,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         Opacity(
             opacity: state.textPos,
             child: Text(
-              getText(targetInfo),
+              getText(targetInfo!),
               style: textStyle,
             ))
       ]);
@@ -242,7 +241,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     final decoration = BoxDecoration(
         color: widget.animationOptions.selectColor
             ? state.squareColor
-            : getColor(targetInfo, context),
+            : getColor(targetInfo!, context),
         shape: BoxShape.circle);
     final sizeFrac =
         widget.animationOptions.selectSize ? state.decorationSize : 1.0;
@@ -250,7 +249,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
       padding: const EdgeInsets.all(3.0),
       child: InkWell(
         customBorder: CircleBorder(),
-        onTap: targetInfo.isInitial ? null : onTap,
+        onTap: targetInfo!.isInitial ? null : onTap,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -265,7 +264,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
             Align(
                 alignment: widget.animationOptions.textPosition
                     ? state.textAlign
-                    : getTextAlignment(targetInfo),
+                    : getTextAlignment(targetInfo!),
                 child: text),
           ],
         ),
@@ -276,20 +275,20 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
   @override
   Widget build(BuildContext context) {
     updateControllerIfNeeded();
-    if (controller.isAnimating) {
+    if (controller!.isAnimating) {
       tween = _SquareTween(
-          begin: tween.transform(controller.value),
+          begin: tween!.transform(controller!.value),
           end: createState(widget.info, context, true));
     } else {
       tween = _SquareTween(
           begin: createState(oldInfo, context, false),
           end: createState(widget.info, context, true));
     }
-    if (targetInfo == null || !targetInfo.hasSameContentAs(widget.info)) {
+    if (targetInfo == null || !targetInfo!.hasSameContentAs(widget.info)) {
       targetInfo = widget.info;
-      if (!targetInfo.hasSameContentAs(oldInfo)) {
-        controller.reset();
-        controller.forward();
+      if (!targetInfo!.hasSameContentAs(oldInfo)) {
+        controller!.reset();
+        controller!.forward();
       }
     }
     return AnimatedBuilder(
@@ -324,9 +323,7 @@ class SudokuBoard extends StatelessWidget {
   }
 
   Widget buildGrid(BuildContext context) {
-    final children = List<Widget>(state.length * state.length);
-    state.forEachIndexed((info, x, y) =>
-        children[x + y * state.length] = buildNumber(info, x, y));
+    final children = state.mapInnerIndexed((x, y, info) => buildNumber(info, x, y)).toList();
     return GridView.count(
       crossAxisCount: state.length,
       childAspectRatio: 1,
@@ -337,7 +334,7 @@ class SudokuBoard extends StatelessWidget {
     );
   }
 
-  Widget buildBackground(context) {
+  Widget buildBackground(BuildContext context) {
     final theme = Provider.of<SudokuTheme>(context);
     return Hero(
       tag: "SudokuBG",

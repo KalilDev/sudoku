@@ -1,8 +1,9 @@
-import 'package:sudoku/presentation/preferences_bloc.dart';
-import 'package:sudoku/presentation/sudoku_bloc/state.dart';
 import 'package:sudoku/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/preferences_bloc.dart';
 
 Color getTextColorForBrightness(Brightness b) => b == Brightness.dark ? Colors.white.withOpacity(0.87) : Colors.black87;
 
@@ -77,11 +78,15 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
 }
 
 void openPrefs(BuildContext context) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
       context: context,
       builder: (context) {
         return BlocBuilder<PreferencesBloc, PrefsState>(
-          builder: (BuildContext context, PrefsState state) {
+          builder: (BuildContext context, PrefsState _state) {
+            if (_state is LoadingPrefsState) {
+              return Center(child: CircularProgressIndicator());
+            }
+            final state = _state as PrefsSnap;
             final themes = [
               Padding(
                 padding: const EdgeInsets.all(8.0),

@@ -146,6 +146,18 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
   bool everyInner(bool test(T e)) => every((e)=>e.every(test));
 
   Iterable<V> mapInner<V>(V f(T element)) => map((e)=>e.map<V>(f)).reduce((a,b)=>a.followedBy(b));
+  Iterable<V> mapInnerIndexed<V>(V f(int x, int y, T element)) {
+    var x = -1;
+    var y = -1;
+    return map((List<T> row) {
+      y++;
+      x = -1;
+      return row.map<V>((e) {
+        x++;
+        return f(x, y, e);
+      });
+    }).reduce((a,b)=>a.followedBy(b));
+  }
   Iterable<T> whereInner(bool test(T element)) => map((e)=>e.where(test)).reduce((a,b) => a.followedBy(b));
 
   BidimensionalList<V> castInner<V>();

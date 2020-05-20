@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku/presentation/common.dart';
-import 'package:sudoku/presentation/main_menu_bloc/bloc.dart';
+import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/main_menu_bloc.dart';
 import 'prefs_sheet.dart';
 import 'package:sudoku/theme.dart';
 import 'package:provider/provider.dart';
@@ -27,10 +27,11 @@ class MainMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MainMenuBloc, MainMenuState>(
-        builder: (BuildContext context, MainMenuState state) {
-      if (state.isLoading) {
+        builder: (BuildContext context, MainMenuState _state) {
+      if (_state is LoadingMainMenu) {
         return Center(child: CircularProgressIndicator());
       }
+      final state = _state as MainMenuSnap;
       final configs = state.configurations;
       //debugger();
       final theme = Provider.of<SudokuTheme>(context);

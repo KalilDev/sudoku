@@ -4,3 +4,7 @@ analyzer:
   enable-experiment:
     - non-nullable
     - nonfunction-type-aliases
+  exclude: [build/**, lib/**/*.g.dart]
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false

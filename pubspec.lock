@@ -224,6 +224,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.5"
+  sudoku_core:
+    dependency: "direct main"
+    description:
+      path: sudoku_core
+      relative: true
+    source: path
+    version: "0.0.0"
+  sudoku_presentation:
+    dependency: "direct main"
+    description:
+      path: sudoku_presentation
+      relative: true
+    source: path
+    version: "0.0.0"
   term_glyph:
     dependency: transitive
     description:
@@ -253,5 +267,5 @@ packages:
     source: hosted
     version: "2.0.8"
 sdks:
-  dart: ">=2.9.0-5.0 <3.0.0"
+  dart: ">=2.9.0-5.0 <2.9.0"
   flutter: ">=1.17.0 <2.0.0"
