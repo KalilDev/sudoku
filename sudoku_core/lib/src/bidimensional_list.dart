@@ -45,6 +45,9 @@ class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
   @override
   T setValue(int x, int y, T value) => _underlyingList[y*width + x] = value;
 
+  @override
+  BidimensionalList<V> castInner<V>() => _OneDBackedBidimensionalList(underlyingList: _underlyingList.cast<V>(), width: width, height: height, canMutate: canMutate);
+
 }
 
 class _TwoDBackedBidimensionalList<T> extends BidimensionalList<T> {
@@ -82,6 +85,8 @@ class _TwoDBackedBidimensionalList<T> extends BidimensionalList<T> {
   // TODO: ????
   @override
   BidimensionalList<T> toList({bool growable: true}) => BidimensionalList.view2d(super.toList());
+
+  BidimensionalList<V> castInner<V>() => _OneDBackedBidimensionalList(underlyingList: flat().cast<V>(), width: width, height: height, canMutate: canMutate);
 }
 
 
@@ -143,11 +148,13 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
   Iterable<V> mapInner<V>(V f(T element)) => map((e)=>e.map<V>(f)).reduce((a,b)=>a.followedBy(b));
   Iterable<T> whereInner(bool test(T element)) => map((e)=>e.where(test)).reduce((a,b) => a.followedBy(b));
 
+  BidimensionalList<V> castInner<V>();
+
   List<T> getRow(int i) {
     final y = i;
     return Viewer<T>(lengthGetter: ()=> width, valueGetter: (int i) => getValue(i, y), valueSetter: (int i, T value) => setValue(i, y, value), lengthSetter: (int i) => width = i);
   }
-  setRow(int i, List<T> value) {
+  void setRow(int i, List<T> value) {
     if (value.length != width) {
       throw StateError("You can't set an eow that isn't the same size as the width");
     }
@@ -160,7 +167,7 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
     final x = i;
     return Viewer<T>(lengthGetter: ()=> height, valueGetter: (int i) => getValue(x, i), valueSetter: (int i, T value) => setValue(x, i, value), lengthSetter: (int i) => height = i);
   }
-  setColumn(int i, List<T> value) {
+  void setColumn(int i, List<T> value) {
     if (value.length != height) {
       throw StateError("You can't set an column that isn't the same size as the height");
     }

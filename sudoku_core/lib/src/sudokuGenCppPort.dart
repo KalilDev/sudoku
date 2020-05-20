@@ -12,7 +12,7 @@ class Ptr<T> {
   Ptr.allocate(int size, T fill) : count = size, _values = List<T>.filled(size, fill);
   Ptr(T value) : count = 1, _values = List.filled(1, value);
 
-  operator [](int i) => _values[i];
+  T operator [](int i) => _values[i];
   operator []=(int i, T val) => _values[i] = val;
   T get val => _values[0];
   set val(T val) => _values[0] = val;

@@ -113,7 +113,7 @@ class SudokuState {
   List<int> row(int y) => state.getRow(y);
   List<int> column(int x) => state.getColumn(x);
 
-  operator []=(int y, v) => state[y] = v;
+  operator []=(int y, List<int> v) => state[y] = v;
   List<int> operator [](int y) => state[y];
 
   // Returns a list of the indices which failed the validation.

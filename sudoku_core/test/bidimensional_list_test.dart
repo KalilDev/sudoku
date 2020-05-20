@@ -2,8 +2,8 @@ import 'package:test/test.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:collection/collection.dart';
 
-final _listEquality = ListEquality();
-final _iterEquality = IterableEquality();
+//final _listEquality = ListEquality<dynamic>();
+final _iterEquality = IterableEquality<dynamic>();
 final _deepEquality = DeepCollectionEquality();
 
 Iterable<T> flatten<T>(Iterable<Iterable<T>> iter) {
@@ -27,7 +27,7 @@ void main() {
     expect(twoD[0][3], 3);
     expect(twoD[2][0], 8);
     expect(twoD[2][3], 11);
-    expect(_iterEquality.equals(flatten(arr), twoD.flat()), true);
+    expect(_iterEquality.equals(flatten<int>(arr), twoD.flat()), true);
     expect(() => twoD.flat(false), throwsStateError);
     expect(_deepEquality.equals(BidimensionalList.view(flatten(arr).toList(), 4, height: 3), twoD), true);
   });
