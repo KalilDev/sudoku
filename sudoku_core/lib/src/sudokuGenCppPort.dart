@@ -4,11 +4,7 @@ import 'dart:io';
 import 'bidimensional_list.dart';
 import 'dart:typed_data';
 import 'dart:math';
-import 'nnbd_helper.dart';
 import 'sudoku_state.dart';
-
-typedef Grid = NonNull<BidimensionalList<NonNull<int>>>;
-typedef IntPtr = NonNull<Ptr<NonNull<int>>>;
 
 class Ptr<T> {
   final int count;
@@ -25,7 +21,7 @@ class Ptr<T> {
 final int UNASSIGNED = 0;
 
 // START: Helper functions for solving grid
-Bool FindUnassignedLocation(Grid grid, IntPtr row, IntPtr col)
+bool FindUnassignedLocation(BidimensionalList<int> grid, Ptr<int> row, Ptr<int> col)
 {
     for (row.val = 0; row.val < 9; row.val = row.val+1)
     {
@@ -39,7 +35,7 @@ Bool FindUnassignedLocation(Grid grid, IntPtr row, IntPtr col)
     return false;
 }
 
-Bool UsedInRow(Grid grid, Int row, Int num)
+bool UsedInRow(BidimensionalList<int> grid, int row, int num)
 {
     for (int col = 0; col < 9; col++)
     {
@@ -50,7 +46,7 @@ Bool UsedInRow(Grid grid, Int row, Int num)
     return false;
 }
 
-Bool UsedInCol(Grid grid, Int col, Int num)
+bool UsedInCol(BidimensionalList<int> grid, int col, int num)
 {
     for (int row = 0; row < 9; row++)
     {
@@ -61,7 +57,7 @@ Bool UsedInCol(Grid grid, Int col, Int num)
     return false;
 }
 
-Bool UsedInBox(Grid grid, Int boxStartRow, Int boxStartCol, Int num)
+bool UsedInBox(BidimensionalList<int> grid, int boxStartRow, int boxStartCol, int num)
 {
     for (int row = 0; row < 3; row++)
     {
@@ -75,17 +71,17 @@ Bool UsedInBox(Grid grid, Int boxStartRow, Int boxStartCol, Int num)
     return false;
 }
 
-Bool isSafe(Grid grid, Int row, Int col, Int num)
+bool isSafe(BidimensionalList<int> grid, int row, int col, int num)
 {
     return !UsedInRow(grid, row, num) && !UsedInCol(grid, col, num) && !UsedInBox(grid, row - row%3 , col - col%3, num);
 }
 
 class PortedSudoku {
-  Grid grid = BidimensionalList<Int>.view(Uint8List(9*9), 9);
-  Grid solnGrid = BidimensionalList<Int>.view(Uint8List(9*9), 9);
-  IntList guessNum = Uint8List(9);
-  IntList gridPos = Uint8List(9*9);
-  Int difficultyLevel = 0;
+  BidimensionalList<int> grid = BidimensionalList<int>.view(Uint8List(9*9), 9);
+  BidimensionalList<int> solnGrid = BidimensionalList<int>.view(Uint8List(9*9), 9);
+  List<int> guessNum = Uint8List(9);
+  List<int> gridPos = Uint8List(9*9);
+  int difficultyLevel = 0;
   PortedSudoku._();
 
   factory PortedSudoku() {
@@ -141,22 +137,22 @@ class PortedSudoku {
     stdout.write("\nDifficulty of current sudoku(0 being easiest): $difficultyLevel");
     stdout.write('\n');
   }
-  Bool solveGrid()
+  bool solveGrid()
   {
-      IntPtr row = Ptr(0), col = Ptr(0);
+      Ptr<int> row = Ptr(0), col = Ptr(0);
 
       // If there is no unassigned location, we are done
       if (!FindUnassignedLocation(grid, row, col))
         return true; // success!
       
       // Consider digits 1 to 9
-      for (var num = 0; num < 9; num++)
+      for (var n = 0; n < 9; n++)
       {
           // if looks promising
-          if (isSafe(grid, row.val, col.val, guessNum[num]))
+          if (isSafe(grid, row.val, col.val, guessNum[n]))
           {
               // make tentative assignment
-              grid[row.val][col.val] = guessNum[num];
+              grid[row.val][col.val] = guessNum[n];
 
               // return, if success, yay!
               if (solveGrid())
@@ -171,9 +167,9 @@ class PortedSudoku {
 
   }
 
-  void countSoln(IntPtr number)
+  void countSoln(Ptr<int> number)
   {
-    IntPtr row = Ptr(0), col = Ptr(0);
+    Ptr<int> row = Ptr(0), col = Ptr(0);
 
     if(!FindUnassignedLocation(grid, row, col))
     {
@@ -198,13 +194,13 @@ class PortedSudoku {
   {
     for(var i=0;i<81;i++)
     {
-      Int x = (gridPos[i])~/9;
-      Int y = (gridPos[i])%9;
-      Int temp = grid[x][y];
+      int x = (gridPos[i])~/9;
+      int y = (gridPos[i])%9;
+      int temp = grid[x][y];
       grid[x][y] = UNASSIGNED;
 
       // If now more than 1 solution , replace the removed cell back.
-      IntPtr check = Ptr(0);
+      Ptr<int> check = Ptr(0);
       countSoln(check);
       if(check.val!=1)
       {
@@ -214,8 +210,8 @@ class PortedSudoku {
   }
   void calculateDifficulty()
   {
-    Int B = branchDifficultyScore();
-    Int emptyCells = 0;
+    int B = branchDifficultyScore();
+    int emptyCells = 0;
 
     for(var i=0;i<9;i++)
     {
@@ -228,29 +224,21 @@ class PortedSudoku {
 
     difficultyLevel = B*100 + emptyCells;
   }
-  Int branchDifficultyScore()
+  int branchDifficultyScore()
   {
-    Int emptyPositions = -1;
-    Grid tempGrid = BidimensionalList<Int>.view(Uint8List(9*9), 9);
-    Int sum=0;
-
-    for(Int i=0;i<9;i++)
-    {
-      for(Int j=0;j<9;j++)
-      {
-        tempGrid[i][j] = grid[i][j];
-      }
-    }
+    int emptyPositions = -1;
+    BidimensionalList<int> tempGrid = grid.toList(growable: false);
+    int sum=0;
 
     while(emptyPositions!=0)
     {
-      NonNull<List<IntList>> empty = <IntList>[]; 
+      List<List<int>> empty = <List<int>>[]; 
 
       for(var i=0;i<81;i++)
       {
           if(tempGrid[i~/9][i%9] == 0)
           {
-            IntList temp = <Int>[];
+            List<int> temp = <int>[];
             temp.add(i);
           
             for(var num=1;num<=9;num++)
@@ -272,18 +260,18 @@ class PortedSudoku {
         return sum;
       } 
 
-      Int minIndex = 0;
+      int minIndex = 0;
 
-      Int check = empty.length;
+      int check = empty.length;
       for(var i=0;i<check;i++)
       {
         if(empty[i].length < empty[minIndex].length)
       minIndex = i;
       }
 
-      Int branchFactor=empty[minIndex].length;
-      Int rowIndex = empty[minIndex][0]~/9;
-      Int colIndex = empty[minIndex][0]%9;
+      int branchFactor=empty[minIndex].length;
+      int rowIndex = empty[minIndex][0]~/9;
+      int colIndex = empty[minIndex][0]%9;
 
       tempGrid[rowIndex][colIndex] = solnGrid[rowIndex][colIndex];
       sum = sum + ((branchFactor-2) * (branchFactor-2)) ;
@@ -296,12 +284,12 @@ class PortedSudoku {
   }
 }
 
-Int genRandNum(Int maxLimit)
+int genRandNum(int maxLimit)
 {
   return Random().nextInt(maxLimit); //TODO: check inclusive or exclusive
 }
 
-Grid quickAndDartyGen({NonNull<double> mask_rate = 0.5})
+BidimensionalList<int> quickAndDartyGen({double mask_rate = 0.5})
 {
   mask_rate = 1 - mask_rate;
   // Creating an instance of Sudoku

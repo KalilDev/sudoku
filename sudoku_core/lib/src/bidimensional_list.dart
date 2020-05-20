@@ -1,229 +1,219 @@
 import 'dart:collection';
-import 'nnbd_helper.dart';
+import 'package:meta/meta.dart';
 
-class BidimensionalList<T> extends ListBase<List<T>> {
-  int _resizeCounter = 0;
+class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
   List<T> _underlyingList;
   int _x;
   int _y;
-  final bool canMutate;
-  BidimensionalList._(
-      List<T> underlyingList, int width, int height, bool canMutate)
-      : assert(underlyingList != null && width != null),
-        assert(underlyingList.length == width * (height ?? width)),
-        assert(canMutate != null),
+
+  factory _OneDBackedBidimensionalList.filled(int width, T fill, {int? height, bool canMutate = false}) {
+    height ??= width;
+    final list = List<T>.filled(width*height, fill, growable: false);
+    return _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: canMutate);
+  }
+
+  _OneDBackedBidimensionalList(
+      {@required List<T> underlyingList, @required int width, @required int? height, @required bool canMutate})
+      : assert(underlyingList.length == width * (height ?? width)),
         _x = width,
         _y = height ?? width,
         _underlyingList = underlyingList,
-        canMutate = canMutate;
-
-  factory BidimensionalList.view(List<T> underlyingList, int width,
-          {int height}) =>
-      BidimensionalList._(underlyingList, width, height, false);
-
-  factory BidimensionalList.view2d(List<List<T>> subject, {bool canMutate = false}) {
-    final width = subject.first.length;
-    final height = subject.length;
-    assert(subject.every((row) => row.length == width));
-    final list = List<T>(width*height);
-    for (var i = 0; i < height; i++) {
-      list.setRange(i*width, (i+1)*width, subject[i]);
-    }
-    return BidimensionalList._(list, width, height, canMutate);
-  }
-
-  factory BidimensionalList(int width, {bool canMutate = false, int height}) =>
-      BidimensionalList._(
-          List<T>(width * (height ?? width)), width, height, canMutate);
-
-  factory BidimensionalList.filled(int width, T fill,
-          {bool canMutate = false, int height}) =>
-      BidimensionalList._(List<T>.filled(width * (height ?? width), fill),
-          width, height, canMutate);
-
-  factory BidimensionalList.generate(int width, T generator(int x, int y),
-      {bool canMutate = false, int height}) {
-    height ??= width;
-    final list =
-        BidimensionalList<T>(width, canMutate: canMutate, height: height);
-    for (var x = 0; x < width; x++)
-      for (var y = 0; y < height; y++) list[y][x] = generator(x, y);
-    return list;
-  }
+        super._(canMutate);
 
   int get height => _y;
+  set height(int n) {
+    throw UnimplementedError();
+  }
   int get width => _x;
   set width(int n) {
-    assert(n > _x && canMutate);
-    final temp = BidimensionalList.view(_underlyingList, _x, height: _y);
-    _resizeCounter++;
-    _x = n;
-    final newList = List<T>(_x * _y);
-    _underlyingList = newList;
-    for (var i = 0; i < temp.length; i++) {
-      this[i] = temp[i];
-    }
+    throw UnimplementedError();
   }
 
   @override
-  int get length => _y;
+  List<T> flat([bool copy = true]) =>
+      copy ? _underlyingList.toList(growable: false) : _underlyingList;
+  
+  @override
+  BidimensionalList<T> toList({bool growable: true}) {
+    final list = _underlyingList.toList(growable: false);
+    return _OneDBackedBidimensionalList(underlyingList: list, width: _x, height: _y, canMutate: growable);
+  }
 
+  @override
+  T getValue(int x, int y) => _underlyingList[y*width + x];
+  
+  @override
+  T setValue(int x, int y, T value) => _underlyingList[y*width + x] = value;
+
+}
+
+class _TwoDBackedBidimensionalList<T> extends BidimensionalList<T> {
+  List<List<T>> _underlyingList;
+  int _x;
+  _TwoDBackedBidimensionalList._(this._underlyingList, this._x, bool canMutate) : super._(canMutate);
+
+  factory _TwoDBackedBidimensionalList(
+      List<List<T>> underlyingList, {bool canMutate = false}) {
+   final width = underlyingList.length > 0 ? underlyingList.first.length : 0;
+   assert(underlyingList.every((e) => e.length == width));
+  return _TwoDBackedBidimensionalList<T>._(underlyingList, width, canMutate);
+  }
+
+
+  @override
+  int get height => _underlyingList.length;
+  set height(int n) {
+    throw UnimplementedError();
+  }
+
+  @override
+  int get width => _x;
+  set width(int n) {
+    throw UnimplementedError();
+  }
+
+  @override
+  T getValue(int x, int y) => _underlyingList[y][x];
+  
+  
+  @override
+  T setValue(int x, int y, T value) => _underlyingList[y][x] = value;
+
+  // TODO: ????
+  @override
+  BidimensionalList<T> toList({bool growable: true}) => BidimensionalList.view2d(super.toList());
+}
+
+
+abstract class BidimensionalList<T> extends ListBase<List<T>> {
+  final bool canMutate;
+  BidimensionalList._(this.canMutate);
+
+  factory BidimensionalList.view2d(List<List<T>> list) => _TwoDBackedBidimensionalList(list, canMutate: false);
+  factory BidimensionalList.view(List<T> list, int width, {int? height}) => _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: false);
+  factory BidimensionalList.filled(int width, T fill, {int? height, bool canMutate = false}) {
+    return _OneDBackedBidimensionalList.filled(width, fill, height: height, canMutate: canMutate);
+  }
+  factory BidimensionalList.generate(int width, T Function(int x, int y) gen, {int? height, bool canMutate = false}) {
+    height ??= width;
+    final list = List<List<T>>.generate(height, (y) => List<T>.generate(width, (x) => gen(x, y), growable: false), growable: false);
+    return _TwoDBackedBidimensionalList._(list, width, canMutate);
+  }
+
+  int get height;
+  set height(int n);
+  int get width;
+  set width(int n);
+
+  @override
+  int get length => height;
   set length(_) => throw StateError(
       "You can't change the size directly, change the width and the height");
 
   List<List<T>> get rows => this;
-  List<List<T>> get columns => _ColumnsViewer<T>(this, _resizeCounter);
-  List<T> flat([bool copy = true]) =>
-      copy ? List<T>.from(_underlyingList, growable: false) : _underlyingList;
+  List<List<T>> get columns {
+    return Viewer<List<T>>(valueGetter: (int i)=>getColumn(i), valueSetter: (int i, List<T> value)=> setColumn(i, value), lengthGetter: ()=> width, lengthSetter: (int length)=>width = length);
+  }
+  List<T> flat([bool copy = true]) {
+    if (!copy) {
+      throw StateError("In this BidimensionalList impl, you NEED to copy");
+    }
+    // TERRIBLY inneficient
+    return reduce((rowA, rowB)=> [...rowA, ...rowB]).toList();
+  }
   /**
    * Applies the function [f] to each element of this collection in iteration
    * order.
    */
-  void forEachInner(void f(T element)) {
-    for (T element in _underlyingList) f(element);
-  }
+  void forEachInner(void f(T element)) => forEach((e)=>e.forEach(f));
 
-  bool anyInner(bool test(T element)) => _underlyingList.any(test);
+  bool anyInner(bool test(T element)) => any((e)=>e.any(test));
 
   void forEachIndexed(void f(T element, int x, int y)) {
-    for (var y = 0; y < this.height; y++) {
-      final row = this[y];
-      for (var x = 0; x < this.width; x++) {
-        final element = row[x];
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final element = getValue(x, y);
         f(element, x, y);
       }
     }
   }
 
-  bool everyInner(bool test(T e)) => _underlyingList.every(test);
+  bool everyInner(bool test(T e)) => every((e)=>e.every(test));
 
-  Iterable<V> mapInner<V>(V f(T element)) => _underlyingList.map<V>(f);
-  Iterable<T> whereInner(bool test(T element)) => _underlyingList.where(test);
+  Iterable<V> mapInner<V>(V f(T element)) => map((e)=>e.map<V>(f)).reduce((a,b)=>a.followedBy(b));
+  Iterable<T> whereInner(bool test(T element)) => map((e)=>e.where(test)).reduce((a,b) => a.followedBy(b));
 
-  List<T> row(int i) => _RowViewer(this, i, _resizeCounter);
-  List<T> column(int i) => _ColumnViewer(this, i, _resizeCounter);
-
-  @override
-  List<T> operator [](int y) => row(y);
-
-  @override
-  void operator []=(int index, List<T> value) {
-    if (value.length != _x) {
-      throw StateError("Invalid value");
+  List<T> getRow(int i) {
+    final y = i;
+    return Viewer<T>(lengthGetter: ()=> width, valueGetter: (int i) => getValue(i, y), valueSetter: (int i, T value) => setValue(i, y, value), lengthSetter: (int i) => width = i);
+  }
+  setRow(int i, List<T> value) {
+    if (value.length != width) {
+      throw StateError("You can't set an eow that isn't the same size as the width");
     }
-    final row = this[index];
-    for (var i = 0; i < _y; i++) {
-      row[i] = value[i];
+    for (int x = 0 ; x < width; x++) {
+      setValue(x, i, value[x]);
     }
   }
 
-  @override
-  BidimensionalList<T> toList({bool growable: true}) {
-    final list = _underlyingList.toList(growable: false);
-    return BidimensionalList._(list, _x, _y, growable);
+  List<T> getColumn(int i) {
+    final x = i;
+    return Viewer<T>(lengthGetter: ()=> height, valueGetter: (int i) => getValue(x, i), valueSetter: (int i, T value) => setValue(x, i, value), lengthSetter: (int i) => height = i);
+  }
+  setColumn(int i, List<T> value) {
+    if (value.length != height) {
+      throw StateError("You can't set an column that isn't the same size as the height");
+    }
+    for (int y = 0 ; y < height; y++) {
+      setValue(i, y, value[y]);
+    }
   }
 
+  T getValue(int x, int y);
+  T setValue(int x, int y, T value);
+
   @override
-  Set<List<T>> toSet() => throw StateError("nope");
+  List<T> operator [](int y) => getRow(y);
+
+  @override
+  void operator []=(int index, List<T> value) => setRow(index, value);
+
+  @override
+  BidimensionalList<T> toList({bool growable: true});
 
   @override
   String toString() => rows.join('\n');
 }
 
-class _ColumnsViewer<T> extends ListBase<List<T>> {
-  final BidimensionalList<T> base;
-  final int resizeCounter;
+typedef ValueGetter<T> = T Function(int i);
+typedef ValueSetter<T> = void Function(int i, T value);
+typedef LengthGetter = int Function();
+typedef LengthSetter = void Function(int length);
 
-  _ColumnsViewer(this.base, this.resizeCounter);
-
-  @override
-  int get length {
-    _validate();
-    return base._x;
-  }
-
-  set length(_) =>
-      throw StateError("You cant change the height like this bruh");
-
-  void _validate() {
-    assert(base._resizeCounter == resizeCounter);
-  }
+class Viewer<T> extends ListBase<T> {
+  final ValueGetter<T> _valueGetter;
+  final ValueSetter<T> _valueSetter;
+  final LengthGetter _lengthGetter;
+  final LengthSetter? _lengthSetter;
+  Viewer({@required ValueGetter<T> valueGetter, @required ValueSetter<T> valueSetter, @required LengthGetter lengthGetter, LengthSetter? lengthSetter})
+    : _valueGetter = valueGetter,
+      _valueSetter = valueSetter,
+      _lengthGetter = lengthGetter,
+      _lengthSetter = lengthSetter;
 
   @override
-  List<T> operator [](int index) {
-    _validate();
-    return _ColumnViewer(base, index, resizeCounter);
-  }
-
-  @override
-  void operator []=(int index, List<T> value) {
-    _validate();
-    if (value.length != base._y) {
-      throw StateError("Invalid value");
+  int get length => _lengthGetter();
+  set length(int length) {
+    if (_lengthSetter == null) {
+      throw StateError("You can't change the length");
     }
-    final column = this[index];
-    for (var i = 0; i < base._y; i++) {
-      column[i] = value[i];
-    }
-  }
-}
-
-class _ColumnViewer<T> extends _SideViewer<T> {
-  _ColumnViewer(BidimensionalList<T> base, int crossAxisI, int changeCounter)
-      : super(base, crossAxisI, changeCounter);
-
-  @override
-  int get length {
-    _validate();
-    return base._y;
+    _lengthSetter!(length);
+    
   }
 
   @override
-  int _getIndexOnArray(int i) => crossAxisI + i*base._y;
-}
-
-class _RowViewer<T> extends _SideViewer<T> {
-  _RowViewer(BidimensionalList<T> base, int crossAxisI, int changeCounter)
-      : super(base, crossAxisI, changeCounter);
-
+  T operator [](int index) => _valueGetter(index);
+  
   @override
-  int get length {
-    _validate();
-    return base._x;
-  }
-
-  @override
-  int _getIndexOnArray(int i) => crossAxisI * length + i;
-}
-
-abstract class _SideViewer<T> extends ListBase<T> {
-  final BidimensionalList<T> base;
-  final int crossAxisI;
-  final int resizeCounter;
-
-  _SideViewer(this.base, this.crossAxisI, this.resizeCounter);
-
-  set length(int _) =>
-      throw Exception("You can't change the size of the 2d array from a side");
-
-  int _getIndexOnArray(int i);
-
-  void _validate([int i]) {
-    if (i != null && (i >= length || i < 0)) {
-      throw StateError("Index out of bounds");
-    }
-    assert(base._resizeCounter == resizeCounter);
-  }
-
-  @override
-  T operator [](int i) {
-    _validate(i);
-    return base._underlyingList[_getIndexOnArray(i)];
-  }
-
-  @override
-  void operator []=(int i, T value) {
-    _validate(i);
-    base._underlyingList[_getIndexOnArray(i)] = value;
-  }
+  void operator []=(int index, T value) => _valueSetter(index, value);
 }

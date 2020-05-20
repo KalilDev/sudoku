@@ -17,9 +17,9 @@ BidimensionalList<int> createRandomSudoku({int side = 9, double maskRate = 0.5, 
   while (tries < maxTry) {
     bool failed = false;
     for (var y = 1; y < side && !failed; y++) {
-      final row = state.row(y);
+      final row = state.getRow(y);
       for (var x = 0; x < side; x++) {
-        final col = state.column(x).take(y);
+        final col = state.getColumn(x).take(y);
         final rowColAvailable = setDiff1d(validValues, union1d(col, row.take(x)));
         if (rowColAvailable.isEmpty) {
           failed = true; // welp, this random solution did not work

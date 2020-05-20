@@ -36,17 +36,16 @@ class SudokuState {
     this.possibleValues
   });
 
-  SudokuState._({int side, BidimensionalList<int> initialState, this.possibleValues, BidimensionalList<int> state}) : side = side, initialState = initialState, state = state ?? BidimensionalList<int>.view(Uint8List.fromList(initialState.flat(false)), side);
-  factory SudokuState.uint8list({int side = 9, BidimensionalList<List<int>> possibleValues, BidimensionalList<int> initialState}) {
-    final list = Uint8List(side*side);
-    final values = BidimensionalList<int>.view(list, side);
-    if (initialState != null) {
-      list.setAll(0, initialState.flat(false));
-    }
-    return SudokuState._(side: side, state: values, initialState: initialState, possibleValues: possibleValues); // initialState is null
+  factory SudokuState({int side, BidimensionalList<int>? initialState, BidimensionalList<List<int>>? possibleValues, BidimensionalList<int>? state}) {
+    final sideSqrt = sqrt(side).round();
+    assert(sideSqrt * sideSqrt == side);
+    initialState ??= BidimensionalList.view(Uint8List(side*side), side);
+    possibleValues ??= BidimensionalList.generate(side, (_, __) => <int>[]);
+    state ??= initialState.toList();
+    return SudokuState.raw(side: side, initialState: initialState, state: state, possibleValues: possibleValues);
   }
-
-  SudokuState copy() => SudokuState.uint8list(side: side, possibleValues: possibleValues, initialState: initialState)..state.setAll(0, this.state);
+  
+  SudokuState copy() => SudokuState(side: side, possibleValues: possibleValues.toList(), initialState: initialState, state: state.toList());
   
   int get sideSqrt => sqrt(side).round();
   List<List<int>> get rows => state.rows;
@@ -58,8 +57,8 @@ class SudokuState {
   BidimensionalList<int> square(int x, int y) => BidimensionalList.view(flatSquare(x, y), sideSqrt);
 
   void reset() {
-    state = BidimensionalList<int>.view(Uint8List.fromList(initialState.flat(false)), side);
-    possibleValues = BidimensionalList<List<int>>.generate(side, (x, y) => <int>[]);
+    state = BidimensionalList<int>.filled(0, side);
+    possibleValues = BidimensionalList<List<int>>.generate(side, (_, __) => <int>[]);
   }
 
   Validation validateBoard() {
@@ -86,7 +85,7 @@ class SudokuState {
     return Validation.values[returnValue];
   }
   BidimensionalList<bool> validateWithInfo() {
-    final list = BidimensionalList<bool>(side);
+    final list = BidimensionalList<bool>.filled(side, true);
     final columns = this.columns;
     final rows = this.rows;
     final squares = flatSquares();
@@ -108,16 +107,11 @@ class SudokuState {
         list[y*sideSqrt + j][x * sideSqrt + i] = false;
       });
     });
-    list.forEachIndexed((element, x, y) {
-      if (element != false && state[y][x] != 0) {
-        list[y][x] = true;
-      }
-    });
     return list;
   }
 
-  List<int> row(int y) => state.row(y);
-  List<int> column(int x) => state.column(x);
+  List<int> row(int y) => state.getRow(y);
+  List<int> column(int x) => state.getColumn(x);
 
   operator []=(int y, v) => state[y] = v;
   List<int> operator [](int y) => state[y];
@@ -160,7 +154,7 @@ class SudokuState {
     final walked = <int>[];
     for (var i = 0; i < toValidate.length; i++) {
       final value = toValidate[i];
-      if (value == 0 || value == null) {
+      if (value == 0) {
         return 2;
       }
       if (walked.contains(value)) {
