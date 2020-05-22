@@ -38,6 +38,15 @@ class SudokuBoardView extends StatelessWidget {
                       body: Center(child: CircularProgressIndicator())
                 );
               }
+
+              if (_state is SudokuErrorState) {
+                return Scaffold(
+                  appBar: appBar,
+                  body: Center(child: Column(mainAxisSize: MainAxisSize.min,children: [
+                  Text(_state.userFriendlyMessage),
+                  Text("Mensagem do erro: ${_state.message}")
+                ],),),);
+              }
               final state = _state as SudokuSnapshot;
               final prefsState = _prefsState as PrefsSnap;
               if (state.validationState == Validation.valid) {
