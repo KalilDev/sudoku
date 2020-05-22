@@ -8,6 +8,19 @@ import 'prefs_sheet.dart';
 import 'package:sudoku/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:sudoku/widgets/board/board.dart';
+import 'sudoku_button.dart';
+
+String difficultyToString(SudokuDifficulty difficulty) {
+  switch (difficulty) {
+    case SudokuDifficulty.begginer: return 'Iniciante';
+    case SudokuDifficulty.easy: return 'Fácil';
+    case SudokuDifficulty.medium: return 'Média';
+    case SudokuDifficulty.hard: return 'Difícil';
+    case SudokuDifficulty.extreme: return 'Extrema';
+    case SudokuDifficulty.impossible: return 'Impossível';
+    default: return 'Desconhecida';
+  }
+}
 
 class MainMenu extends StatelessWidget {
   void setSide(int side, BuildContext context) {
@@ -20,8 +33,7 @@ class MainMenu extends StatelessWidget {
 
   void launch(SudokuConfiguration config, BuildContext context) {
     final difficultyIndex = SudokuDifficulty.values.indexOf(config.difficulty);
-    Navigator.of(context).pushNamed("${config.side}x$difficultyIndex", arguments: config).then((_) => 
-      Future.delayed(Duration(milliseconds: 500), ()=>BlocProvider.of<MainMenuBloc>(context).add(ReloadConfigurations())));
+    Navigator.of(context).pushNamed("${config.side}x$difficultyIndex", arguments: config).then((_) => BlocProvider.of<MainMenuBloc>(context).add(ReloadConfigurations()));
   }
 
   @override
@@ -33,78 +45,76 @@ class MainMenu extends StatelessWidget {
       }
       final state = _state as MainMenuSnap;
       final configs = state.configurations;
-      //debugger();
       final theme = Provider.of<SudokuTheme>(context);
       final sideCounts = configs.map((row) => row.first.side).toList();
       final config = state.configurations[state.sideY][state.difficultyX];
-      return Scaffold(
-          appBar: AppBar(
-            title: Text("Sudoku"),
-            actions: [
-              IconButton(icon: Icon(Icons.settings), onPressed: () => openPrefs(context))
-            ],
-          ),
-          body: Center(
-            child: FractionallySizedBox(
-              widthFactor: 0.6,
-              alignment: Alignment.center,
-                        child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Spacer(),
-              Flexible(
-                flex: 2,
-                child: Center(
-                  child: AspectRatio(
-                      aspectRatio: 1,
-                      child: Hero(
-                        tag: "SudokuBG",
-                          child: CustomPaint(
-                          painter: SudokuBgPainter(
-                              sideCounts[state.sideY], theme.main, Colors.transparent),
-                        ),
-                      )),
-                ),
+      final widthConstraints = BoxConstraints(maxWidth: 450);
+      final boardWidget = 
+                Flexible(
+                  child: Center(
+                    child: AspectRatio(
+                        aspectRatio: 1,
+                        child: Hero(
+              tag: "SudokuBG",
+                child: CustomPaint(
+                painter: SudokuBgPainter(
+                    sideCounts[state.sideY], theme.main, Colors.transparent),
               ),
-              Flexible(flex: 2,child: Center(
-                child: Column(children: [
+                        )),
+                  ),
+                );
+      final sliderTheme = Theme.of(context).sliderTheme.copyWith(activeTrackColor: theme.secondary, thumbColor: theme.secondary);
+      final optionsWidgets = [
                   Text("Lado: " + sideCounts[state.sideY].toString()),
-                FractionallySizedBox(
-                    widthFactor: 0.8,
-                    child: Slider(
-                      divisions: sideCounts.length - 1,
-                      value: state.sideY.toDouble(),
-                      onChanged: (v) => setSide(v.round(), context),
-                      max: sideCounts.length - 1.0,
-                    )),
+                Slider(
+                  divisions: sideCounts.length - 1,
+                  value: state.sideY.toDouble(),
+                  onChanged: (v) => setSide(v.round(), context),
+                  max: sideCounts.length - 1.0,
+                ),
                 Text("Dificuldade: " +
-                    SudokuDifficulty.values[state.difficultyX].toString()),
-                FractionallySizedBox(
-                    widthFactor: 0.8,
-                    child: Slider(
-                      divisions: configs.width - 1,
-                      value: state.difficultyX.toDouble(),
-                      onChanged: (v) => setDifficulty(v.round(), context),
-                      max: configs.width - 1.0,
-                    )),
-                RaisedButton(
+                    difficultyToString(SudokuDifficulty.values[state.difficultyX])),
+                Slider(
+                  divisions: configs.width - 1,
+                  value: state.difficultyX.toDouble(),
+                  onChanged: (v) => setDifficulty(v.round(), context),
+                  max: configs.width - 1.0,
+                ),
+                SudokuButton(
                   onPressed: () => launch(config.newSudoku(), context),
                   child: Text("Novo jogo"),
+                  filled: true,
                 ),
-                RaisedButton(
+                SudokuButton(
                   onPressed: config.source == StateSource.storage
                       ? () => launch(config, context)
                       : null,
+                  filled: true,
                   child: Text("Continuar"),
                 )
-                ]),
-              ),),
-              Spacer()
-                ],
-              ),
+      ];
+      return SliderTheme(
+        data: sliderTheme,
+              child: Scaffold(
+            appBar: AppBar(
+              title: Text("Sudoku"),
+              actions: [
+                IconButton(icon: Icon(Icons.settings), onPressed: () => openPrefs(context))
+              ],
             ),
-          ));
+            body: Center(
+              child: ConstrainedBox(
+                constraints: widthConstraints,
+                          child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                    boardWidget,
+                  Flexible(child: Column(mainAxisSize: MainAxisSize.min, children: optionsWidgets),),
+                    ],
+                  ),
+              ),
+            )),
+      );
     });
   }
 }
