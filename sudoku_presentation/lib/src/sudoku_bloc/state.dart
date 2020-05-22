@@ -1,9 +1,34 @@
 import 'package:meta/meta.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:collection/collection.dart';
-import 'bloc.dart';
-import '../sudoku_configuration.dart';
-import '../common.dart';
+
+@immutable
+abstract class SquareDelta {
+  final int x;
+  final int y;
+  SquareDelta(this.x, this.y);
+}
+
+class PossibleAdded extends SquareDelta {
+  PossibleAdded(int x, int y, this.number) : super(x, y);
+  // The number that got added
+  final int number;
+}
+class PossibleRemoved extends SquareDelta {
+  PossibleRemoved(int x, int y, this.number) : super(x, y);
+  // The number that got removed
+  final int number;
+}
+class NumChanged extends SquareDelta {
+  NumChanged(int x, int y, this.number) : super(x, y);
+  // The number that was there before being replaced by the new one
+  final int number;
+}
+class PossibleCleared extends SquareDelta {
+  PossibleCleared(int x, int y, this.possibleValues) : super(x, y);
+  // The possible values that were cleared when the number was added
+  final List<int> possibleValues;
+}
 
 @immutable
 class SquareInfo {
@@ -22,7 +47,7 @@ class SquareInfo {
       this.isSelected,
       this.isValid});
   static final SquareInfo empty =
-      SquareInfo(isInitial: false, isSelected: false);
+      SquareInfo(isInitial: false, isSelected: false, isValid: true, possibleNumbers: <int>[], number: 0);
 
   bool hasSameContentAs(SquareInfo other) =>
       number == other.number &&
