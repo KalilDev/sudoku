@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku/theme.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
-import 'package:provider/provider.dart';
+import '../sudoku_button.dart';
 
 class SudokuActions extends StatelessWidget {
   final bool canRewind;
@@ -12,79 +11,46 @@ class SudokuActions extends StatelessWidget {
   const SudokuActions({Key key, @required this.canRewind, @required this.markType, @required this.isPortrait})
       : super(key: key);
 
-  Widget buildAction(IconData icon, VoidCallback? onTap, BuildContext context,
-      {bool colored = false}) {
-    final theme = Provider.of<SudokuTheme>(context);
-    final isDisabled = onTap == null;
-    final disabledColor = Theme.of(context).disabledColor;
-    final decoration = BoxDecoration(
-        border: Border.all(color: isDisabled ? disabledColor : theme.mainDarkened),
-        borderRadius: BorderRadius.circular(48.0));
-    final iconConstraints = BoxConstraints(
-      minWidth: isPortrait ? 52.0 : 22.0,
-      minHeight: !isPortrait ? 52.0 : 22.0,
-      maxHeight: isPortrait ? 36.0 : 112.0,
-      maxWidth: !isPortrait ? 36.0 : 112.0,
-    );
-    final aspectRatio = isPortrait ? 20/9 : 9/20;
-    return Material(
-      color: colored ? theme.secondary : null,
-      shape: StadiumBorder(),
-      child: InkWell(
-        onTap: onTap,
-        child: Ink(
-          decoration: decoration,
-          child: ConstrainedBox(
-            constraints: iconConstraints,
-              child: AspectRatio(
-                aspectRatio: aspectRatio,
-                  child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                child: Icon(
-                  icon,
-                  color: isDisabled ? disabledColor : colored ? Theme.of(context).colorScheme.onPrimary : null,
-                ),
-            ),
-                        ),
-              ),
-          ),
-        ),
-        customBorder: StadiumBorder(),
-        highlightColor: colored ? theme.secondaryDarkened : theme.secondary,
-      ),
-    );
-  }
+  static Map<IconData, Key> iconKeyMap = {};
 
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
     final bloc = context.bloc<SudokuBloc>();
+
+    final buttonConstraints = BoxConstraints(
+      minWidth: isPortrait ? 52.0 : 36.0,
+      minHeight: !isPortrait ? 52.0 : 36.0,
+      maxHeight: isPortrait ? 42.0 : 112.0,
+      maxWidth: !isPortrait ? 42.0 : 112.0,
+    );
+    ShapeBorder shapeBuilder(Color c) => StadiumBorder(side: BorderSide(color: c));
+
     void resetBoard() => bloc.add(ActionReset());
     void validate() => bloc.add(ActionValidate());
     void changeMarkType() => bloc.add(ActionSetMark(
         markType == MarkType.concrete ? MarkType.possible : MarkType.concrete));
     void undo() => bloc.add(ActionUndo());
+    Widget buildButton({IconData icon, VoidCallback onPressed, bool filled = false}) => SudokuButton(shapeBuilder: shapeBuilder, constraints: buttonConstraints, child: Icon(icon), filled: filled,onPressed: onPressed,);
     final children = [
       Spacer(),
-      Expanded(flex: 2, child: buildAction(Icons.sync, resetBoard, context)),
+      Expanded(flex: 3, child: buildButton(icon: Icons.sync, onPressed: resetBoard)),
       Spacer(),
-      Expanded(flex: 2, child: buildAction(Icons.check, validate, context)),
-      Spacer(),
-      Expanded(
-          flex: 2,
-          child: buildAction(Icons.edit, changeMarkType, context,
-              colored: markType == MarkType.possible)),
+      Expanded(flex: 3, child: buildButton(icon: Icons.check, onPressed: validate)),
       Spacer(),
       Expanded(
-          flex: 2,
-          child: buildAction(Icons.undo, canRewind ? undo : null, context)),
+          flex: 3,
+          child: buildButton(icon: Icons.edit, onPressed: changeMarkType,
+              filled: markType == MarkType.possible)),
+      Spacer(),
+      Expanded(
+          flex: 3,
+          child: buildButton(icon: Icons.undo,  onPressed: canRewind ? undo : null)),
       Spacer(),
     ];
     return !isPortrait
         ? Column(
-            children: children,
+            children: children.reversed.toList(),
           )
         : Row(
             children: children,
