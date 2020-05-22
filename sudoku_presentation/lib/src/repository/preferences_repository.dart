@@ -9,4 +9,6 @@ abstract class PreferencesRepository {
   Future<void> updateMainMenuX(int x);
   Future<int> getMainMenuY();
   Future<void> updateMainMenuY(int y);
+  Future<bool> getAknowledgement();
+  Future<void> updateAknowledgement(bool a);
 }

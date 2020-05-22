@@ -1,8 +1,6 @@
 import 'package:cross_local_storage/cross_local_storage.dart';
 import 'package:sudoku_presentation/common.dart';
 import 'package:sudoku_presentation/repositories.dart';
-import 'package:sudoku_presentation/sudoku_bloc.dart';
-import 'package:sudoku_core/sudoku_core.dart';
 
 class CrossPreferencesRepository implements PreferencesRepository {
   Future<LocalStorageInterface> get prefs async => await LocalStorage.getInstance();
@@ -11,8 +9,9 @@ class CrossPreferencesRepository implements PreferencesRepository {
   Future<AnimationOptions> getAnimationOptions() async {
     final pref = await prefs;
     final optsStrings = pref.getStringList("animationOptions");
-    if (optsStrings == null || optsStrings.isEmpty)
+    if (optsStrings == null || optsStrings.isEmpty) {
       return null;
+    }
     final options = AnimationOptions.parse(optsStrings);
     return options;
   }
@@ -41,5 +40,11 @@ class CrossPreferencesRepository implements PreferencesRepository {
   
   @override
   Future<void> updateTheme(String themeName) => prefs.then((pref) => pref.setString("currentTheme", themeName));
+
+  @override
+  Future<bool> getAknowledgement() => prefs.then((pref)=>pref.getBool("storageAknowledgement"));
+
+  @override
+  Future<void> updateAknowledgement(bool a) => prefs.then((pref)=>pref.setBool("storageAknowledgement", a));
 
 }
