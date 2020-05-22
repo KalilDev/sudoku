@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +9,7 @@ import '../prefs_sheet.dart';
 import './numbers.dart';
 import './board.dart';
 import './actions.dart';
+
 class SudokuBoardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -37,9 +38,11 @@ class SudokuBoardView extends StatelessWidget {
                       body: Center(child: CircularProgressIndicator())
                 );
               }
-
               final state = _state as SudokuSnapshot;
               final prefsState = _prefsState as PrefsSnap;
+              if (state.validationState == Validation.valid) {
+                BlocProvider.of<SudokuBloc>(context).add(DeleteSudoku());
+              }
               if (state.wasDeleted) {
                 void pop([dynamic _]) => Navigator.of(context).pop();
                 WidgetsBinding.instance.addPostFrameCallback((_) {
