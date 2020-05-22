@@ -57,7 +57,7 @@ class SudokuState {
   BidimensionalList<int> square(int x, int y) => BidimensionalList.view(flatSquare(x, y), sideSqrt);
 
   void reset() {
-    state = BidimensionalList<int>.filled(0, side);
+    state = initialState.toList();
     possibleValues = BidimensionalList<List<int>>.generate(side, (_, __) => <int>[]);
   }
 
