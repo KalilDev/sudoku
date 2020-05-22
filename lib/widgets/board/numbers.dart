@@ -1,53 +1,36 @@
-import 'dart:developer';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku_presentation/common.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
-import 'package:sudoku/theme.dart';
-import 'package:provider/provider.dart';
+
+import '../sudoku_button.dart';
 
 class SudokuNumbers extends StatelessWidget {
   final List<NumberInfo> state;
   final bool isPortrait;
 
-  const SudokuNumbers({Key? key, @required this.state, @required this.isPortrait}) : super(key: key);
+  const SudokuNumbers({Key key, @required this.state, @required this.isPortrait}) : super(key: key);
+
+  static double buttonSize = 52;
+  static final buttonConstraints = BoxConstraints(
+    minWidth: 0,
+    minHeight: 0,
+    maxHeight: 2*buttonSize,
+    maxWidth: 2*buttonSize,
+  );
 
   Widget renderNumber(NumberInfo info, BuildContext context) {
     void onTap() {
       context.bloc<SudokuBloc>().add(NumberTap(info.number));
     }
-    final decoration = BoxDecoration(color: info.isSelected ? Provider.of<SudokuTheme>(context).secondary : null, shape: BoxShape.circle, border: Border.all(color: Provider.of<SudokuTheme>(context).mainDarkened));
-    var textStyle = Theme.of(context).textTheme.headline4;
-    if (info.isSelected) {
-      textStyle =  textStyle.copyWith(color: Theme.of(context).colorScheme.onSecondary);
-    }
-    final textOrIcon = info.number == 0 ? Padding(padding: EdgeInsets.all(2.5),child: Icon(Icons.clear, color: textStyle.color,)) : Text(info.number.toString(), style: textStyle,);
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(3.0),
-        child: Ink(
-          decoration: decoration,
-          child: InkWell(
-            onTap: onTap,
-            customBorder: CircleBorder(),
-            child: FractionallySizedBox(
-              widthFactor: 0.75,
-              heightFactor: 0.75,
-                          child: FittedBox(
-                fit: BoxFit.contain,
-                  child: textOrIcon,
-              ),
-            ),
-          ),
-        ),
-      ),
+    final textOrIcon = info.number == 0 ? Icon(Icons.clear) : Text(info.number.toString());
+    final textStyle = Theme.of(context).textTheme.headline4;
+    return Padding(
+      padding: const EdgeInsets.all(3.0),
+      child: SudokuButton(filled: info.isSelected, textStyle: textStyle, constraints: buttonConstraints, child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)), onPressed: onTap, shapeBuilder: (c)=> CircleBorder(side: BorderSide(color: c)),),
     );
   }
-
-  static double buttonSize = 52;
 
   @override
   Widget build(BuildContext context) {
