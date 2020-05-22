@@ -4,6 +4,14 @@ import 'state.dart';
 @immutable
 abstract class MainMenuEvent {}
 
+class MainMenuErrorEvent extends MainMenuEvent {
+  final MainMenuErrorState state;
+
+  MainMenuErrorEvent(this.state);
+}
+
+class AknowledgeStorageEvent extends MainMenuEvent {}
+
 class LoadedEvent extends MainMenuEvent {
   final MainMenuState state;
 
