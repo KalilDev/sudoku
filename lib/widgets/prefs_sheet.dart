@@ -7,7 +7,32 @@ import 'package:sudoku_presentation/preferences_bloc.dart';
 
 Color getTextColorForBrightness(Brightness b) => b == Brightness.dark ? Colors.white.withOpacity(0.87) : Colors.black87;
 
-Widget buildThemePreview(
+String themeToString(AvailableTheme theme) {
+  switch (theme) {
+    case AvailableTheme.darkGreen: return "Verde escuro";
+    case AvailableTheme.blackGreen: return "Preto e verde";
+    case AvailableTheme.materialLight: return "Material Design";
+    case AvailableTheme.materialDark: return "Material Design escuro";
+    case AvailableTheme.seasideLight: return "Seaside";
+    case AvailableTheme.seasideDark: return "Seaside escuro";
+    case AvailableTheme.desertLight: return "Deserto";
+    case AvailableTheme.desertDark: return "Deserto escuro";
+    case AvailableTheme.pixelBlue: return "Azul Pixel";
+    default: return 'Desconhecido';
+  }
+}
+
+String speedToString(AnimationSpeed speed) {
+  switch (speed) {
+    case AnimationSpeed.none: return 'Desativada';
+    case AnimationSpeed.normal: return 'Lenta';
+    case AnimationSpeed.fast: return 'Normal';
+    case AnimationSpeed.fastest: return 'Rápida';
+    default: return 'Desconhecido';
+  }
+}
+
+Widget buildSingleThemePreview(
     MapEntry<AvailableTheme, SudokuTheme> entry, BuildContext context, bool enabled) {
   final shape =
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0));
@@ -15,7 +40,7 @@ Widget buildThemePreview(
   final textColor = theme.brightness == Theme.of(context).brightness
       ? null
       : getTextColorForBrightness(theme.brightness);
-  final text = entry.key.toString();
+  final text = themeToString(entry.key);
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
     child: Material(
@@ -42,39 +67,63 @@ Widget buildThemePreview(
   );
 }
 
+
+Widget buildSectionTitle(String title, BuildContext context) => 
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+              );
+
+List<Widget> buildThemes(BuildContext context, AvailableTheme currentTheme) {
+  final themes = SudokuTheme.availableThemeMap.entries
+        .map((t) => buildSingleThemePreview(t, context, t.key != currentTheme)).toList();
+  return [
+    SliverToBoxAdapter(child: buildSectionTitle("Temas:", context)),
+    SliverGrid(delegate: SliverChildListDelegate(themes), gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 200, childAspectRatio: 1.8))
+  ];
+}
+
 List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
   // ignore: close_sinks
   final bloc = BlocProvider.of<PreferencesBloc>(context);
+  Widget buildSubSectionTitle(String name) => 
+  Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Text(name),
+  );
+  final checksEnabled = opts.speed != AnimationSpeed.none;
+  final sliderEnabled = opts.hasAnimations || opts.speed == AnimationSpeed.none;
+  final speed = !opts.hasAnimations ? AnimationSpeed.none : opts.speed;
   Widget buildSingle(String name, bool enabled, ValueChanged<bool> onChange) {
-    return ListTile(title: Text(name), trailing: Checkbox(value: enabled, onChanged: onChange, activeColor: Theme.of(context).colorScheme.secondary, checkColor: Theme.of(context).colorScheme.onPrimary,),onTap: ()=>onChange(!enabled),);
+    return ListTile(title: Text(name), trailing: Checkbox(value: enabled, onChanged: checksEnabled ? onChange : null, activeColor: Theme.of(context).colorScheme.secondary, checkColor: Theme.of(context).colorScheme.onPrimary,),onTap: checksEnabled ? ()=>onChange(!enabled) : null,);
   }
-  Widget buildSectionTitle(String name) => 
-    Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(name),
-    );
   void update(AnimationOptions newOpts) => bloc.add(PrefsEvent<AnimationOptions>(
           newOpts,
           PrefsEventType.animUpdate));
   return [
+    SliverToBoxAdapter(child: buildSectionTitle("Animações:", context)),
+    SliverList(delegate: SliverChildListDelegate([
     Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(opts.speed.toString()),
+      child: Text('Velocidade: ' + speedToString(speed)),
     ),
     Slider(
       value: AnimationSpeed.values.indexOf(opts.speed).toDouble(),
-      onChanged: (d) => update(opts.copyWith(speed: AnimationSpeed.values[d.round()])),
+      onChanged: sliderEnabled ? (d) => update(opts.copyWith(speed: AnimationSpeed.values[d.round()])) : null,
       max: AnimationSpeed.values.length - 1.0,
     ),
-    buildSectionTitle("Seleção"),
+    buildSubSectionTitle("Seleção"),
     buildSingle("Tamanho", opts.selectSize, (b) =>update(opts.copyWith(selectSize: b))),
     buildSingle("Cor", opts.selectColor, (b) =>update(opts.copyWith(selectColor: b))),
-    buildSectionTitle("Texto"),
+    buildSubSectionTitle("Texto"),
     buildSingle("Posição", opts.textPosition, (b) =>update(opts.copyWith(textPosition: b))),
     buildSingle("Opacidade", opts.textOpacity, (b) =>update(opts.copyWith(textOpacity: b))),
     buildSingle("Tamanho", opts.textSize, (b) =>update(opts.copyWith(textSize: b))),
     buildSingle("Cor", opts.textColor, (b) =>update(opts.copyWith(textColor: b))),
-  ];
+  ]))];
 }
 
 void openPrefs(BuildContext context) {
@@ -87,29 +136,13 @@ void openPrefs(BuildContext context) {
               return Center(child: CircularProgressIndicator());
             }
             final state = _state as PrefsSnap;
-            final themes = [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Tema:",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-              ),
-              ...SudokuTheme.availableThemeMap.entries
-                  .map((t) => buildThemePreview(t, context, t.value != state.theme))
-            ];
             final opts = state.animationOptions;
-            final animation = [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Animações:",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-              ),
+            final slivers = [
+              ...buildThemes(context, state.theme),
               ...buildAnimations(opts, context)
             ];
-            return ListView(children: [...themes, ...animation]);
+            final widthConstraints = BoxConstraints(maxWidth: 900);
+            return Center(child: ConstrainedBox(constraints: widthConstraints, child: CustomScrollView(slivers: slivers)));
           },
         );
       });
