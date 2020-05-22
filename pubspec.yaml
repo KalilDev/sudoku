@@ -27,6 +27,7 @@ dependencies:
   flutter_bloc: any
   cross_local_storage: any
   localstorage: any
+  path_provider_linux: any
   sudoku_core:
     path: ./sudoku_core/
   sudoku_presentation:
