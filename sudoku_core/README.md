@@ -1,4 +1,4 @@
-A library for Dart developers.
+A library with the core utilities for the Sudoku Flutter app.
 
 Created from templates made available by Stagehand under a BSD-style
 [license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
@@ -11,12 +11,13 @@ A simple usage example:
 import 'package:sudoku_core/sudoku_core.dart';
 
 main() {
-  var awesome = new Awesome();
+  BidimensionalList<int> initialState = createRandomSudoku();
+  SudokuState state = SudokuState(side: 9, initialState: initialState);
+  print(state.state);
 }
 ```
 
 ## Features and bugs
 
-Please file feature requests and bugs at the [issue tracker][tracker].
-
-[tracker]: http://example.com/issues/replaceme
+BidimensionalList and SudokuState are the main features of this library. They are tested, so no bugs hopefully.
+More tests and functionality will be added.

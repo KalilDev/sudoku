@@ -1,16 +1,34 @@
 # sudoku
 
-A new Flutter project.
+An beautiful Sudoku made with Flutter and Dart using the BLoC pattern.
 
-## Getting Started
+## Running
 
-This project is a starting point for a Flutter application.
+You can download an release APK on the [releases page](https://github.com/KalilDev/sudoku/releases)
 
-A few resources to get you started if this is your first Flutter project:
+The Flutter web version is deployed on github-pages and can be accessed through these links:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- [Dom version](https://kalildev.github.io/sudoku/index.html)
+- [CanvasKit version](https://kalildev.github.io/sudoku/index_skia.html)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Screenshots
+
+### Light
+<img src="readme-assets/screenshots/light/1.png" height="400"></img>
+<img src="readme-assets/screenshots/light/2.png" height="400"></img>
+<img src="readme-assets/screenshots/light/3.png" height="400"></img>
+<img src="readme-assets/screenshots/light/4.png" height="400"></img>
+<img src="readme-assets/screenshots/light/5.png" width="400"></img>
+<img src="readme-assets/screenshots/light/6.png" height="400"></img>
+<img src="readme-assets/screenshots/light/7.png" height="400"></img>
+<img src="readme-assets/screenshots/light/8.png" width="400"></img>
+
+### Dark
+<img src="readme-assets/screenshots/dark/1.png" height="400"></img>
+<img src="readme-assets/screenshots/dark/2.png" height="400"></img>
+<img src="readme-assets/screenshots/dark/3.png" height="400"></img>
+<img src="readme-assets/screenshots/dark/4.png" height="400"></img>
+<img src="readme-assets/screenshots/dark/5.png" width="400"></img>
+<img src="readme-assets/screenshots/dark/6.png" height="400"></img>
+<img src="readme-assets/screenshots/dark/7.png" height="400"></img>
+<img src="readme-assets/screenshots/dark/8.png" width="400"></img>
