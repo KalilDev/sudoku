@@ -24,21 +24,57 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   MarkType markType = MarkType.concrete;
   BidimensionalList<bool> validation;
 
-  Future<void> scheduleSave(SudokuSnapshot snap) => repository.scheduleSave(definition.side, definition.difficulty, snap);
-  Future<void> initialize() async {
-    Future<SudokuState> futureState;
-    switch (definition.source) {
-      case StateSource.storage: futureState = repository.loadSudoku(definition.side, definition.difficulty);break;
-      case StateSource.random: futureState = genRandomSudoku(definition.side, definition.difficulty, compute: computeImpl); break;
+  Future<void> scheduleSave(SudokuSnapshot snap) async {
+    if (repository.currentStatus().type == StorageStatusType.ready) {
+      //debugger();
+      await catchFuture(repository.scheduleSave(definition.side, definition.difficulty, snap), "Houve um erro inesperado ao salvar o Sudoku");
     }
-    final state = await futureState;
-    add(LoadedEvent(state));
+  }
+  
+  Future<T> catchFuture<T>(Future<T> future, String userFriendlyMessage) => future.catchError((dynamic e){
+    emitError(msg: e.toString(), userFriendlyMsg: userFriendlyMessage);
+    return null;
+  });
+
+  void emitError({String msg, String userFriendlyMsg}) => add(SudokuErrorEvent(SudokuErrorState(
+          message: msg,
+          userFriendlyMessage: userFriendlyMsg
+        )));
+  
+  @override
+  void onError(Object error, StackTrace stackTrace) {
+    emitError(msg: error.toString(), userFriendlyMsg: "Houve um erro inesperado, o desenvolvedor é burro");
+    super.onError(error, stackTrace);
+  }
+
+  Future<void> initialize() async {
+    SudokuState state;
+    switch (definition.source) {
+      case StateSource.storage:
+        var status = repository.currentStatus();
+        if (status.type == StorageStatusType.unawaited) {
+          status = await repository.prepareStorage();
+        }
+        if (status.type != StorageStatusType.ready) {
+          emitError(msg: status.message, userFriendlyMsg: "Ao tentar carregar o estado armazenado do Sudoku, o armazenamento não pode ser preparado, ao invés, ele ficou com o status ${status.type}");
+          return;
+        }
+        state = await catchFuture(repository.loadSudoku(definition.side, definition.difficulty), "Ao tentar carregar o Sudoku armazenado, ocorreu um erro inesperado.");
+        break;
+      case StateSource.random:
+        state = await catchFuture(genRandomSudoku(definition.side, definition.difficulty, compute: computeImpl), "Ao tentar criar um Sudoku, ocorreu um erro inesperado.");
+      break;
+    }
+    // State is only null in case errors happened
+    if (state != null) {
+      add(LoadedEvent(state));
+    }
   }
 
   @override
   SudokuBlocState get initialState {
     validation = BidimensionalList.filled(definition.side, true);
-    initialize();
+    initialize().catchError(onError);
     return SudokuLoadingState();
   }
 
@@ -158,19 +194,20 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   
   @override
   Future<void> close() async {
-    if (state is SudokuSnapshot && ! (state as SudokuSnapshot).wasDeleted) {
+    if (state is SudokuSnapshot && !(state as SudokuSnapshot).wasDeleted && repository.currentStatus().type == StorageStatusType.ready) {
       await repository.freeSudoku(definition.side, definition.difficulty);
     }
     return super.close();
   }
 
   @override
-  Stream<SudokuSnapshot> mapEventToState(SudokuEvent event) async* {
+  Stream<SudokuBlocState> mapEventToState(SudokuEvent event) async* {
     if (event is LoadedEvent) {
       sudokuState = event.state;
     }
     if (event is ActionReset) {
       sudokuState.reset();
+      deltas.clear();
     }
     if (event is ActionUndo) {
       undo();
@@ -189,14 +226,20 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
     }
     if (event is DeleteSudoku) {
       if (!(state as SudokuSnapshot).wasDeleted) {
-        repository.deleteSudoku(definition.side, definition.difficulty);
+        if (repository.currentStatus().type == StorageStatusType.ready) {
+          catchFuture(repository.deleteSudoku(definition.side, definition.difficulty), "Houve um erro inesperado ao deletar o Sudoku armazenado");
+        }
         yield (state as SudokuSnapshot).deleted();
       }
+    } else if (event is SudokuErrorEvent) {
+      yield event.state;
     } else {
-      final snapshot = await genSnapshot();
-      //debugger();
-      yield snapshot;
-      scheduleSave(snapshot);
+      final snapshot = await catchFuture(genSnapshot(), "Houve um erro inesperado ao gerar o estado atual do Sudoku");
+      // only null on error
+      if (snapshot != null) {
+        yield snapshot;
+        scheduleSave(snapshot);
+      }
     }
   }
 }

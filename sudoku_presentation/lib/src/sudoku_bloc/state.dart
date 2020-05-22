@@ -70,6 +70,13 @@ abstract class SudokuBlocState {}
 
 class SudokuLoadingState extends SudokuBlocState {}
 
+class SudokuErrorState extends SudokuBlocState {
+  final String message;
+  final String userFriendlyMessage;
+
+  SudokuErrorState({this.message, this.userFriendlyMessage});
+}
+
 @immutable
 class SudokuSnapshot extends SudokuBlocState {
   final BidimensionalList<SquareInfo> squares; // non nullable
