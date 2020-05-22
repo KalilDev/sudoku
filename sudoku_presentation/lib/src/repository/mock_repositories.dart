@@ -3,23 +3,32 @@ import 'package:sudoku_presentation/src/sudoku_configuration.dart';
 import 'package:sudoku_presentation/src/sudoku_bloc/state.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'board_repository.dart';
+import 'board_repository.dart';
 import 'preferences_repository.dart';
 
 class MockBoardRepository extends BoardRepository {
+  static const status = StorageStatus(StorageStatusType.unsupported, 'This repository is an mock version made for unsupported platforms.');
+  
   @override
-  Future<bool> hasConfiguration(int side, SudokuDifficulty difficulty) => Future.value(false);
+  Future<bool> hasConfiguration(int side, SudokuDifficulty difficulty) => throw UnimplementedError();
   
   @override
   Future<SudokuState> loadSudoku(int side, SudokuDifficulty difficulty) => throw UnimplementedError();
   
   @override
-  Future<void> scheduleSave(int side, SudokuDifficulty difficulty, SudokuSnapshot snap) => Future.value(null);
+  Future<void> scheduleSave(int side, SudokuDifficulty difficulty, SudokuSnapshot snap) => throw UnimplementedError();
 
   @override
-  Future<void> deleteSudoku(int side, SudokuDifficulty difficulty) => Future.value(null);
+  Future<void> deleteSudoku(int side, SudokuDifficulty difficulty) => throw UnimplementedError();
   
   @override
-  Future<void> freeSudoku(int side, SudokuDifficulty difficulty) => Future.value(null);
+  Future<void> freeSudoku(int side, SudokuDifficulty difficulty) => throw UnimplementedError();
+
+  @override
+  Future<StorageStatus> prepareStorage() => Future.value(status);
+
+  @override
+  StorageStatus currentStatus() => status;
 }
 
 class MockPreferencesRepository extends PreferencesRepository {
@@ -46,4 +55,10 @@ class MockPreferencesRepository extends PreferencesRepository {
   
   @override
   Future<void> updateMainMenuY(int x) => Future.value(null);
+
+  @override
+  Future<bool> getAknowledgement() => Future.value(false);
+
+  @override
+  Future<void> updateAknowledgement(bool a) => Future.value(null);
 }
