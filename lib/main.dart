@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sudoku_presentation/common.dart';
@@ -65,6 +66,7 @@ class RootView extends StatelessWidget {
         builder: (context) => BlocProvider<SudokuBloc>(
               create: (BuildContext context) => SudokuBloc(sudokuConfiguration,
                   RepositoryProvider.of<BoardRepository>(context),
+                  compute
                   ),
               child: SudokuBoardView(),
             ));
@@ -75,7 +77,7 @@ class RootView extends StatelessWidget {
     return BlocBuilder<PreferencesBloc, PrefsState>(builder: (BuildContext context, PrefsState _state) {
       final state = _state is PrefsSnap ? _state : null;
 
-      final availableTheme = state?.theme ?? AvailableTheme.materialLight;
+      final availableTheme = (state?.theme) ?? AvailableTheme.materialLight;
       final theme = SudokuTheme.availableThemeMap[availableTheme];
       final colorScheme = theme.brightness == Brightness.light
           ? ColorScheme.light(
