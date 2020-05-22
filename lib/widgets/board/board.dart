@@ -1,6 +1,4 @@
-import 'dart:developer';
-import 'dart:math' show sqrt;
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku/theme.dart';
@@ -38,12 +36,14 @@ Alignment getTextAlignment(SquareInfo info) {
   return Alignment.center;
 }
 
-TextStyle getTextStyle(SquareInfo info, BuildContext context) {
+TextStyle getTextStyle(SquareInfo info, double squareSide, BuildContext context) {
   final noMainNumber = info.number == 0;
   final theme = Theme.of(context);
-  final style = noMainNumber
-      ? theme.textTheme.overline
-      : theme.textTheme.headline4;
+  final smallestTextStyle = theme.textTheme.overline;
+  final biggestTextStyle = theme.textTheme.headline4;
+  final absoluteBiggest = squareSide * 0.8;
+  final constrainedTextStyle = biggestTextStyle.copyWith(fontSize: absoluteBiggest.clamp(smallestTextStyle.fontSize, biggestTextStyle.fontSize).toDouble());
+  final style = noMainNumber ? smallestTextStyle : constrainedTextStyle;
   final color = getColor(info, context);
   if (color == null) {
     return style;
@@ -59,18 +59,20 @@ class SudokuStaticSquare extends StatelessWidget {
   final SquareInfo info;
   final int x;
   final int y;
-  const SudokuStaticSquare({@required Key key, @required this.info, @required this.x, @required this.y})
+  final double squareSide;
+  const SudokuStaticSquare({@required Key key, @required this.info, @required this.x, @required this.y, this.squareSide})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final text = Text(getText(info), style: getTextStyle(info, context));
+    final text = Text(getText(info), style: getTextStyle(info, squareSide, context));
     final decoration =
         BoxDecoration(color: getColor(info, context), shape: BoxShape.circle);
     void onTap() => context.bloc<SudokuBloc>().add(SquareTap(x, y));
 
+    final padding = squareSide/15;
     return Padding(
-      padding: const EdgeInsets.all(3.0),
+      padding: EdgeInsets.all(padding),
       child: InkWell(
         customBorder: CircleBorder(),
         onTap: info.isInitial ? null : onTap,
@@ -87,10 +89,11 @@ class SudokuAnimatedSquare extends StatefulWidget {
   final SquareInfo info;
   final int x;
   final int y;
+  final double squareSide;
   final AnimationOptions animationOptions;
 
   const SudokuAnimatedSquare(
-      {@required Key key, @required this.info, @required this.x, @required this.y, @required this.animationOptions})
+      {@required Key key, @required this.info, @required this.x, @required this.y, @required this.animationOptions, this.squareSide})
       : super(key: key);
 
   @override
@@ -197,10 +200,10 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     super.didUpdateWidget(oldWidget);
   }
 
-  static _SquareState createState(SquareInfo info, BuildContext context, bool isEnd) {
+  static _SquareState createState(SquareInfo info, double squareSide, BuildContext context, bool isEnd) {
     final color = getColor(info, context);
     final align = getTextAlignment(info);
-    final style = getTextStyle(info, context);
+    final style = getTextStyle(info, squareSide, context);
     return _SquareState._(
         isEnd ? 1.0 : 0.0, color, color == null ? 0 : 1.0, align, style);
   }
@@ -210,7 +213,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     TextStyle textStyle;
     if (widget.animationOptions.hasTextStyleAnimations) {
       textStyle = state.style;
-      final targetStyle = getTextStyle(targetInfo, context);
+      final targetStyle = getTextStyle(targetInfo, widget.squareSide, context);
       if (!widget.animationOptions.textSize) {
         textStyle = textStyle.copyWith(fontSize: targetStyle.fontSize);
       }
@@ -218,7 +221,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         textStyle = textStyle.copyWith(color: targetStyle.color);
       }
     } else {
-      textStyle = getTextStyle(targetInfo, context);
+      textStyle = getTextStyle(targetInfo, widget.squareSide, context);
     }
     Widget text;
     if (state.textPos == 0.0 ||
@@ -251,8 +254,9 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         shape: BoxShape.circle);
     final sizeFrac =
         widget.animationOptions.selectSize ? state.decorationSize : 1.0;
+    final padding = widget.squareSide/15;
     return Padding(
-      padding: const EdgeInsets.all(3.0),
+      padding: EdgeInsets.all(padding),
       child: InkWell(
         customBorder: CircleBorder(),
         onTap: targetInfo.isInitial ? null : onTap,
@@ -284,11 +288,11 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     if (controller.isAnimating) {
       tween = _SquareTween(
           begin: tween.transform(controller.value),
-          end: createState(widget.info, context, true));
+          end: createState(widget.info, widget.squareSide, context, true));
     } else {
       tween = _SquareTween(
-          begin: createState(oldInfo, context, false),
-          end: createState(widget.info, context, true));
+          begin: createState(oldInfo, widget.squareSide, context, false),
+          end: createState(widget.info, widget.squareSide, context, true));
     }
     if (targetInfo == null || !targetInfo.hasSameContentAs(widget.info)) {
       targetInfo = widget.info;
@@ -309,13 +313,14 @@ class SudokuBoard extends StatelessWidget {
   const SudokuBoard({Key key, this.state, this.animationOptions})
       : super(key: key);
 
-  Widget buildNumber(SquareInfo info, int x, int y) {
+  Widget buildNumber(SquareInfo info, int x, int y, double childSize) {
     final key = ValueKey("Square: $x, $y");
     if (animationOptions.hasAnimations) {
       return SudokuAnimatedSquare(
         info: info,
         x: x,
         y: y,
+        squareSide: childSize,
         key: key,
         animationOptions: animationOptions,
       );
@@ -324,20 +329,24 @@ class SudokuBoard extends StatelessWidget {
       info: info,
       x: x,
       y: y,
+      squareSide: childSize,
       key: key,
     );
   }
 
   Widget buildGrid(BuildContext context) {
-    final children = state.mapInnerIndexed((x, y, info) => buildNumber(info, x, y)).toList();
-    return GridView.count(
-      crossAxisCount: state.length,
-      childAspectRatio: 1,
-      children: children,
-      addAutomaticKeepAlives: false,
-      addRepaintBoundaries: false,
-      physics: NeverScrollableScrollPhysics(),
-    );
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+      final childSize = constraints.biggest.height / state.length;
+      final children = state.mapInnerIndexed((x, y, info) => buildNumber(info, x, y, childSize)).toList();
+      return GridView.count(
+        crossAxisCount: state.length,
+        childAspectRatio: 1,
+        children: children,
+        addAutomaticKeepAlives: false,
+        addRepaintBoundaries: false,
+        physics: NeverScrollableScrollPhysics(),
+      );
+    });
   }
 
   Widget buildBackground(BuildContext context) {
