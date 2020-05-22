@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:localstorage/localstorage.dart';
+import 'package:localstorage/src/errors.dart';
 import 'package:sudoku_presentation/common.dart';
 import 'package:sudoku_presentation/repositories.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
@@ -18,17 +20,40 @@ List<List<List<T>>> dynamicTo3dList<T>(dynamic _list) {
 
 typedef FreedStorageCallback = void Function(LocalStorage);
 
+enum StorageStatus {
+  unawaited,
+  ready,
+  unsupported,
+  error
+}
+
 class LocalStorageBoardRepository extends BoardRepository {
   final LocalStorage info = LocalStorage("BoardsInfo");
-  bool ready = false;
+  StorageStatus status = StorageStatus.unawaited;
 
   Map<String, LocalStorage> openedStorages = {};
-  Map<String, FreedStorageCallback?> busyStorages = {};
+  Map<String, FreedStorageCallback> busyStorages = {};
+
+  FutureOr<StorageStatus> prepareStorageIfNeeded() async {
+    if (status != StorageStatus.unawaited) {
+      return status;
+    }
+    try {
+      final result = await info.ready;
+      final status =  result ? StorageStatus.ready : StorageStatus.error;
+      this.status = status;
+      return status;
+    } on PlatformNotSupportedError catch (e) {
+      return StorageStatus.unsupported;
+    } finally {
+      return StorageStatus.error;
+    }
+  }
 
   @override
   Future<bool> hasConfiguration(int side, SudokuDifficulty difficulty) async {
-    if (!ready) {
-      ready = await info.ready;
+    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
+      return false;
     }
     final configs = info.getItem("availableConfigurations") as List<dynamic>;
     if (configs == null) {
@@ -46,8 +71,8 @@ class LocalStorageBoardRepository extends BoardRepository {
   
   @override
   Future<SudokuState> loadSudoku(int side, SudokuDifficulty difficulty) async {
-    if (!ready) {
-      ready = await info.ready;
+    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
+      return null;
     }
     final file = await getStorage(side, difficulty);
     final initialStateRaw = dynamicTo2dList<int>(file.getItem("initialState"));
@@ -74,9 +99,6 @@ class LocalStorageBoardRepository extends BoardRepository {
   }
 
   Future<LocalStorage> getStorage(int side, SudokuDifficulty difficulty) async {
-    if (!ready) {
-      ready = await info.ready;
-    }
     if (!await hasConfiguration(side, difficulty)) {
       final difficultyIndex = SudokuDifficulty.values.indexOf(difficulty);
       final configs = info.getItem("availableConfigurations") as List<dynamic> ?? <dynamic>[];
@@ -113,6 +135,9 @@ class LocalStorageBoardRepository extends BoardRepository {
   
   @override
   Future<void> scheduleSave(int side, SudokuDifficulty difficulty, SudokuSnapshot snap) async {
+    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
+      return null;
+    }
     final filename = getFilename(side, difficulty);
     if (busyStorages.containsKey(filename)) {
       busyStorages[filename] = (file) {
@@ -129,8 +154,8 @@ class LocalStorageBoardRepository extends BoardRepository {
 
   @override
   Future<void> deleteSudoku(int side, SudokuDifficulty difficulty) async {
-    if (!ready) {
-      ready = await info.ready;
+    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
+      return null;
     }
     final filename = getFilename(side, difficulty);
     final file = openedStorages[filename];
@@ -150,8 +175,8 @@ class LocalStorageBoardRepository extends BoardRepository {
 
   @override
   Future<void> freeSudoku(int side, SudokuDifficulty difficulty) async {
-    if (!ready) {
-      ready = await info.ready;
+    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
+      return null;
     }
     final filename = getFilename(side, difficulty);
     busyStorages.remove(filename);
