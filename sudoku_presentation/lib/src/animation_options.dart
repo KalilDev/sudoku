@@ -12,10 +12,7 @@ class AnimationOptions {
   final AnimationSpeed speed;
 
   bool get hasAnimations {
-    if (speed == AnimationSpeed.none) {
-      return selectSize || selectColor || textPosition || textOpacity || textSize || textColor;
-    }
-    return true;
+    return selectSize || selectColor || textPosition || textOpacity || textSize || textColor;
   }
   bool get hasTextStyleAnimations {
     if (speed == AnimationSpeed.none) {
@@ -64,7 +61,7 @@ class AnimationOptions {
 
   }
 
-  AnimationOptions copyWith({bool? selectSize, bool? selectColor, bool? textPosition, bool? textOpacity, bool? textColor, bool? textSize, AnimationSpeed? speed}) {
+  AnimationOptions copyWith({bool selectSize, bool selectColor, bool textPosition, bool textOpacity, bool textColor, bool textSize, AnimationSpeed speed}) {
     return AnimationOptions(
       selectSize: selectSize ?? this.selectSize,
       selectColor: selectColor ?? this.selectColor,
