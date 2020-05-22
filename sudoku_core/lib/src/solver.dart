@@ -2,7 +2,7 @@ import 'sudoku_state.dart';
 import 'bidimensional_list.dart';
 import 'dart:typed_data';
 import 'dart:math';
-BidimensionalList<int>? solve(SudokuState toBeSolved, {bool inPlace = true, int maxTry = 1000}) {
+BidimensionalList<int> solve(SudokuState toBeSolved, {bool inPlace = true, int maxTry = 1000}) {
   switch (toBeSolved.validateBoard()) {
     case Validation.invalid: throw StateError("We can't solve an broken sudoku. unfuck it first please."); break;
     case Validation.valid: return toBeSolved.state; break; // already solved
@@ -15,7 +15,7 @@ BidimensionalList<int>? solve(SudokuState toBeSolved, {bool inPlace = true, int 
   var tries = 0;
   final validValues = List<int>.generate(toBeSolved.side, (i) => i+1);
 
-  BidimensionalList<int>? state;
+  BidimensionalList<int> state;
   
   while (tries < maxTry) {
     bool failed = false;

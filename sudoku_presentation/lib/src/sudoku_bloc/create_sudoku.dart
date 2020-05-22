@@ -29,7 +29,6 @@ class _IsolateSudokuParams {
 List<int> isolateCreateSudoku(_IsolateSudokuParams param) {
   try {
     if (param.side == 9) {
-      print("using the gud algorithym");
       return quickAndDartyGen(mask_rate: param.mask).flat(false);
     }
     return createRandomSudoku(maskRate: param.mask, side: param.side, maxTry: 1000*10).flat(false);
@@ -42,7 +41,7 @@ Future<R> asyncCompute<Q, R>(ComputeCallback<Q, R> callback, Q message, {String 
   return callback(message);
 }
 
-Future<SudokuState> genRandomSudoku(int side, SudokuDifficulty difficulty, {int tryCount = 0, ComputeImpl? compute}) async {
+Future<SudokuState> genRandomSudoku(int side, SudokuDifficulty difficulty, {int tryCount = 0, ComputeImpl compute}) async {
   compute ??= asyncCompute;
   await null;
   if (tryCount >= 1)

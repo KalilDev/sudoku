@@ -316,7 +316,6 @@ BidimensionalList<int> quickAndDartyGen({double mask_rate = 0.5})
     if (onGrid != UNASSIGNED) {
       continue;
     }
-    print("sol: ${puzzle.solnGrid[y][x]}");
     puzzle.grid[y][x] = puzzle.solnGrid[y][x];
     toBeAdded--;
   }

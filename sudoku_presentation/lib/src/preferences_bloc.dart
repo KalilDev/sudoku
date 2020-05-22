@@ -25,7 +25,7 @@ class PrefsSnap extends PrefsState {
 
   PrefsSnap(this.theme, this.animationOptions);
 
-  PrefsSnap copyWith({AvailableTheme? theme, AnimationOptions? animationOptions}) => PrefsSnap(theme ?? this.theme, animationOptions ?? this.animationOptions);
+  PrefsSnap copyWith({AvailableTheme theme, AnimationOptions animationOptions}) => PrefsSnap(theme ?? this.theme, animationOptions ?? this.animationOptions);
 }
 
 class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {

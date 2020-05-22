@@ -15,8 +15,8 @@ class MainMenuSnap extends MainMenuState {
   MainMenuSnap(this.configurations, this.difficultyX, this.sideY);
 
   MainMenuState copyWith({
-      BidimensionalList<SudokuConfiguration>? configurations,
-      int? difficultyX,
-      int? sideY}) => MainMenuSnap(configurations ?? this.configurations,
+      BidimensionalList<SudokuConfiguration> configurations,
+      int difficultyX,
+      int sideY}) => MainMenuSnap(configurations ?? this.configurations,
       difficultyX ?? this.difficultyX, sideY ?? this.sideY);
 }

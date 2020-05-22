@@ -1,9 +1,6 @@
 analyzer:
   errors:
     missing_default_value_for_parameter: info
-  enable-experiment:
-    - non-nullable
-    - nonfunction-type-aliases
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false

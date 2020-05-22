@@ -8,7 +8,7 @@ class CrossPreferencesRepository implements PreferencesRepository {
   Future<LocalStorageInterface> get prefs async => await LocalStorage.getInstance();
 
   @override
-  Future<AnimationOptions?> getAnimationOptions() async {
+  Future<AnimationOptions> getAnimationOptions() async {
     final pref = await prefs;
     final optsStrings = pref.getStringList("animationOptions");
     if (optsStrings == null || optsStrings.isEmpty)
@@ -18,13 +18,13 @@ class CrossPreferencesRepository implements PreferencesRepository {
   }
 
   @override
-  Future<String?> getCurrentTheme() => prefs.then((pref) => pref.getString("currentTheme"));
+  Future<String> getCurrentTheme() => prefs.then((pref) => pref.getString("currentTheme"));
 
   @override
-  Future<int?> getMainMenuX() => prefs.then((pref) => pref.getInt("mainMenuX"));
+  Future<int> getMainMenuX() => prefs.then((pref) => pref.getInt("mainMenuX"));
 
   @override
-  Future<int?> getMainMenuY() => prefs.then((pref) => pref.getInt("mainMenuY"));
+  Future<int> getMainMenuY() => prefs.then((pref) => pref.getInt("mainMenuY"));
 
   @override
   Future<void> updateAnimationOptions(AnimationOptions options) async {

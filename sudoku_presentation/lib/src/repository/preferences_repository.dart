@@ -1,12 +1,12 @@
 import 'package:sudoku_presentation/src/animation_options.dart';
 
 abstract class PreferencesRepository {
-  Future<String?> getCurrentTheme();
+  Future<String> getCurrentTheme();
   Future<void> updateTheme(String theme);
-  Future<AnimationOptions?> getAnimationOptions();
+  Future<AnimationOptions> getAnimationOptions();
   Future<void> updateAnimationOptions(AnimationOptions options);
-  Future<int?> getMainMenuX();
+  Future<int> getMainMenuX();
   Future<void> updateMainMenuX(int x);
-  Future<int?> getMainMenuY();
+  Future<int> getMainMenuY();
   Future<void> updateMainMenuY(int y);
 }

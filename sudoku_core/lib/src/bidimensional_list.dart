@@ -6,14 +6,14 @@ class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
   int _x;
   int _y;
 
-  factory _OneDBackedBidimensionalList.filled(int width, T fill, {int? height, bool canMutate = false}) {
+  factory _OneDBackedBidimensionalList.filled(int width, T fill, {int height, bool canMutate = false}) {
     height ??= width;
     final list = List<T>.filled(width*height, fill, growable: false);
     return _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: canMutate);
   }
 
   _OneDBackedBidimensionalList(
-      {@required List<T> underlyingList, @required int width, @required int? height, @required bool canMutate})
+      {@required List<T> underlyingList, @required int width, @required int height, @required bool canMutate})
       : assert(underlyingList.length == width * (height ?? width)),
         _x = width,
         _y = height ?? width,
@@ -95,11 +95,11 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
   BidimensionalList._(this.canMutate);
 
   factory BidimensionalList.view2d(List<List<T>> list) => _TwoDBackedBidimensionalList(list, canMutate: false);
-  factory BidimensionalList.view(List<T> list, int width, {int? height}) => _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: false);
-  factory BidimensionalList.filled(int width, T fill, {int? height, bool canMutate = false}) {
+  factory BidimensionalList.view(List<T> list, int width, {int height}) => _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: false);
+  factory BidimensionalList.filled(int width, T fill, {int height, bool canMutate = false}) {
     return _OneDBackedBidimensionalList.filled(width, fill, height: height, canMutate: canMutate);
   }
-  factory BidimensionalList.generate(int width, T Function(int x, int y) gen, {int? height, bool canMutate = false}) {
+  factory BidimensionalList.generate(int width, T Function(int x, int y) gen, {int height, bool canMutate = false}) {
     height ??= width;
     final list = List<List<T>>.generate(height, (y) => List<T>.generate(width, (x) => gen(x, y), growable: false), growable: false);
     return _TwoDBackedBidimensionalList._(list, width, canMutate);
@@ -147,16 +147,11 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
 
   Iterable<V> mapInner<V>(V f(T element)) => map((e)=>e.map<V>(f)).reduce((a,b)=>a.followedBy(b));
   Iterable<V> mapInnerIndexed<V>(V f(int x, int y, T element)) {
-    var x = -1;
-    var y = -1;
-    return map((List<T> row) {
-      y++;
-      x = -1;
-      return row.map<V>((e) {
-        x++;
-        return f(x, y, e);
-      });
-    }).reduce((a,b)=>a.followedBy(b));
+    return Iterable.generate(height*width, (i) {
+      final x = i % width;
+      final y = i ~/ width;
+      return f(x, y, getValue(x, y));
+    });
   }
   Iterable<T> whereInner(bool test(T element)) => map((e)=>e.where(test)).reduce((a,b) => a.followedBy(b));
 
@@ -213,8 +208,8 @@ class Viewer<T> extends ListBase<T> {
   final ValueGetter<T> _valueGetter;
   final ValueSetter<T> _valueSetter;
   final LengthGetter _lengthGetter;
-  final LengthSetter? _lengthSetter;
-  Viewer({@required ValueGetter<T> valueGetter, @required ValueSetter<T> valueSetter, @required LengthGetter lengthGetter, LengthSetter? lengthSetter})
+  final LengthSetter _lengthSetter;
+  Viewer({@required ValueGetter<T> valueGetter, @required ValueSetter<T> valueSetter, @required LengthGetter lengthGetter, LengthSetter lengthSetter})
     : _valueGetter = valueGetter,
       _valueSetter = valueSetter,
       _lengthGetter = lengthGetter,
@@ -226,7 +221,7 @@ class Viewer<T> extends ListBase<T> {
     if (_lengthSetter == null) {
       throw StateError("You can't change the length");
     }
-    _lengthSetter!(length);
+    _lengthSetter(length);
     
   }
 

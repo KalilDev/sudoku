@@ -36,7 +36,7 @@ class SudokuState {
     this.possibleValues
   });
 
-  factory SudokuState({int side, BidimensionalList<int>? initialState, BidimensionalList<List<int>>? possibleValues, BidimensionalList<int>? state}) {
+  factory SudokuState({int side, BidimensionalList<int> initialState, BidimensionalList<List<int>> possibleValues, BidimensionalList<int> state}) {
     final sideSqrt = sqrt(side).round();
     assert(sideSqrt * sideSqrt == side);
     initialState ??= BidimensionalList.view(Uint8List(side*side), side);

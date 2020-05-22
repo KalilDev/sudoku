@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku_presentation/src/repository/board_repository.dart';
 import 'package:sudoku_presentation/src/repository/preferences_repository.dart';
-import '../common.dart';
 import '../sudoku_configuration.dart';
 import 'event.dart';
 import 'state.dart';
@@ -13,7 +12,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
   MainMenuBloc(this.boardRepository, this.preferencesRepository);
 
   Future<BidimensionalList<SudokuConfiguration>> loadConfigurations() async {
-    final sudokuConfigurations = BidimensionalList<SudokuConfiguration?>.filled(SudokuDifficulty.values.length, null, height: SudokuConfiguration.factories.length);
+    final sudokuConfigurations = BidimensionalList<SudokuConfiguration>.filled(SudokuDifficulty.values.length, null, height: SudokuConfiguration.factories.length);
     for (var y = 0; y < sudokuConfigurations.height; y++) {
       final factory = SudokuConfiguration.factories[y];
       final side = SudokuConfiguration.factorySide[y];

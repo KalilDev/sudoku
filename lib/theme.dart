@@ -11,16 +11,16 @@ class SudokuTheme {
   final Color background;
   final Color invalid;
   final Brightness brightness;
-  SudokuTheme.raw({@required Color main, Color? secondary,  @required Color mainDarkened, Color? secondaryDarkened, @required this.background, @required this.invalid,
+  SudokuTheme.raw({@required Color main, Color secondary,  @required Color mainDarkened, Color secondaryDarkened, @required this.background, @required this.invalid,
       @required this.brightness}) : secondary = secondary ?? main, main = main, secondaryDarkened = secondaryDarkened ?? mainDarkened, mainDarkened = mainDarkened;
-  factory SudokuTheme({@required Color main, Color? secondary, Color? mainDarkened, Color? secondaryDarkened, Color? background, Color? invalid, bool? mixMainBg, Brightness brightness}) {
+  factory SudokuTheme({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg, Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
     mixMainBg ??= isDark;
     if (main is MaterialColor && isDark) {
-      main = main[200];
+      main = (main as MaterialColor)[200];
     }
     if (secondary is MaterialColor && isDark) {
-      secondary = secondary[200];
+      secondary = (secondary as MaterialColor)[200];
     }
     invalid ??= isDark ? Colors.redAccent : Colors.red;
     final _materialBg = isDark ? Color(0xFF121212) : Color(0xFFFAFAFA);
@@ -28,13 +28,13 @@ class SudokuTheme {
     mainDarkened ??= Color.alphaBlend(main.withAlpha(isDark ? 90 : 120), _background);
     secondary ??= main;
     secondaryDarkened ??= Color.alphaBlend(secondary.withAlpha(isDark ? 90 : 120), _background);
-    return SudokuTheme(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: _background, invalid: invalid, brightness: brightness);
+    return SudokuTheme.raw(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: _background, invalid: invalid, brightness: brightness);
   }
 
-  factory SudokuTheme.light({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool? mixMainBg}) {
+  factory SudokuTheme.light({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg}) {
     return SudokuTheme(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: background, invalid: invalid, mixMainBg: mixMainBg, brightness: Brightness.light);
   }
-  factory SudokuTheme.dark({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool? mixMainBg}) {
+  factory SudokuTheme.dark({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg}) {
     return SudokuTheme(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: background, invalid: invalid, mixMainBg: mixMainBg, brightness: Brightness.dark);
   }
 
