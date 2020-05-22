@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:localstorage/localstorage.dart';
+// The dude who made localstorage didn't export it
+// ignore: implementation_imports
 import 'package:localstorage/src/errors.dart';
 import 'package:sudoku_presentation/common.dart';
 import 'package:sudoku_presentation/repositories.dart';
@@ -20,40 +22,37 @@ List<List<List<T>>> dynamicTo3dList<T>(dynamic _list) {
 
 typedef FreedStorageCallback = void Function(LocalStorage);
 
-enum StorageStatus {
-  unawaited,
-  ready,
-  unsupported,
-  error
-}
-
 class LocalStorageBoardRepository extends BoardRepository {
   final LocalStorage info = LocalStorage("BoardsInfo");
-  StorageStatus status = StorageStatus.unawaited;
+  StorageStatus status = const StorageStatus(StorageStatusType.unawaited, "O armazenamento ainda não foi preparado, usa-lo agora é um erro");
 
   Map<String, LocalStorage> openedStorages = {};
   Map<String, FreedStorageCallback> busyStorages = {};
 
-  FutureOr<StorageStatus> prepareStorageIfNeeded() async {
-    if (status != StorageStatus.unawaited) {
+  FutureOr<StorageStatus> prepareAndGetStatus() async {
+    if (status.type != StorageStatusType.unawaited) {
       return status;
     }
     try {
       final result = await info.ready;
-      final status =  result ? StorageStatus.ready : StorageStatus.error;
+      if (result) {
+        await info.setItem('noop', <dynamic>[]); // This is so that and PlatformNotSupportedError is thrown in case the platform is not supported
+      }
+      final status =  result ? const StorageStatus(StorageStatusType.ready, "Pronto") : const StorageStatus(StorageStatusType.error, "O armazenamento não pode ser preparado");
       this.status = status;
       return status;
+      // ignore: avoid_catching_errors
     } on PlatformNotSupportedError catch (e) {
-      return StorageStatus.unsupported;
-    } finally {
-      return StorageStatus.error;
+      return const StorageStatus(StorageStatusType.unsupported, "Essa plataforma não é suportada para o armazenamento persistente do Sudoku");
+    } catch (e) {
+      return StorageStatus(StorageStatusType.error, "O armazenamento não pode ser preparado: $e");
     }
   }
 
   @override
   Future<bool> hasConfiguration(int side, SudokuDifficulty difficulty) async {
-    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
-      return false;
+    if (status.type != StorageStatusType.ready) {
+      throw Error();
     }
     final configs = info.getItem("availableConfigurations") as List<dynamic>;
     if (configs == null) {
@@ -71,8 +70,8 @@ class LocalStorageBoardRepository extends BoardRepository {
   
   @override
   Future<SudokuState> loadSudoku(int side, SudokuDifficulty difficulty) async {
-    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
-      return null;
+    if (status.type != StorageStatusType.ready) {
+      throw Error();
     }
     final file = await getStorage(side, difficulty);
     final initialStateRaw = dynamicTo2dList<int>(file.getItem("initialState"));
@@ -103,7 +102,7 @@ class LocalStorageBoardRepository extends BoardRepository {
       final difficultyIndex = SudokuDifficulty.values.indexOf(difficulty);
       final configs = info.getItem("availableConfigurations") as List<dynamic> ?? <dynamic>[];
       configs.add({"side": side.toString(), "difficulty": difficultyIndex.toString()});
-      info.setItem("availableConfigurations", configs);
+      await info.setItem("availableConfigurations", configs);
     }
     final filename = getFilename(side, difficulty);
     if (!openedStorages.containsKey(filename)) {
@@ -115,6 +114,9 @@ class LocalStorageBoardRepository extends BoardRepository {
   }
 
   Future<LocalStorage> save(LocalStorage file, SudokuSnapshot snap) async {
+    if (status.type != StorageStatusType.ready) {
+      throw Error();
+    }
     final initialState = BidimensionalList.view(Uint8List(snap.side*snap.side), snap.side);
     final state = BidimensionalList.view(Uint8List(snap.side*snap.side), snap.side);
     final possibleValues = BidimensionalList<List<int>>.generate(snap.side, (_, __) => <int>[]);
@@ -126,17 +128,17 @@ class LocalStorageBoardRepository extends BoardRepository {
       possibleValues[y][x] = square.possibleNumbers;
     });
     await null;
-    file.setItem("initialState", initialState);
-    file.setItem("state", state);
-    file.setItem("possibleValues", possibleValues);
-    file.setItem("side", snap.side);
+    await file.setItem("initialState", initialState);
+    await file.setItem("state", state);
+    await file.setItem("possibleValues", possibleValues);
+    await file.setItem("side", snap.side);
     return file;
   }
   
   @override
   Future<void> scheduleSave(int side, SudokuDifficulty difficulty, SudokuSnapshot snap) async {
-    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
-      return null;
+    if (status.type != StorageStatusType.ready) {
+      throw Error();
     }
     final filename = getFilename(side, difficulty);
     if (busyStorages.containsKey(filename)) {
@@ -154,8 +156,8 @@ class LocalStorageBoardRepository extends BoardRepository {
 
   @override
   Future<void> deleteSudoku(int side, SudokuDifficulty difficulty) async {
-    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
-      return null;
+    if (status.type != StorageStatusType.ready) {
+      throw Error();
     }
     final filename = getFilename(side, difficulty);
     final file = openedStorages[filename];
@@ -167,7 +169,7 @@ class LocalStorageBoardRepository extends BoardRepository {
       busyStorages[filename] = null;
       final configs = info.getItem("availableConfigurations") as List<dynamic> ?? <dynamic>[];
       configs.removeWhere((dynamic obj) => (obj as Map<String,dynamic>)["side"] == side.toString() && obj["difficulty"] == difficultyIndex.toString());
-      info.setItem("availableConfigurations", configs);
+      await info.setItem("availableConfigurations", configs);
     }
     await file?.clear();
     busyStorages.remove(filename);
@@ -175,8 +177,8 @@ class LocalStorageBoardRepository extends BoardRepository {
 
   @override
   Future<void> freeSudoku(int side, SudokuDifficulty difficulty) async {
-    if (await prepareStorageIfNeeded() != StorageStatus.ready) {
-      return null;
+    if (status.type != StorageStatusType.ready) {
+      throw Error();
     }
     final filename = getFilename(side, difficulty);
     busyStorages.remove(filename);
@@ -184,4 +186,10 @@ class LocalStorageBoardRepository extends BoardRepository {
     file?.dispose();
     openedStorages.remove(file);*/
   }
+
+  @override
+  Future<StorageStatus> prepareStorage() async => await prepareAndGetStatus();
+
+  @override
+  StorageStatus currentStatus() => status;
 }
