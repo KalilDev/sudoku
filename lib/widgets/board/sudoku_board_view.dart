@@ -49,7 +49,7 @@ class SudokuBoardView extends StatelessWidget {
               }
               final state = _state as SudokuSnapshot;
               final prefsState = _prefsState as PrefsSnap;
-              if (state.validationState == Validation.valid) {
+              if (state.validationState == Validation.correct && !state.wasDeleted) {
                 BlocProvider.of<SudokuBloc>(context).add(DeleteSudoku());
               }
               if (state.wasDeleted) {
