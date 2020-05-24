@@ -36,7 +36,7 @@ class SquareInfo {
   final List<int> possibleNumbers; // non-nullable (empty when none)
   final bool isInitial; // non nullable
   final bool isSelected; // non nullable
-  final bool isValid; // non-nullable (true when unassigned)
+  final Validation validation; // non-nullable 
   
   static final _listEquality = ListEquality<int>();
 
@@ -45,16 +45,16 @@ class SquareInfo {
       this.possibleNumbers,
       this.isInitial,
       this.isSelected,
-      this.isValid});
+      this.validation});
   static final SquareInfo empty =
-      SquareInfo(isInitial: false, isSelected: false, isValid: true, possibleNumbers: <int>[], number: 0);
+      SquareInfo(isInitial: false, isSelected: false, validation: Validation.notValidated, possibleNumbers: <int>[], number: 0);
 
   bool hasSameContentAs(SquareInfo other) =>
       number == other.number &&
       _listEquality.equals(possibleNumbers, other.possibleNumbers) &&
       isInitial == other.isInitial &&
       isSelected == other.isSelected &&
-      isValid == other.isValid;
+      validation == other.validation;
 }
 
 @immutable

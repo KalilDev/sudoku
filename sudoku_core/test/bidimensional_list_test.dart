@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:test/test.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:collection/collection.dart';
@@ -49,7 +51,7 @@ void main() {
       [3, 1]]],
     ]);
     final state = SudokuState(side: 4, initialState: board);
-    expect(state.validateBoard(), Validation.valid);
+    expect(state.validateBoard(), Validation.correct);
     expect(state.validateWithInfo().anyInner((e) => e == false), false);
     expect(_deepEquality.equals(state.squares(), squares), true);
   });
@@ -61,7 +63,7 @@ void main() {
       [4, 2, 3, 0],
     ]);
     final state = SudokuState(side: 4, initialState: board);
-    expect(state.validateBoard(), Validation.invalid);
+    expect(state.validateBoard(), Validation.incorrect);
     final info = state.validateWithInfo();
     final invalidIndices = [[0,3],[1,1],[1,2],[2,2]];
     var invalidCounter = 0;
@@ -70,14 +72,14 @@ void main() {
       final isInvalid = invalidIndices.any((i) => i[0] == y && i[1] == x);
       if (isInvalid) {
         invalidCounter++;
-        expect(element, false);
+        expect(element, Validation.incorrect);
       } else {
         if (x == y && y == 3) {
           expect(didReachZero, false); // in case i change this test to include more zeroes. idk, unneeded tbh
           didReachZero = true;
-          expect(element, true); // BREAKING CHANGE: now unfilled values are validated as true
+          expect(element, Validation.missing); // BREAKING CHANGE: now unfilled values are validated as true
         } else {
-          expect(element, true);
+          expect(element, Validation.correct);
         }
       }
     });
@@ -98,6 +100,20 @@ void main() {
       [1, 0, 4, 2],
       [0, 2, 3, 1],
     ]);
-    expect(_deepEquality.equals(solve(SudokuState(side: 4, initialState: boardMissing)), board),true);
+    final state = SudokuState(side: 4, initialState: boardMissing);
+    expect(state.validateBoard(), Validation.missing);
+    state.solve();
+    expect(_deepEquality.equals(state.solution, board),true);
+  });
+  test("Test sudoku creation", () {
+    final state = createRandomSudoku(side: 4);
+    expect(state.validateBoard(), Validation.missing);
+    expect(state.solution.everyInner((e) => e != 0), true);
+    expect(state.initialState.everyInner((e) => e != 0), false);
+    expect(_deepEquality.equals(state.state, state.initialState), true);
+    final oldSolution = state.solution.toList(growable: false);
+    state.solve();
+    expect(_deepEquality.equals(oldSolution, state.solution), true);
+
   });
 }

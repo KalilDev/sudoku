@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:meta/meta.dart';
+import 'package:sudoku_core/src/solver.dart';
 
 import 'bidimensional_list.dart';
 
@@ -11,43 +12,47 @@ Iterable<T> union1d<T>(Iterable<T> a, Iterable<T> b) => a.followedBy(b);
 
 enum Validation {
   /// At least one element is invalid. The sudoku may or may not be filled.
-  invalid,
+  incorrect,
   /// All the sudoku is filled, and every single element is valid.
-  valid,
+  correct,
   /// The sudoku is valid for now, but it is incomplete.
-  incomplete
+  missing,
+  notValidated
 }
 
 
 class SudokuState {
   final int side;
-  final BidimensionalList<int> initialState;
+  final BidimensionalList<int> initialState; // Isn't final JUST for random generation. DO NOT CHANGE IT
   BidimensionalList<int> state;
   BidimensionalList<List<int>> possibleValues;
+  BidimensionalList<int> solution;
 
   SudokuState.raw({
     @required
-    this.side,
+    int side,
     @required
     this.initialState,
     @required
     this.state,
     @required
-    this.possibleValues
-  });
+    this.possibleValues,
+    @required
+    this.solution
+  }) : side = side, sideSqrt = sqrt(side).round();
 
-  factory SudokuState({int side, BidimensionalList<int> initialState, BidimensionalList<List<int>> possibleValues, BidimensionalList<int> state}) {
+  factory SudokuState({int side, BidimensionalList<int> initialState, BidimensionalList<List<int>> possibleValues, BidimensionalList<int> state, BidimensionalList<int> solution}) {
     final sideSqrt = sqrt(side).round();
     assert(sideSqrt * sideSqrt == side);
     initialState ??= BidimensionalList.view(Uint8List(side*side), side);
     possibleValues ??= BidimensionalList.generate(side, (_, __) => <int>[]);
     state ??= initialState.toList();
-    return SudokuState.raw(side: side, initialState: initialState, state: state, possibleValues: possibleValues);
+    return SudokuState.raw(side: side, initialState: initialState, state: state, possibleValues: possibleValues, solution: solution);
   }
   
   SudokuState copy() => SudokuState(side: side, possibleValues: possibleValues.toList(), initialState: initialState, state: state.toList());
   
-  int get sideSqrt => sqrt(side).round();
+  final int sideSqrt;
   List<List<int>> get rows => state.rows;
   List<List<int>> get columns => state.columns;
   BidimensionalList<BidimensionalList<int>> squares() => BidimensionalList.generate(sideSqrt, square);
@@ -62,6 +67,8 @@ class SudokuState {
   }
 
   Validation validateBoard() {
+    // We will use the old method that is lazy
+    // TODO: use the solution?
     int returnValue = 1;
     bool validateSingle(List<int> list) {
       final result = isValid(list);
@@ -80,32 +87,25 @@ class SudokuState {
     if (validations.any((e) => e)) {
       // an result was zero, therefore even if the board is
       // incomplete, it is invalid.
-      return Validation.invalid;
+      return Validation.incorrect;
     }
     return Validation.values[returnValue];
   }
-  BidimensionalList<bool> validateWithInfo() {
-    final list = BidimensionalList<bool>.filled(side, true);
-    final columns = this.columns;
-    final rows = this.rows;
-    final squares = flatSquares();
-    // validate columns
-    for (var x = 0; x < side; x++) {
-      final column = columns[x];
-      invalidIndices(column).forEach((invalid) =>list[invalid][x] = false);
+
+  // May take a while
+  BidimensionalList<Validation> validateWithInfo() {
+    if (solution == null) {
+      // We will solve the board, and then do this again
+      solve();
+      return validateWithInfo();
     }
-    // validate rows
-    for (var y = 0; y < side; y++) {
-      final row = rows[y];
-      invalidIndices(row).forEach((invalid) =>list[y][invalid] = false);
-    }
-    // validate squares
-    squares.forEachIndexed((square, x, y) {
-      invalidIndices(square).forEach((invalid) {
-        final i = invalid % sideSqrt;
-        final j = (invalid / sideSqrt).floor();
-        list[y*sideSqrt + j][x * sideSqrt + i] = false;
-      });
+    final list = BidimensionalList<Validation>.generate(side, (x, y) {
+      final current = state.getValue(x, y);
+      if (current == 0) {
+        return Validation.missing;
+      }
+      final correct = solution.getValue(x, y);
+      return correct == current ? Validation.correct : Validation.incorrect;
     });
     return list;
   }
@@ -163,6 +163,58 @@ class SudokuState {
       walked.add(value);
     }
     return 1;
+  }
+
+  void solve() {
+    switch (validateBoard()) {
+      case Validation.correct:
+        // already solved
+        solution = state.toList(growable: false);
+        return;
+        break;
+      default:
+    }
+
+    final rand = Random();
+    var tries = 0;
+    final validValues = List<int>.generate(side, (i) => i+1);
+    
+    while (true) {
+      bool failed = false;
+      // Start with an fresh state
+      solution = initialState.toList(growable: false);
+      for (var x = 0; x < side && !failed; x++) {
+        final col = solution.getColumn(x);
+        for (var y = 0; y < side; y++) {
+          if(col[y] != 0) {
+            // this value is solved already.
+            continue;
+          }
+          final row = solution.getRow(y);
+          final rowColAvailable = setDiff1d(validValues, union1d(col, row));
+          if (rowColAvailable.isEmpty) {
+            failed = true; // welp, this random solution did not work
+            break;
+          }
+          final squareX = x ~/ sideSqrt;
+          final squareY = y ~/ sideSqrt;
+          final sector = SquareViewer(solution, sideSqrt, squareX, squareY);
+          final sectorAvailable = setDiff1d(validValues, sector);
+          final available = intersect1d(rowColAvailable, sectorAvailable).toList(growable: false);
+          if (available.isEmpty) {
+            failed = true; // welp, this random solution did not work
+            break;
+          }
+          solution[y][x] = available[rand.nextInt(available.length)];
+        }
+      }
+      tries++;
+      if (failed) {
+        continue;
+      }
+      break;
+    }
+    print(tries);
   }
 }
 

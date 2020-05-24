@@ -22,7 +22,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   int selectedNum; // number or null
   SudokuState sudokuState; // will be the same across the lifetime of this bloc
   MarkType markType = MarkType.concrete;
-  BidimensionalList<bool> validation;
+  BidimensionalList<Validation> validation;
 
   Future<void> scheduleSave(SudokuSnapshot snap) async {
     if (repository.currentStatus().type == StorageStatusType.ready) {
@@ -73,7 +73,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
 
   @override
   SudokuBlocState get initialState {
-    validation = BidimensionalList.filled(definition.side, true);
+    validation = BidimensionalList<Validation>.filled(definition.side, Validation.notValidated);
     initialize().catchError(onError);
     return SudokuLoadingState();
   }
@@ -86,8 +86,8 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         final isInitial = initialN != 0;
         final number = isInitial ? initialN : sudokuState.state[y][x];
         final possibleValues = sudokuState.possibleValues[y][x].toList();
-        final isValid = isInitial ? true : validation[y][x];
-        final square = SquareInfo(number: number, isInitial: isInitial,possibleNumbers: possibleValues, isSelected: isSelected, isValid: isValid);
+        final validation = isInitial ? Validation.correct : this.validation[y][x];
+        final square = SquareInfo(number: number, isInitial: isInitial,possibleNumbers: possibleValues, isSelected: isSelected, validation: validation);
         return square;
     });
     final numbers = List<NumberInfo>.generate(sudokuState.side + 1, (i) => NumberInfo(number: i, isSelected: i == selectedNum));
@@ -98,7 +98,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   }
 
   void squareMark(int n, int x, int y) {
-    validation[y][x] = true; // reset validation status for this square
+    validation[y][x] = Validation.notValidated; // reset validation status for this square
     switch (markType) {
         case MarkType.possible:
           final list = sudokuState.possibleValues[y][x];
@@ -137,7 +137,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   }
 
   void squareTap(int x, int y) {
-    validation[y][x] = true; // reset validation status for this square
+    validation[y][x] = Validation.notValidated; // reset validation status for this square
     final snap = state as SudokuSnapshot;
     final info = snap.squares[y][x];
     if (info.isSelected) {

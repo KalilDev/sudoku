@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 Color getColor(SquareInfo info, BuildContext context) {
   final theme = Provider.of<SudokuTheme>(context);
-  if (info.isValid == false) {
+  if (info.validation == Validation.incorrect) {
     return theme.invalid;
   }
   if (info.isInitial) {
