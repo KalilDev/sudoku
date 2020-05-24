@@ -339,13 +339,13 @@ class SudokuBoard extends StatelessWidget {
       final childSize = constraints.biggest.height / state.length;
       final children = state.mapInnerIndexed((x, y, info) => buildNumber(info, x, y, childSize)).toList();
       return GridView.count(
-        crossAxisCount: state.length,
-        childAspectRatio: 1,
-        children: children,
-        addAutomaticKeepAlives: false,
-        addRepaintBoundaries: false,
-        physics: NeverScrollableScrollPhysics(),
-      );
+          crossAxisCount: state.length,
+          childAspectRatio: 1,
+          children: children,
+          addAutomaticKeepAlives: false,
+          addRepaintBoundaries: false,
+          physics: NeverScrollableScrollPhysics(),
+        );
     });
   }
 
@@ -354,7 +354,6 @@ class SudokuBoard extends StatelessWidget {
     return Hero(
       tag: "SudokuBG",
           child: CustomPaint(
-        child: SizedBox.expand(),
         painter: SudokuBgPainter(state.length, theme.main, theme.mainDarkened),
       ),
     );
@@ -362,16 +361,26 @@ class SudokuBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Center(
-          child: AspectRatio(aspectRatio: 1, child: buildBackground(context)),
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      removeBottom: true,
+      removeLeft: true,
+      removeRight: true,
+          child: Align(
+        alignment: Alignment.center,
+        child: AspectRatio(
+          aspectRatio: 1,
+              child: Stack(
+            fit: StackFit.expand,
+            children: [
+              SizedBox.expand(child: buildBackground(context)),
+              SizedBox.expand(child: buildGrid(context),
+              )
+            ],
+          ),
         ),
-        Center(
-          child: AspectRatio(aspectRatio: 1, child: buildGrid(context)),
-        )
-      ],
+      ),
     );
   }
 }

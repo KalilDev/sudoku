@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
@@ -24,6 +22,14 @@ class SudokuBoardView extends StatelessWidget {
             BlocBuilder<SudokuBloc, SudokuBlocState>(
                 builder: (BuildContext context, SudokuBlocState _state) => LayoutBuilder(builder: (context, constraints) {
               final appBar = AppBar(
+                      title: Text("Sudoku"),
+                      actions: [
+                        IconButton(
+                            icon: Icon(Icons.settings),
+                            onPressed: () => openPrefs(context))
+                      ],
+                    );
+              final sliverAppBar = SliverAppBar(
                       title: Text("Sudoku"),
                       actions: [
                         IconButton(
@@ -64,12 +70,13 @@ class SudokuBoardView extends StatelessWidget {
               }
 
               final isPortrait = constraints.biggest.aspectRatio <= 1;
+              final actionsOnChildren = constraints.biggest.aspectRatio >= 1.2;
               final sudokuActions = Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: SudokuActions(
                             canRewind: state.canRewind,
                             markType: state.markType,
-                            isPortrait: isPortrait));
+                            isPortrait: !actionsOnChildren));
               
               final numberSize = SudokuNumbers.buttonSize;
 
@@ -100,20 +107,94 @@ class SudokuBoardView extends StatelessWidget {
                         isPortrait: isPortrait),
                     ),
                   ),
-                  if (!isPortrait) sudokuActions
+                  if (actionsOnChildren) sudokuActions
                 ];
-
-
-
-
+              final widget = SliverFillRemaining(child: !isPortrait
+                              ? Row(children: children)
+                              : Column(children: children));
               return 
                   Scaffold(
-                    appBar: appBar,
-                    bottomNavigationBar: isPortrait ? sudokuActions : null,
-                    body: !isPortrait
-                              ? Row(children: children)
-                              : Column(children: children),
+                    bottomNavigationBar: !actionsOnChildren ? sudokuActions : null,
+                    body: CustomScrollView(slivers: [sliverAppBar, widget], physics: SnapToEdgesAndPointsPhysics(points: [kToolbarHeight]),),
               );
             })));
   }
+}
+
+
+/// Scroll physics used by a [PageView].
+///
+/// These physics cause the page view to snap to page boundaries.
+///
+/// See also:
+///
+///  * [ScrollPhysics], the base class which defines the API for scrolling
+///    physics.
+///  * [PageView.physics], which can override the physics used by a page view.
+class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
+  /// Creates physics for a [PageView].
+  const SnapToEdgesAndPointsPhysics({this.points, ScrollPhysics parent }) : super(parent: parent);
+
+  final List<double> points;
+
+  @override
+  SnapToEdgesAndPointsPhysics applyTo(ScrollPhysics ancestor) {
+    return SnapToEdgesAndPointsPhysics(points: points, parent: buildParent(ancestor));
+  }
+
+  // 0 = start of scroll
+  // 1 = points[0]
+  // 2 = points[1]..
+  // n = n < points.length ? points[n] : end of scroll
+  double _getPoint(ScrollMetrics position) {
+    final sortedPoints = points.toList()..sort((a,b)=>a.compareTo(b));
+    final currentPos = position.pixels;
+    int startI = 0;
+    double start = 0.0;
+    double end;
+    for (var i = 0; i < sortedPoints.length; i++) {
+      final point = sortedPoints[i];
+      if (point < currentPos) {
+        start = point;
+        startI = i + 1;
+      } else {
+        end = point;
+        break;
+      }
+    }
+    end ??= position.viewportDimension;
+    final range = end - start;
+    return startI + (currentPos - start)/range;
+  }
+
+  double _getPixels(ScrollMetrics position, int point) {
+    if (point == 0) {
+      return 0.0;
+    }
+    if (point > points.length) {
+      return position.viewportDimension;
+    }
+    return points[point - 1];
+  }
+
+  double _getTargetPixels(ScrollMetrics position, Tolerance tolerance, double velocity) {
+    double point = _getPoint(position);
+    if (velocity < -tolerance.velocity)
+      point -= 0.1; // TODO
+    else if (velocity > tolerance.velocity)
+      point += 0.1;
+    return _getPixels(position, point.round());
+  }
+
+  @override
+  Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
+    final Tolerance tolerance = this.tolerance;
+    final double target = _getTargetPixels(position, tolerance, velocity);
+    if (target != position.pixels)
+      return ScrollSpringSimulation(spring, position.pixels, target, velocity, tolerance: tolerance);
+    return null;
+  }
+
+  @override
+  bool get allowImplicitScrolling => false;
 }
