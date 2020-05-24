@@ -11,7 +11,7 @@ class SudokuTheme {
   final Color background;
   final Color invalid;
   final Brightness brightness;
-  SudokuTheme.raw({@required Color main, Color secondary,  @required Color mainDarkened, Color secondaryDarkened, @required this.background, @required this.invalid,
+  const SudokuTheme.raw({@required Color main, Color secondary,  @required Color mainDarkened, Color secondaryDarkened, @required this.background, @required this.invalid,
       @required this.brightness}) : secondary = secondary ?? main, main = main, secondaryDarkened = secondaryDarkened ?? mainDarkened, mainDarkened = mainDarkened;
   factory SudokuTheme({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg, Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
@@ -37,6 +37,16 @@ class SudokuTheme {
   factory SudokuTheme.dark({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg}) {
     return SudokuTheme(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: background, invalid: invalid, mixMainBg: mixMainBg, brightness: Brightness.dark);
   }
+
+  SudokuTheme copyWith({
+  Color main,
+  Color secondary,
+  Color secondaryDarkened,
+  Color mainDarkened,
+  Color background,
+  Color invalid,
+  Brightness brightness,
+  }) => SudokuTheme.raw(main: main ?? this.main, mainDarkened: mainDarkened ?? this.mainDarkened, background: background ?? this.background, invalid: invalid ?? this.invalid, brightness: brightness ?? this.brightness);
 
   static final Map<AvailableTheme, SudokuTheme> availableThemeMap = {
     AvailableTheme.darkGreen: darkGreen,
