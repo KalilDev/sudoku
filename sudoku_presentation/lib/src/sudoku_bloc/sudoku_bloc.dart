@@ -47,9 +47,9 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
     super.onError(error, stackTrace);
   }
 
-  Future<void> initialize() async {
+  Future<void> initialize(StateSource source) async {
     SudokuState state;
-    switch (definition.source) {
+    switch (source) {
       case StateSource.storage:
         var status = repository.currentStatus();
         if (status.type == StorageStatusType.unawaited) {
@@ -63,6 +63,21 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         break;
       case StateSource.random:
         state = await catchFuture(genRandomSudoku(definition.side, definition.difficulty, compute: computeImpl), "Ao tentar criar um Sudoku, ocorreu um erro inesperado.");
+        break;
+      case StateSource.storageIfPossible:
+        var status = repository.currentStatus();
+        if (status.type == StorageStatusType.unawaited) {
+          status = await repository.prepareStorage();
+        }
+        if (status.type != StorageStatusType.ready) {
+          return initialize(StateSource.random);
+        }
+        final hasState = await catchFuture(repository.hasConfiguration(definition.side, definition.difficulty), "Ao tentar checar se há esta configuração de Sudoku no armazenamento, houve um erro inesperado");
+        // Error
+        if (hasState == null) {
+          return;
+        }
+        return initialize(hasState ? StateSource.storage : StateSource.random);
       break;
     }
     // State is only null in case errors happened
@@ -74,7 +89,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   @override
   SudokuBlocState get initialState {
     validation = BidimensionalList<Validation>.filled(definition.side, Validation.notValidated);
-    initialize().catchError(onError);
+    initialize(definition.source).catchError(onError);
     return SudokuLoadingState();
   }
 

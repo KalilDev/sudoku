@@ -10,7 +10,8 @@ enum SudokuDifficulty {
 
 enum StateSource {
   storage,
-  random
+  random,
+  storageIfPossible
 }
 
 class SudokuConfiguration {
@@ -24,7 +25,7 @@ class SudokuConfiguration {
 
   factory SudokuConfiguration(int side, int difficulty) {
     assert(factorySide.contains(side));
-    return SudokuConfiguration._(side, difficulty, StateSource.random);
+    return SudokuConfiguration._(side, difficulty, StateSource.storageIfPossible);
   }
 
 

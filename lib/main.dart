@@ -1,6 +1,3 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -60,7 +57,7 @@ class RootView extends StatelessWidget {
       sudokuConfiguration = routeSettings.arguments as SudokuConfiguration;
     } else {
       final numbers = name.split("x").map(int.parse).toList();
-      sudokuConfiguration = SudokuConfiguration(numbers[0], numbers[1]); // TODO
+      sudokuConfiguration = SudokuConfiguration(numbers[0], numbers[1]);
     }
     return MaterialPageRoute<void>(
         builder: (context) => BlocProvider<SudokuBloc>(
