@@ -91,9 +91,10 @@ class RootView extends StatelessWidget {
         systemNavigationBarColor: theme.background,
         systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark
       );
+      final sliderTheme = SliderThemeData(activeTrackColor: theme.secondary, thumbColor: theme.secondary);
       final themeData = ThemeData.from(
                   colorScheme:
-                      colorScheme.copyWith(background: theme.background, surface: theme.background));
+                      colorScheme.copyWith(background: theme.background, surface: theme.background)).copyWith(sliderTheme: sliderTheme);
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: overlayStyle,
               child: Provider<SudokuTheme>.value(value: theme,

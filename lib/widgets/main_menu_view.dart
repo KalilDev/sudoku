@@ -84,7 +84,6 @@ class MainMenu extends StatelessWidget {
                         )),
                   ),
                 );
-      final sliderTheme = Theme.of(context).sliderTheme.copyWith(activeTrackColor: theme.secondary, thumbColor: theme.secondary);
       final optionsWidgets = [
                   Text("Lado: " + sideCounts[state.sideY].toString()),
                 Slider(
@@ -115,28 +114,25 @@ class MainMenu extends StatelessWidget {
                     child: Text("Continuar"),
                   )
       ];
-      return SliderTheme(
-        data: sliderTheme,
-              child: Scaffold(
+      return Scaffold(
             appBar: AppBar(
-              title: Text("Sudoku"),
-              actions: [
-                IconButton(icon: Icon(Icons.settings), onPressed: () => openPrefs(context))
-              ],
+      title: Text("Sudoku"),
+      actions: [
+        IconButton(icon: Icon(Icons.settings), onPressed: () => openPrefs(context))
+      ],
             ),
             body: Center(
-              child: ConstrainedBox(
-                constraints: widthConstraints,
-                          child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                    boardWidget,
-                  Flexible(child: Column(mainAxisSize: MainAxisSize.min, children: optionsWidgets),),
-                    ],
-                  ),
-              ),
-            )),
-      );
+      child: ConstrainedBox(
+        constraints: widthConstraints,
+                  child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+            boardWidget,
+          Flexible(child: Column(mainAxisSize: MainAxisSize.min, children: optionsWidgets),),
+            ],
+          ),
+      ),
+            ));
     });
   }
 }
