@@ -1,6 +1,7 @@
 import 'package:sudoku/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sudoku/widgets/sudoku_button.dart';
 
 import 'package:sudoku_presentation/common.dart';
 import 'package:sudoku_presentation/preferences_bloc.dart';
@@ -34,37 +35,19 @@ String speedToString(AnimationSpeed speed) {
 
 Widget buildSingleThemePreview(
     MapEntry<AvailableTheme, SudokuTheme> entry, BuildContext context, bool enabled) {
-  final shape =
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0));
-  final theme = entry.value;
-  final textColor = theme.brightness == Theme.of(context).brightness
-      ? null
-      : getTextColorForBrightness(theme.brightness);
+  final rawTheme = entry.value;
+  final theme = rawTheme.copyWith(main: rawTheme.background, mainDarkened: rawTheme.main);
+  final expand = BoxConstraints.expand(width: double.infinity, height: double.infinity);
+  final shape = RoundedRectangleBorder(side: BorderSide(color: enabled ? rawTheme.main : rawTheme.mainDarkened, width: 2.0), borderRadius: BorderRadius.circular(4.0));
   final text = themeToString(entry.key);
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-    child: Material(
-        shadowColor: theme.mainDarkened,
-        shape: shape,
-        color: theme.background,
-        elevation: enabled ? 4.0 : 0,
-        child: Ink(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4.0),
-                border: Border.all(color: enabled ? theme.main : theme.mainDarkened, width: 2.0)),
-            child: ListTile(
-                onTap: enabled ? () => BlocProvider.of<PreferencesBloc>(context).add(
-                    PrefsEvent<AvailableTheme>(
-                        entry.key, PrefsEventType.themeUpdate)) : null,
-                title: Builder(
-                  builder: (BuildContext context) => Text(
-                    text,
-                    style: DefaultTextStyle.of(context)
-                        .style
-                        .copyWith(color: textColor),
-                  ),
-                )))),
-  );
+    child: SudokuButton(elevation: 2.0,shapeBuilder: (_) => shape,theme: theme, filled: true, onPressed: enabled ? () => BlocProvider.of<PreferencesBloc>(context).add(
+        PrefsEvent<AvailableTheme>(
+            entry.key, PrefsEventType.themeUpdate)) : null,child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Text(text, textAlign: TextAlign.center,),
+            ), constraints: expand,));
 }
 
 
@@ -98,7 +81,7 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
   final sliderEnabled = opts.hasAnimations || opts.speed == AnimationSpeed.none;
   final speed = !opts.hasAnimations ? AnimationSpeed.none : opts.speed;
   Widget buildSingle(String name, bool enabled, ValueChanged<bool> onChange) {
-    return ListTile(title: Text(name), trailing: Checkbox(value: enabled, onChanged: checksEnabled ? onChange : null, activeColor: Theme.of(context).colorScheme.secondary, checkColor: Theme.of(context).colorScheme.onPrimary,),onTap: checksEnabled ? ()=>onChange(!enabled) : null,);
+    return CheckboxListTile(value: enabled, onChanged: checksEnabled ? onChange : null, title: Text(name),activeColor: Theme.of(context).colorScheme.secondary, checkColor: Theme.of(context).colorScheme.onPrimary);
   }
   void update(AnimationOptions newOpts) => bloc.add(PrefsEvent<AnimationOptions>(
           newOpts,
