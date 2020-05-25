@@ -2,8 +2,6 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:meta/meta.dart';
-import 'package:sudoku_core/src/solver.dart';
-
 import 'bidimensional_list.dart';
 
 Iterable<T> setDiff1d<T>(Iterable<T> a, Iterable<T> b) => a.where((e) => !b.contains(e));
@@ -178,34 +176,28 @@ class SudokuState {
     final rand = Random();
     var tries = 0;
     final validValues = List<int>.generate(side, (i) => i+1);
+    final guessNums = validValues..shuffle(rand);
     
     while (true) {
       bool failed = false;
       // Start with an fresh state
       solution = initialState.toList(growable: false);
+      guessNums..shuffle(rand);
       for (var x = 0; x < side && !failed; x++) {
-        final col = solution.getColumn(x);
-        for (var y = 0; y < side; y++) {
-          if(col[y] != 0) {
+        guessNums.shuffle(rand);
+        for (var y = 0; y < side && !failed; y++) {
+          if(solution.getValue(x, y) != 0) {
             // this value is solved already.
             continue;
           }
-          final row = solution.getRow(y);
-          final rowColAvailable = setDiff1d(validValues, union1d(col, row));
-          if (rowColAvailable.isEmpty) {
-            failed = true; // welp, this random solution did not work
-            break;
+          failed = true;
+          for (final guess in guessNums) {
+            if (isSafe(solution, y, x, sideSqrt, guess)) {
+              solution.setValue(x, y, guess);
+              failed = false;
+              break;
+            }
           }
-          final squareX = x ~/ sideSqrt;
-          final squareY = y ~/ sideSqrt;
-          final sector = SquareViewer(solution, sideSqrt, squareX, squareY);
-          final sectorAvailable = setDiff1d(validValues, sector);
-          final available = intersect1d(rowColAvailable, sectorAvailable).toList(growable: false);
-          if (available.isEmpty) {
-            failed = true; // welp, this random solution did not work
-            break;
-          }
-          solution[y][x] = available[rand.nextInt(available.length)];
         }
       }
       tries++;
@@ -216,6 +208,37 @@ class SudokuState {
     }
     print(tries);
   }
+}
+
+
+bool isSafe(BidimensionalList<int> grid, int row/*y*/, int col/*x*/, int boxSize, int n)
+{
+  final side = grid.length;
+  // RowSafe
+  for (int x = 0; x < side; x++)
+  {
+      if (grid.getValue(x, row) == n)
+          return false;
+  }
+  // Col safe
+  for (int y = 0; y < side; y++)
+  {
+      if (grid.getValue(col, y) == n)
+          return false;
+  }
+  // BoxSafe
+  final boxStartRow = row - row%boxSize;
+  final boxStartCol = col - col%boxSize;
+  for (int y = 0; y < boxSize; y++)
+  {
+      for (int x = 0; x < boxSize; x++)
+      {
+          if (grid.getValue(x+boxStartCol, y+boxStartRow) == n)
+              return false;
+      }
+  }
+
+  return true;
 }
 
 class SquareViewer extends ListBase<int> {

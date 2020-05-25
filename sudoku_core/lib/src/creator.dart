@@ -1,8 +1,62 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'bidimensional_list.dart';
 import 'dart:math';
 import 'sudoku_state.dart';
 
-SudokuState createRandomSudoku({int side = 9, double maskRate = 0.5}) {
+class ChunkedSudoku {
+  final StreamController<ChunkedSudokuSquare> _squaresController;
+  final Future<SudokuState> onComplete;
+  final StreamSubscription<ChunkedSudokuPiece> _subscription;
+
+  Stream<ChunkedSudokuSquare> get squares => _squaresController.stream;
+
+  Future<void> cancel() async {
+    await _squaresController.close();
+    await _subscription.cancel();
+  }
+
+  const ChunkedSudoku._(this._squaresController, this.onComplete, this._subscription);
+}
+
+abstract class ChunkedSudokuPiece {
+  const ChunkedSudokuPiece();
+}
+
+class ChunkedSudokuResult extends ChunkedSudokuPiece {
+  final SudokuState state;
+  const ChunkedSudokuResult(this.state);
+}
+
+class ChunkedSudokuSquare extends ChunkedSudokuPiece {
+  final int x;
+  final int y;
+  final int n;
+  const ChunkedSudokuSquare(this.x, this.y, this.n);
+}
+
+ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5}) {
+  final squaresController = StreamController<ChunkedSudokuSquare>();
+  final completer = Completer<SudokuState>();
+  final subscription = rawCreateRandomSudoku(side: side, maskRate: maskRate).listen((piece) {
+    if (piece is ChunkedSudokuSquare) {
+      squaresController.add(piece);
+    }
+    if (piece is ChunkedSudokuResult) {
+      completer.complete(piece.state);
+    }
+  });
+  return ChunkedSudoku._(squaresController, completer.future, subscription);
+}
+
+Future<SudokuState> createRandomSudoku({int side = 9, double maskRate = 0.5}) {
+  final completer = Completer<SudokuState>();
+  rawCreateRandomSudoku(side: side, maskRate: maskRate).last.then((value) => completer.complete((value as ChunkedSudokuResult).state));
+  return completer.future;
+}
+
+Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate = 0.5}) async* {
   final rand = Random();
 
   final state = SudokuState(side: side);
@@ -18,19 +72,21 @@ SudokuState createRandomSudoku({int side = 9, double maskRate = 0.5}) {
   state.initialState.setAll(0, state.solution);
   // Indices which we will try to remove
   List<int> gridPos = List<int>.generate(side*side, (i) => i)..shuffle(rand);
-  for(var i=0;i<gridPos.length;i++)
+  for(final pos in gridPos)
   {
-    final gridI = gridPos[i];
-    int y = gridI~/side;
-    int x = gridI%side;
-    int temp = state.initialState[y][x];
-    state.initialState[x][y] = 0;
+    int y = pos~/side;
+    int x = pos%side;
+    int temp = state.initialState.getValue(x, y);
+    state.initialState.setValue(x, y, 0);
 
     // If now more than 1 solution , replace the removed cell back.
     final check = countSoln(state.initialState, state.sideSqrt, guessNums);
     if(check != 1)
     {
-      state.initialState[x][y] = temp;
+      state.initialState.setValue(x, y, temp);
+      yield ChunkedSudokuSquare(x, y, temp);
+    } else {
+      yield ChunkedSudokuSquare(x, y, 0);
     }
   }
   // Ok, now initial state contains the ABSOLUTE minimum amount of values
@@ -38,52 +94,23 @@ SudokuState createRandomSudoku({int side = 9, double maskRate = 0.5}) {
   final count = state.initialState.whereInner((n) => n != 0).length;
   var toBeAdded = (side*side*maskRate).round() - count;
   if (toBeAdded < 0) {
-    return state..reset();
-  }
-  while (toBeAdded > 0) {
-    final x = rand.nextInt(side);
-    final y = rand.nextInt(side);
-    final onGrid = state.initialState[y][x];
-    if (onGrid != 0) {
-      continue;
-    }
-    state.initialState[y][x] = state.solution[y][x];
-    toBeAdded--;
-  }
-  // Finally, we have an Sudoku with an single solution on the [solution]
-  // field, an initial state with side*side*maskRate elements and an state
-  // equal to the initialState
-  return state..reset();
-}
-
-bool isSafe(BidimensionalList<int> grid, int row, int col, int boxSize, int n)
-{
-  final side = grid.length;
-  // RowSafe
-  for (int x = 0; x < side; x++)
-  {
-      if (grid.getValue(x, row) == n)
-          return false;
-  }
-  // Col safe
-  for (int y = 0; y < side; y++)
-  {
-      if (grid.getValue(col, y) == n)
-          return false;
-  }
-  // BoxSafe
-  final boxStartRow = row - row%boxSize;
-  final boxStartCol = col - col%boxSize;
-  for (int y = 0; y < boxSize; y++)
-  {
-      for (int x = 0; x < boxSize; x++)
-      {
-          if (grid.getValue(x+boxStartCol, y+boxStartRow) == n)
-              return false;
+    yield ChunkedSudokuResult(state..reset());
+  } else {
+    while (toBeAdded > 0) {
+      final x = rand.nextInt(side);
+      final y = rand.nextInt(side);
+      final onGrid = state.initialState[y][x];
+      if (onGrid != 0) {
+        continue;
       }
+      state.initialState[y][x] = state.solution[y][x];
+      toBeAdded--;
+    }
+    // Finally, we have an Sudoku with an single solution on the [solution]
+    // field, an initial state with side*side*maskRate elements and an state
+    // equal to the initialState
+    yield ChunkedSudokuResult(state..reset());
   }
-
-  return true;
 }
 
 int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums, {int solnCount = 0})
@@ -136,9 +163,9 @@ SudokuVec/*?*/ findUnassignedLocation(BidimensionalList<int> grid)
     return null;
 }
 
-void main() {
+void main() async {
 
-  final sudoku = createRandomSudoku(side: 9);
+  final sudoku = await createRandomSudoku(side: 9);
   print("Solution:");
   print(sudoku.solution);
   print("InitialState:");

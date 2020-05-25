@@ -105,8 +105,8 @@ void main() {
     state.solve();
     expect(_deepEquality.equals(state.solution, board),true);
   });
-  test("Test sudoku creation", () {
-    final state = createRandomSudoku(side: 4);
+  test("Test sudoku creation", () async {
+    final state = await createRandomSudoku(side: 4);
     expect(state.validateBoard(), Validation.missing);
     expect(state.solution.everyInner((e) => e != 0), true);
     expect(state.initialState.everyInner((e) => e != 0), false);
