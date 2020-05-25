@@ -12,25 +12,30 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
   final PreferencesRepository preferencesRepository;
   MainMenuBloc(this.boardRepository, this.preferencesRepository);
 
-  Future<T> catchFuture<T>(Future<T> future, String userFriendlyMessage) => future.catchError((dynamic e){
-    emitError(msg: e.toString(), userFriendlyMsg: userFriendlyMessage);
-    return null;
-  });
+  Future<T> catchFuture<T>(Future<T> future, String userFriendlyMessage) =>
+      future.catchError((dynamic e) {
+        emitError(msg: e.toString(), userFriendlyMsg: userFriendlyMessage);
+        return null;
+      });
 
-  void emitError({String msg, String userFriendlyMsg}) => add(MainMenuErrorEvent(MainMenuErrorState(
-          message: msg,
-          userFriendlyMessage: userFriendlyMsg
-        )));
-  
+  void emitError({String msg, String userFriendlyMsg}) =>
+      add(MainMenuErrorEvent(MainMenuErrorState(
+          message: msg, userFriendlyMessage: userFriendlyMsg)));
+
   @override
   void onError(Object error, StackTrace stackTrace) {
-    emitError(msg: error.toString(), userFriendlyMsg: "Houve um erro inesperado, o desenvolvedor é burro");
+    emitError(
+        msg: error.toString(),
+        userFriendlyMsg: "Houve um erro inesperado, o desenvolvedor é burro");
     super.onError(error, stackTrace);
   }
 
   Future<BidimensionalList<SudokuConfiguration>> loadConfigurations() async {
-    final isStorageSupported = boardRepository.currentStatus().type == StorageStatusType.ready;
-    final sudokuConfigurations = BidimensionalList<SudokuConfiguration>.filled(SudokuDifficulty.values.length, null, height: SudokuConfiguration.factories.length);
+    final isStorageSupported =
+        boardRepository.currentStatus().type == StorageStatusType.ready;
+    final sudokuConfigurations = BidimensionalList<SudokuConfiguration>.filled(
+        SudokuDifficulty.values.length, null,
+        height: SudokuConfiguration.factories.length);
     for (var y = 0; y < sudokuConfigurations.height; y++) {
       final factory = SudokuConfiguration.factories[y];
       final side = SudokuConfiguration.factorySide[y];
@@ -38,7 +43,9 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
         final difficulty = SudokuDifficulty.values[x];
         bool hasSave;
         if (isStorageSupported) {
-          hasSave = await catchFuture(boardRepository.hasConfiguration(side, difficulty), "Houve um erro inesperado ao checar se há um Sudoku armazenado");
+          hasSave = await catchFuture(
+              boardRepository.hasConfiguration(side, difficulty),
+              "Houve um erro inesperado ao checar se há um Sudoku armazenado");
         } else {
           hasSave = false;
         }
@@ -46,7 +53,8 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
         if (hasSave == null) {
           return null;
         }
-        final configuration = factory(x, hasSave ? StateSource.storage : StateSource.random);
+        final configuration =
+            factory(x, hasSave ? StateSource.storage : StateSource.random);
         sudokuConfigurations[y][x] = configuration;
       }
     }
@@ -55,19 +63,26 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
   }
 
   Future<int> getStoredX() async {
-    return catchFuture(preferencesRepository.getMainMenuX().then((v) => v ?? 0), "There was an error while getting the stored difficulty");
+    return catchFuture(preferencesRepository.getMainMenuX().then((v) => v ?? 0),
+        "There was an error while getting the stored difficulty");
   }
 
   Future<int> getStoredY() async {
-    return catchFuture(preferencesRepository.getMainMenuY().then((v) => v ?? 1), "There was an error while getting the stored side");
+    return catchFuture(preferencesRepository.getMainMenuY().then((v) => v ?? 1),
+        "There was an error while getting the stored side");
   }
 
   Future<bool> getAknowledgement() async {
-    return await preferencesRepository.getAknowledgement().catchError((dynamic e) => false) ?? false;
+    return await preferencesRepository
+            .getAknowledgement()
+            .catchError((dynamic e) => false) ??
+        false;
   }
 
   Future<void> didAknowledge() async {
-    return preferencesRepository.updateAknowledgement(true).catchError((dynamic e) => null);
+    return preferencesRepository
+        .updateAknowledgement(true)
+        .catchError((dynamic e) => null);
   }
 
   Future<void> initialize() async {
@@ -76,13 +91,18 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
       status = await boardRepository.prepareStorage();
     }
     if (status.type == StorageStatusType.error) {
-      emitError(msg: status.message, userFriendlyMsg: "Houve um erro inesperado ao preparar o armazenamento do Sudoku");
+      emitError(
+          msg: status.message,
+          userFriendlyMsg:
+              "Houve um erro inesperado ao preparar o armazenamento do Sudoku");
       return;
     }
     var storage = StorageAknowledgment.supported;
     if (status.type == StorageStatusType.unsupported) {
       final didAknowledge = await getAknowledgement();
-      storage = didAknowledge ? StorageAknowledgment.unsupportedAknowledged : StorageAknowledgment.unsupported;
+      storage = didAknowledge
+          ? StorageAknowledgment.unsupportedAknowledged
+          : StorageAknowledgment.unsupported;
     }
     final sudokuConfigurations = await loadConfigurations();
     // Error
@@ -99,7 +119,11 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
     if (savedY == null) {
       return;
     }
-    final state = MainMenuSnap(configurations: sudokuConfigurations, difficultyX: savedX, sideY: savedY, storage: storage);
+    final state = MainMenuSnap(
+        configurations: sudokuConfigurations,
+        difficultyX: savedX,
+        sideY: savedY,
+        storage: storage);
     add(LoadedEvent(state));
   }
 
@@ -123,15 +147,16 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
       yield (state as MainMenuSnap).copyWith(sideY: event.y);
     }
     if (event is ReloadConfigurations) {
-      yield (state as MainMenuSnap).copyWith(configurations: await loadConfigurations());
+      yield (state as MainMenuSnap)
+          .copyWith(configurations: await loadConfigurations());
     }
     if (event is MainMenuErrorEvent) {
       yield event.state;
     }
     if (event is AknowledgeStorageEvent) {
       await didAknowledge();
-      yield (state as MainMenuSnap).copyWith(storage: StorageAknowledgment.unsupportedAknowledged);
+      yield (state as MainMenuSnap)
+          .copyWith(storage: StorageAknowledgment.unsupportedAknowledged);
     }
   }
-
 }

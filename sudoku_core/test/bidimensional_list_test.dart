@@ -29,7 +29,10 @@ void main() {
     expect(twoD[2][3], 11);
     expect(_iterEquality.equals(flatten<int>(arr), twoD.flat()), true);
     expect(() => twoD.flat(false), throwsStateError);
-    expect(_deepEquality.equals(BidimensionalList.view(flatten(arr).toList(), 4, height: 3), twoD), true);
+    expect(
+        _deepEquality.equals(
+            BidimensionalList.view(flatten(arr).toList(), 4, height: 3), twoD),
+        true);
   });
   test("Test SudokuState basics", () {
     final board = BidimensionalList.view2d([
@@ -39,18 +42,31 @@ void main() {
       [4, 2, 3, 1],
     ]);
     final squares = BidimensionalList.view2d([
-      [[[3, 1],
-      [2, 4]],
-      [[2, 4],
-      [1, 3]]],
-      [[[1, 3],
-      [4, 2]],
-      [[4, 2],
-      [3, 1]]],
+      [
+        [
+          [3, 1],
+          [2, 4]
+        ],
+        [
+          [2, 4],
+          [1, 3]
+        ]
+      ],
+      [
+        [
+          [1, 3],
+          [4, 2]
+        ],
+        [
+          [4, 2],
+          [3, 1]
+        ]
+      ],
     ]);
     final state = SudokuState(side: 4, initialState: board);
     expect(state.validateBoard(), Validation.correct);
-    expect(state.validateWithInfo().anyInner((e) => e != Validation.correct), false);
+    expect(state.validateWithInfo().anyInner((e) => e != Validation.correct),
+        false);
     expect(_deepEquality.equals(state.squares(), squares), true);
   });
   test("Test invalid sudokuState", () {
@@ -63,7 +79,12 @@ void main() {
     final state = SudokuState(side: 4, initialState: board);
     expect(state.validateBoard(), Validation.incorrect);
     final info = state.validateWithInfo();
-    final invalidIndices = [[0,3],[1,1],[1,2],[2,2]];
+    final invalidIndices = [
+      [0, 3],
+      [1, 1],
+      [1, 2],
+      [2, 2]
+    ];
     var invalidCounter = 0;
     var didReachZero = false;
     info.forEachIndexed((element, x, y) {
@@ -73,9 +94,13 @@ void main() {
         expect(element, Validation.incorrect);
       } else {
         if (x == y && y == 3) {
-          expect(didReachZero, false); // in case i change this test to include more zeroes. idk, unneeded tbh
+          expect(didReachZero,
+              false); // in case i change this test to include more zeroes. idk, unneeded tbh
           didReachZero = true;
-          expect(element, Validation.missing); // BREAKING CHANGE: now unfilled values are validated as true
+          expect(
+              element,
+              Validation
+                  .missing); // BREAKING CHANGE: now unfilled values are validated as true
         } else {
           expect(element, Validation.correct);
         }
@@ -83,7 +108,6 @@ void main() {
     });
     expect(invalidCounter, invalidIndices.length);
     expect(didReachZero, true);
-
   });
   test("Test sudoku completion", () {
     final board = BidimensionalList.view2d([
@@ -101,7 +125,7 @@ void main() {
     final state = SudokuState(side: 4, initialState: boardMissing);
     expect(state.validateBoard(), Validation.missing);
     state.solve();
-    expect(_deepEquality.equals(state.solution, board),true);
+    expect(_deepEquality.equals(state.solution, board), true);
   });
   test("Test sudoku creation", () async {
     final state = await createRandomSudoku(side: 4);
@@ -112,6 +136,5 @@ void main() {
     final oldSolution = state.solution.toList(growable: false);
     state.solve();
     expect(_deepEquality.equals(oldSolution, state.solution), true);
-
   });
 }

@@ -22,9 +22,8 @@ Color getColor(SquareInfo info, BuildContext context) {
 
 String getText(SquareInfo info) {
   final noMainNumber = info.number == 0;
-  final text = noMainNumber
-      ? info.possibleNumbers.join()
-      : info.number.toString();
+  final text =
+      noMainNumber ? info.possibleNumbers.join() : info.number.toString();
   return text;
 }
 
@@ -36,13 +35,17 @@ Alignment getTextAlignment(SquareInfo info) {
   return Alignment.center;
 }
 
-TextStyle getTextStyle(SquareInfo info, double squareSide, BuildContext context) {
+TextStyle getTextStyle(
+    SquareInfo info, double squareSide, BuildContext context) {
   final noMainNumber = info.number == 0;
   final theme = Theme.of(context);
   final smallestTextStyle = theme.textTheme.overline;
   final biggestTextStyle = theme.textTheme.headline4;
   final absoluteBiggest = squareSide * 0.8;
-  final constrainedTextStyle = biggestTextStyle.copyWith(fontSize: absoluteBiggest.clamp(smallestTextStyle.fontSize, biggestTextStyle.fontSize).toDouble());
+  final constrainedTextStyle = biggestTextStyle.copyWith(
+      fontSize: absoluteBiggest
+          .clamp(smallestTextStyle.fontSize, biggestTextStyle.fontSize)
+          .toDouble());
   final style = noMainNumber ? smallestTextStyle : constrainedTextStyle;
   final color = getColor(info, context);
   if (color == null) {
@@ -50,7 +53,9 @@ TextStyle getTextStyle(SquareInfo info, double squareSide, BuildContext context)
   }
   final colorBrightness = ThemeData.estimateBrightnessForColor(color);
   if (colorBrightness != theme.brightness) {
-    return style.copyWith(color: colorBrightness == Brightness.dark ? Colors.white : Colors.black87);
+    return style.copyWith(
+        color:
+            colorBrightness == Brightness.dark ? Colors.white : Colors.black87);
   }
   return style;
 }
@@ -60,17 +65,23 @@ class SudokuStaticSquare extends StatelessWidget {
   final int x;
   final int y;
   final double squareSide;
-  const SudokuStaticSquare({@required Key key, @required this.info, @required this.x, @required this.y, this.squareSide})
+  const SudokuStaticSquare(
+      {@required Key key,
+      @required this.info,
+      @required this.x,
+      @required this.y,
+      this.squareSide})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final text = Text(getText(info), style: getTextStyle(info, squareSide, context));
+    final text =
+        Text(getText(info), style: getTextStyle(info, squareSide, context));
     final decoration =
         BoxDecoration(color: getColor(info, context), shape: BoxShape.circle);
     void onTap() => context.bloc<SudokuBloc>().add(SquareTap(x, y));
 
-    final padding = squareSide/15;
+    final padding = squareSide / 15;
     return Padding(
       padding: EdgeInsets.all(padding),
       child: InkWell(
@@ -93,7 +104,12 @@ class SudokuAnimatedSquare extends StatefulWidget {
   final AnimationOptions animationOptions;
 
   const SudokuAnimatedSquare(
-      {@required Key key, @required this.info, @required this.x, @required this.y, @required this.animationOptions, this.squareSide})
+      {@required Key key,
+      @required this.info,
+      @required this.x,
+      @required this.y,
+      @required this.animationOptions,
+      this.squareSide})
       : super(key: key);
 
   @override
@@ -200,7 +216,8 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     super.didUpdateWidget(oldWidget);
   }
 
-  static _SquareState createState(SquareInfo info, double squareSide, BuildContext context, bool isEnd) {
+  static _SquareState createState(
+      SquareInfo info, double squareSide, BuildContext context, bool isEnd) {
     final color = getColor(info, context);
     final align = getTextAlignment(info);
     final style = getTextStyle(info, squareSide, context);
@@ -230,7 +247,8 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
       text = Text(state.textPos == 0.0 ? getText(oldInfo) : getText(targetInfo),
           style: textStyle);
     } else {
-      final oldOpacity = (1 - 2.0 * state.textPos).clamp(0.0, 1.0) as double; // idk why this type isn't inferred
+      final oldOpacity = (1 - 2.0 * state.textPos).clamp(0.0, 1.0)
+          as double; // idk why this type isn't inferred
       text = Stack(fit: StackFit.loose, children: [
         if (oldOpacity != 0)
           Opacity(
@@ -254,7 +272,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         shape: BoxShape.circle);
     final sizeFrac =
         widget.animationOptions.selectSize ? state.decorationSize : 1.0;
-    final padding = widget.squareSide/15;
+    final padding = widget.squareSide / 15;
     return Padding(
       padding: EdgeInsets.all(padding),
       child: InkWell(
@@ -335,17 +353,20 @@ class SudokuBoard extends StatelessWidget {
   }
 
   Widget buildGrid(BuildContext context) {
-    return LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
       final childSize = constraints.biggest.height / state.length;
-      final children = state.mapInnerIndexed((x, y, info) => buildNumber(info, x, y, childSize)).toList();
+      final children = state
+          .mapInnerIndexed((x, y, info) => buildNumber(info, x, y, childSize))
+          .toList();
       return GridView.count(
-          crossAxisCount: state.length,
-          childAspectRatio: 1,
-          addAutomaticKeepAlives: false,
-          addRepaintBoundaries: false,
-          physics: const NeverScrollableScrollPhysics(),
-          children: children,
-        );
+        crossAxisCount: state.length,
+        childAspectRatio: 1,
+        addAutomaticKeepAlives: false,
+        addRepaintBoundaries: false,
+        physics: const NeverScrollableScrollPhysics(),
+        children: children,
+      );
     });
   }
 
@@ -353,7 +374,7 @@ class SudokuBoard extends StatelessWidget {
     final theme = Provider.of<SudokuTheme>(context);
     return Hero(
       tag: "SudokuBG",
-          child: CustomPaint(
+      child: CustomPaint(
         painter: SudokuBgPainter(state.length, theme.main, theme.mainDarkened),
       ),
     );
@@ -367,15 +388,16 @@ class SudokuBoard extends StatelessWidget {
       removeBottom: true,
       removeLeft: true,
       removeRight: true,
-          child: Align(
+      child: Align(
         alignment: Alignment.center,
         child: AspectRatio(
           aspectRatio: 1,
-              child: Stack(
+          child: Stack(
             fit: StackFit.expand,
             children: [
               SizedBox.expand(child: buildBackground(context)),
-              SizedBox.expand(child: buildGrid(context),
+              SizedBox.expand(
+                child: buildGrid(context),
               )
             ],
           ),

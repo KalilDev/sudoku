@@ -11,13 +11,20 @@ import 'sudoku_button.dart';
 
 String difficultyToString(SudokuDifficulty difficulty) {
   switch (difficulty) {
-    case SudokuDifficulty.begginer: return 'Iniciante';
-    case SudokuDifficulty.easy: return 'Fácil';
-    case SudokuDifficulty.medium: return 'Média';
-    case SudokuDifficulty.hard: return 'Difícil';
-    case SudokuDifficulty.extreme: return 'Extrema';
-    case SudokuDifficulty.impossible: return 'Impossível';
-    default: return 'Desconhecida';
+    case SudokuDifficulty.begginer:
+      return 'Iniciante';
+    case SudokuDifficulty.easy:
+      return 'Fácil';
+    case SudokuDifficulty.medium:
+      return 'Média';
+    case SudokuDifficulty.hard:
+      return 'Difícil';
+    case SudokuDifficulty.extreme:
+      return 'Extrema';
+    case SudokuDifficulty.impossible:
+      return 'Impossível';
+    default:
+      return 'Desconhecida';
   }
 }
 
@@ -30,25 +37,34 @@ class MainMenu extends StatelessWidget {
     BlocProvider.of<MainMenuBloc>(context).add(ChangeX(difficulty));
   }
 
-  Future<void> launch(SudokuConfiguration config, StorageAknowledgment aknowledgment, BuildContext context) async {
+  Future<void> launch(SudokuConfiguration config,
+      StorageAknowledgment aknowledgment, BuildContext context) async {
     final needsResponse = aknowledgment == StorageAknowledgment.unsupported;
     if (needsResponse) {
-      final didAccept = await showDialog<bool>(context: context, builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Aviso"),
-          content: const Text("Você está usando uma plataforma que ainda não suporta salvar Sudokus. Caso você saia, todo o seu progresso será perdido."),
-          actions: [
-            FlatButton(onPressed: ()=>Navigator.of(context).pop(true), child: const Text("Aceitar"))
-          ],
-        );
-      });
+      final didAccept = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Aviso"),
+              content: const Text(
+                  "Você está usando uma plataforma que ainda não suporta salvar Sudokus. Caso você saia, todo o seu progresso será perdido."),
+              actions: [
+                FlatButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("Aceitar"))
+              ],
+            );
+          });
       if (!didAccept) {
         return;
       }
       BlocProvider.of<MainMenuBloc>(context).add(AknowledgeStorageEvent());
     }
     final difficultyIndex = SudokuDifficulty.values.indexOf(config.difficulty);
-    return Navigator.of(context).pushNamed("${config.side}x$difficultyIndex", arguments: config).then((_) => BlocProvider.of<MainMenuBloc>(context).add(ReloadConfigurations()));
+    return Navigator.of(context)
+        .pushNamed("${config.side}x$difficultyIndex", arguments: config)
+        .then((_) =>
+            BlocProvider.of<MainMenuBloc>(context).add(ReloadConfigurations()));
   }
 
   @override
@@ -59,10 +75,17 @@ class MainMenu extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
       if (_state is MainMenuErrorState) {
-        return Scaffold(body: Center(child: Column(mainAxisSize: MainAxisSize.min,children: [
-          Text(_state.userFriendlyMessage),
-          Text("Mensagem do erro: ${_state.message}")
-        ],),),);
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_state.userFriendlyMessage),
+                Text("Mensagem do erro: ${_state.message}")
+              ],
+            ),
+          ),
+        );
       }
       final state = _state as MainMenuSnap;
       final configs = state.configurations;
@@ -70,69 +93,74 @@ class MainMenu extends StatelessWidget {
       final sideCounts = configs.map((row) => row.first.side).toList();
       final config = state.configurations[state.sideY][state.difficultyX];
       const widthConstraints = BoxConstraints(maxWidth: 450);
-      final boardWidget = 
-                Flexible(
-                  child: Center(
-                    child: AspectRatio(
-                        aspectRatio: 1,
-                        child: Hero(
-              tag: "SudokuBG",
+      final boardWidget = Flexible(
+        child: Center(
+          child: AspectRatio(
+              aspectRatio: 1,
+              child: Hero(
+                tag: "SudokuBG",
                 child: CustomPaint(
-                painter: SudokuBgPainter(
-                    sideCounts[state.sideY], theme.main, Colors.transparent),
-              ),
-                        )),
-                  ),
-                );
+                  painter: SudokuBgPainter(
+                      sideCounts[state.sideY], theme.main, Colors.transparent),
+                ),
+              )),
+        ),
+      );
       final optionsWidgets = [
-                  Text("Lado: " + sideCounts[state.sideY].toString()),
-                Slider(
-                  divisions: sideCounts.length - 1,
-                  value: state.sideY.toDouble(),
-                  onChanged: (v) => setSide(v.round(), context),
-                  max: sideCounts.length - 1.0,
-                ),
-                Text("Dificuldade: " +
-                    difficultyToString(SudokuDifficulty.values[state.difficultyX])),
-                Slider(
-                  divisions: configs.width - 1,
-                  value: state.difficultyX.toDouble(),
-                  onChanged: (v) => setDifficulty(v.round(), context),
-                  max: configs.width - 1.0,
-                ),
-                SudokuButton(
-                  onPressed: () => launch(config.newSudoku(), state.storage, context),
-                  filled: true,
-                  child: const Text("Novo jogo"),
-                ),
-                if (state.storage == StorageAknowledgment.supported)
-                  SudokuButton(
-                    onPressed: config.source == StateSource.storage
-                        ? () => launch(config, state.storage, context)
-                        : null,
-                    filled: true,
-                    child: const Text("Continuar"),
-                  )
+        Text("Lado: " + sideCounts[state.sideY].toString()),
+        Slider(
+          divisions: sideCounts.length - 1,
+          value: state.sideY.toDouble(),
+          onChanged: (v) => setSide(v.round(), context),
+          max: sideCounts.length - 1.0,
+        ),
+        Text("Dificuldade: " +
+            difficultyToString(SudokuDifficulty.values[state.difficultyX])),
+        Slider(
+          divisions: configs.width - 1,
+          value: state.difficultyX.toDouble(),
+          onChanged: (v) => setDifficulty(v.round(), context),
+          max: configs.width - 1.0,
+        ),
+        SudokuButton(
+          onPressed: () => launch(config.newSudoku(), state.storage, context),
+          filled: true,
+          child: const Text("Novo jogo"),
+        ),
+        if (state.storage == StorageAknowledgment.supported)
+          SudokuButton(
+            onPressed: config.source == StateSource.storage
+                ? () => launch(config, state.storage, context)
+                : null,
+            filled: true,
+            child: const Text("Continuar"),
+          )
       ];
       return Scaffold(
-            appBar: AppBar(
-      title: const Text("Sudoku"),
-      actions: [
-        IconButton(icon: const Icon(Icons.settings), onPressed: () => openPrefs(context))
-      ],
-            ),
-            body: Center(
-      child: ConstrainedBox(
-        constraints: widthConstraints,
-                  child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-            boardWidget,
-          Flexible(child: Column(mainAxisSize: MainAxisSize.min, children: optionsWidgets),),
+          appBar: AppBar(
+            title: const Text("Sudoku"),
+            actions: [
+              IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () => openPrefs(context))
             ],
           ),
-      ),
-            ));
+          body: Center(
+            child: ConstrainedBox(
+              constraints: widthConstraints,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  boardWidget,
+                  Flexible(
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: optionsWidgets),
+                  ),
+                ],
+              ),
+            ),
+          ));
     });
   }
 }

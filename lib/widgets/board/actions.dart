@@ -9,7 +9,12 @@ class SudokuActions extends StatelessWidget {
   final bool isPortrait;
   final bool enabled;
 
-  const SudokuActions({Key key, @required this.canRewind, @required this.markType, @required this.isPortrait, @required this.enabled})
+  const SudokuActions(
+      {Key key,
+      @required this.canRewind,
+      @required this.markType,
+      @required this.isPortrait,
+      @required this.enabled})
       : super(key: key);
 
   static Map<IconData, Key> iconKeyMap = {};
@@ -25,28 +30,42 @@ class SudokuActions extends StatelessWidget {
       maxHeight: isPortrait ? 42.0 : 112.0,
       maxWidth: !isPortrait ? 42.0 : 112.0,
     );
-    ShapeBorder shapeBuilder(Color c) => StadiumBorder(side: BorderSide(color: c));
+    ShapeBorder shapeBuilder(Color c) =>
+        StadiumBorder(side: BorderSide(color: c));
 
     void resetBoard() => bloc.add(ActionReset());
     void validate() => bloc.add(ActionValidate());
     void changeMarkType() => bloc.add(ActionSetMark(
         markType == MarkType.concrete ? MarkType.possible : MarkType.concrete));
     void undo() => bloc.add(ActionUndo());
-    Widget buildButton({IconData icon, VoidCallback onPressed, bool filled = false}) => SudokuButton(shapeBuilder: shapeBuilder, constraints: buttonConstraints, filled: filled,onPressed: enabled ? onPressed : null, child: Icon(icon),);
+    Widget buildButton(
+            {IconData icon, VoidCallback onPressed, bool filled = false}) =>
+        SudokuButton(
+          shapeBuilder: shapeBuilder,
+          constraints: buttonConstraints,
+          filled: filled,
+          onPressed: enabled ? onPressed : null,
+          child: Icon(icon),
+        );
     final children = [
       const Spacer(),
-      Expanded(flex: 3, child: buildButton(icon: Icons.sync, onPressed: resetBoard)),
+      Expanded(
+          flex: 3, child: buildButton(icon: Icons.sync, onPressed: resetBoard)),
       const Spacer(),
-      Expanded(flex: 3, child: buildButton(icon: Icons.check, onPressed: validate)),
+      Expanded(
+          flex: 3, child: buildButton(icon: Icons.check, onPressed: validate)),
       const Spacer(),
       Expanded(
           flex: 3,
-          child: buildButton(icon: Icons.edit, onPressed: changeMarkType,
+          child: buildButton(
+              icon: Icons.edit,
+              onPressed: changeMarkType,
               filled: markType == MarkType.possible)),
       const Spacer(),
       Expanded(
           flex: 3,
-          child: buildButton(icon: Icons.undo,  onPressed: (canRewind ?? false) ? undo : null)),
+          child: buildButton(
+              icon: Icons.undo, onPressed: (canRewind ?? false) ? undo : null)),
       const Spacer(),
     ];
     return !isPortrait

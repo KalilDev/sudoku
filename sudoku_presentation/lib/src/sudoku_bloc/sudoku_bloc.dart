@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:collection';
 
@@ -29,26 +28,29 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   Future<void> scheduleSave(SudokuSnapshot snap) async {
     if (repository.currentStatus().type == StorageStatusType.ready) {
       //debugger();
-      await catchFuture(repository.scheduleSave(definition.side, definition.difficulty, snap), "Houve um erro inesperado ao salvar o Sudoku");
+      await catchFuture(
+          repository.scheduleSave(definition.side, definition.difficulty, snap),
+          "Houve um erro inesperado ao salvar o Sudoku");
     }
   }
-  
-  Future<T> catchFuture<T>(Future<T> future, String userFriendlyMessage) => future.catchError((dynamic e){
-    emitError(msg: e.toString(), userFriendlyMsg: userFriendlyMessage);
-    return null;
-  });
 
-  void emitError({String msg, String userFriendlyMsg}) => add(SudokuErrorEvent(SudokuErrorState(
-          message: msg,
-          userFriendlyMessage: userFriendlyMsg
-        )));
-  
+  Future<T> catchFuture<T>(Future<T> future, String userFriendlyMessage) =>
+      future.catchError((dynamic e) {
+        emitError(msg: e.toString(), userFriendlyMsg: userFriendlyMessage);
+        return null;
+      });
+
+  void emitError({String msg, String userFriendlyMsg}) => add(SudokuErrorEvent(
+      SudokuErrorState(message: msg, userFriendlyMessage: userFriendlyMsg)));
+
   @override
   void onError(Object error, StackTrace stackTrace) {
     if (closed) {
       print(error.toString());
     } else {
-      emitError(msg: error.toString(), userFriendlyMsg: "Houve um erro inesperado, o desenvolvedor é burro");
+      emitError(
+          msg: error.toString(),
+          userFriendlyMsg: "Houve um erro inesperado, o desenvolvedor é burro");
     }
     super.onError(error, stackTrace);
   }
@@ -62,14 +64,22 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
           status = await repository.prepareStorage();
         }
         if (status.type != StorageStatusType.ready) {
-          emitError(msg: status.message, userFriendlyMsg: "Ao tentar carregar o estado armazenado do Sudoku, o armazenamento não pode ser preparado, ao invés, ele ficou com o status ${status.type}");
+          emitError(
+              msg: status.message,
+              userFriendlyMsg:
+                  "Ao tentar carregar o estado armazenado do Sudoku, o armazenamento não pode ser preparado, ao invés, ele ficou com o status ${status.type}");
           return;
         }
-        state = await catchFuture(repository.loadSudoku(definition.side, definition.difficulty), "Ao tentar carregar o Sudoku armazenado, ocorreu um erro inesperado.");
+        state = await catchFuture(
+            repository.loadSudoku(definition.side, definition.difficulty),
+            "Ao tentar carregar o Sudoku armazenado, ocorreu um erro inesperado.");
         break;
       case StateSource.random:
-        chunked = await catchFuture(genRandomSudoku(definition.side, definition.difficulty), "Ao tentar criar um Sudoku, ocorreu um erro inesperado.");
-        chunkedSubs = chunked.squares.listen((square) => add(PieceLoadedEvent(square)));
+        chunked = await catchFuture(
+            genRandomSudoku(definition.side, definition.difficulty),
+            "Ao tentar criar um Sudoku, ocorreu um erro inesperado.");
+        chunkedSubs =
+            chunked.squares.listen((square) => add(PieceLoadedEvent(square)));
         state = await chunked.onComplete;
         await chunkedSubs.cancel();
         await chunked.cancel();
@@ -84,13 +94,15 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         if (status.type != StorageStatusType.ready) {
           return initialize(StateSource.random);
         }
-        final hasState = await catchFuture(repository.hasConfiguration(definition.side, definition.difficulty), "Ao tentar checar se há esta configuração de Sudoku no armazenamento, houve um erro inesperado");
+        final hasState = await catchFuture(
+            repository.hasConfiguration(definition.side, definition.difficulty),
+            "Ao tentar checar se há esta configuração de Sudoku no armazenamento, houve um erro inesperado");
         // Error
         if (hasState == null) {
           return;
         }
         return initialize(hasState ? StateSource.storage : StateSource.random);
-      break;
+        break;
     }
     // State is only null in case errors happened
     if (state != null) {
@@ -100,72 +112,92 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
 
   @override
   SudokuBlocState get initialState {
-    validation = BidimensionalList<Validation>.filled(definition.side, Validation.notValidated);
+    validation = BidimensionalList<Validation>.filled(
+        definition.side, Validation.notValidated);
     initialize(definition.source).catchError(onError);
-    final numbers = List<NumberInfo>.generate(definition.side + 1, (i) => NumberInfo(number: i, isSelected: false));
-    return SudokuLoadingState(BidimensionalList<SquareInfo>.filled(definition.side, SquareInfo.empty), numbers);
+    final numbers = List<NumberInfo>.generate(
+        definition.side + 1, (i) => NumberInfo(number: i, isSelected: false));
+    return SudokuLoadingState(
+        BidimensionalList<SquareInfo>.filled(definition.side, SquareInfo.empty),
+        numbers);
   }
 
   Future<SudokuSnapshot> genSnapshot() async {
     await null;
-    final squares = BidimensionalList<SquareInfo>.generate(sudokuState.side, (int x, int y) {
-        final isSelected = selectedSquare == null ? false : selectedSquare[0] == x && selectedSquare[1] == y; 
-        final initialN = sudokuState.initialState[y][x];
-        final isInitial = initialN != 0;
-        final number = isInitial ? initialN : sudokuState.state[y][x];
-        final possibleValues = sudokuState.possibleValues[y][x].toList();
-        final validation = isInitial ? Validation.correct : this.validation[y][x];
-        final square = SquareInfo(number: number, isInitial: isInitial,possibleNumbers: possibleValues, isSelected: isSelected, validation: validation);
-        return square;
+    final squares = BidimensionalList<SquareInfo>.generate(sudokuState.side,
+        (int x, int y) {
+      final isSelected = selectedSquare == null
+          ? false
+          : selectedSquare[0] == x && selectedSquare[1] == y;
+      final initialN = sudokuState.initialState[y][x];
+      final isInitial = initialN != 0;
+      final number = isInitial ? initialN : sudokuState.state[y][x];
+      final possibleValues = sudokuState.possibleValues[y][x].toList();
+      final validation = isInitial ? Validation.correct : this.validation[y][x];
+      final square = SquareInfo(
+          number: number,
+          isInitial: isInitial,
+          possibleNumbers: possibleValues,
+          isSelected: isSelected,
+          validation: validation);
+      return square;
     });
-    final numbers = List<NumberInfo>.generate(sudokuState.side + 1, (i) => NumberInfo(number: i, isSelected: i == selectedNum));
+    final numbers = List<NumberInfo>.generate(sudokuState.side + 1,
+        (i) => NumberInfo(number: i, isSelected: i == selectedNum));
     final validationState = sudokuState.validateBoard();
     final canRewind = deltas.isNotEmpty;
-    final snapshot = SudokuSnapshot(squares: squares, numbers: numbers, canRewind: canRewind, markType: markType, validationState: validationState);
+    final snapshot = SudokuSnapshot(
+        squares: squares,
+        numbers: numbers,
+        canRewind: canRewind,
+        markType: markType,
+        validationState: validationState);
     return snapshot;
   }
 
   void squareMark(int n, int x, int y) {
-    validation[y][x] = Validation.notValidated; // reset validation status for this square
+    validation[y][x] =
+        Validation.notValidated; // reset validation status for this square
     switch (markType) {
-        case MarkType.possible:
-          final list = sudokuState.possibleValues[y][x];
-          if (n == 0) {
-            if (list.isNotEmpty) {
-              deltas.add(PossibleCleared(x,y,list.toList()));
-              list.clear();
-            }
-          } else if (list.contains(n)) {
-            deltas.add(PossibleRemoved(x, y, n));
-            list.remove(n);
-          } else {
-            deltas.add(PossibleAdded(x, y, n));
-            list.add(n);
+      case MarkType.possible:
+        final list = sudokuState.possibleValues[y][x];
+        if (n == 0) {
+          if (list.isNotEmpty) {
+            deltas.add(PossibleCleared(x, y, list.toList()));
+            list.clear();
           }
-          final currentNum = sudokuState[y][x];
-          if (currentNum != 0) {
-            deltas.add(NumChanged(x, y, currentNum));
-            sudokuState[y][x] = 0;
-          }
-          break;
-        case MarkType.concrete:
-          final possible = sudokuState.possibleValues[y][x];
-          final current = sudokuState[y][x];
-          if (current == 0) {
-            deltas.add(PossibleCleared(x, y, possible.toList()));
-            possible.clear();
-            sudokuState[y][x] = n;
-          } else {
-            final next = current == n ? 0 : n;
-            sudokuState[y][x] = next;
-            deltas.add(NumChanged(x, y, current));
-          }
-          break;
+        } else if (list.contains(n)) {
+          deltas.add(PossibleRemoved(x, y, n));
+          list.remove(n);
+        } else {
+          deltas.add(PossibleAdded(x, y, n));
+          list.add(n);
+        }
+        final currentNum = sudokuState[y][x];
+        if (currentNum != 0) {
+          deltas.add(NumChanged(x, y, currentNum));
+          sudokuState[y][x] = 0;
+        }
+        break;
+      case MarkType.concrete:
+        final possible = sudokuState.possibleValues[y][x];
+        final current = sudokuState[y][x];
+        if (current == 0) {
+          deltas.add(PossibleCleared(x, y, possible.toList()));
+          possible.clear();
+          sudokuState[y][x] = n;
+        } else {
+          final next = current == n ? 0 : n;
+          sudokuState[y][x] = next;
+          deltas.add(NumChanged(x, y, current));
+        }
+        break;
     }
   }
 
   void squareTap(int x, int y) {
-    validation[y][x] = Validation.notValidated; // reset validation status for this square
+    validation[y][x] =
+        Validation.notValidated; // reset validation status for this square
     final snap = state as SudokuSnapshot;
     final info = snap.squares[y][x];
     if (info.isSelected) {
@@ -219,10 +251,12 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
       selectedNum = null;
     }
   }
-  
+
   @override
   Future<void> close() async {
-    if (state is SudokuSnapshot && !(state as SudokuSnapshot).wasDeleted && repository.currentStatus().type == StorageStatusType.ready) {
+    if (state is SudokuSnapshot &&
+        !(state as SudokuSnapshot).wasDeleted &&
+        repository.currentStatus().type == StorageStatusType.ready) {
       await repository.freeSudoku(definition.side, definition.difficulty);
     }
     await chunkedSubs?.cancel();
@@ -263,20 +297,24 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
           final currentState = state as SudokuBlocStateWithInfo;
           final newSquares = currentState.squares.toList();
           final prevInfo = newSquares[event.piece.y][event.piece.x];
-          newSquares[event.piece.y][event.piece.x] = prevInfo.copyWith(number: event.piece.n, isInitial: true);
+          newSquares[event.piece.y][event.piece.x] =
+              prevInfo.copyWith(number: event.piece.n, isInitial: true);
           yield SudokuLoadingState(newSquares, currentState.numbers);
         }
       } else if (event is DeleteSudoku) {
         if (!(state as SudokuSnapshot).wasDeleted) {
           if (repository.currentStatus().type == StorageStatusType.ready) {
-            await catchFuture(repository.deleteSudoku(definition.side, definition.difficulty), "Houve um erro inesperado ao deletar o Sudoku armazenado");
+            await catchFuture(
+                repository.deleteSudoku(definition.side, definition.difficulty),
+                "Houve um erro inesperado ao deletar o Sudoku armazenado");
           }
           yield (state as SudokuSnapshot).deleted();
         }
       } else if (event is SudokuErrorEvent) {
         yield event.state;
       } else {
-        final snapshot = await catchFuture(genSnapshot(), "Houve um erro inesperado ao gerar o estado atual do Sudoku");
+        final snapshot = await catchFuture(genSnapshot(),
+            "Houve um erro inesperado ao gerar o estado atual do Sudoku");
         // only null on error
         if (snapshot != null) {
           yield snapshot;

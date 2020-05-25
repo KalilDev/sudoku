@@ -22,11 +22,11 @@ void main() {
             create: (_) => CrossPreferencesRepository()),
       ],
       child: BlocProvider<PreferencesBloc>(
-        create: (BuildContext context) => PreferencesBloc(RepositoryProvider.of<PreferencesRepository>(context)),
-              child: RootView(),
+        create: (BuildContext context) => PreferencesBloc(
+            RepositoryProvider.of<PreferencesRepository>(context)),
+        child: RootView(),
       )));
 }
-
 
 class RootView extends StatelessWidget {
   static bool condition(PrefsState prev, PrefsState next) {
@@ -36,8 +36,7 @@ class RootView extends StatelessWidget {
     return true;
   }
 
-  static Route<dynamic> onGeneratedRoute(
-      RouteSettings routeSettings) {
+  static Route<dynamic> onGeneratedRoute(RouteSettings routeSettings) {
     final name = routeSettings.name.split("/").single;
     SudokuConfiguration sudokuConfiguration;
     if (routeSettings.arguments != null) {
@@ -48,53 +47,71 @@ class RootView extends StatelessWidget {
     }
     return MaterialPageRoute<void>(
         builder: (context) => BlocProvider<SudokuBloc>(
-              create: (BuildContext context) => SudokuBloc(sudokuConfiguration,
-                  RepositoryProvider.of<BoardRepository>(context),
-                  ),
+              create: (BuildContext context) => SudokuBloc(
+                sudokuConfiguration,
+                RepositoryProvider.of<BoardRepository>(context),
+              ),
               child: SudokuBoardView(),
             ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PreferencesBloc, PrefsState>(builder: (BuildContext context, PrefsState _state) {
-      final state = _state is PrefsSnap ? _state : null;
+    return BlocBuilder<PreferencesBloc, PrefsState>(
+      builder: (BuildContext context, PrefsState _state) {
+        final state = _state is PrefsSnap ? _state : null;
 
-      final availableTheme = (state?.theme) ?? AvailableTheme.materialLight;
-      final theme = SudokuTheme.availableThemeMap[availableTheme];
-      final colorScheme = theme.brightness == Brightness.light
-          ? ColorScheme.light(
-              primary: theme.main, secondary: theme.secondary, primaryVariant: theme.mainDarkened, secondaryVariant: theme.secondaryDarkened)
-          : ColorScheme.dark(
-              primary: theme.main, secondary: theme.secondary, primaryVariant: theme.mainDarkened, secondaryVariant: theme.secondaryDarkened);
-      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
-      final isDark = theme.brightness == Brightness.dark;
-      final overlayStyle = SystemUiOverlayStyle(
-        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        statusBarColor: Colors.transparent,
-        systemNavigationBarDividerColor: Colors.transparent,
-        systemNavigationBarColor: theme.background,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark
-      );
-      final sliderTheme = SliderThemeData(activeTrackColor: theme.secondary, thumbColor: theme.secondary);
-      final themeData = ThemeData.from(
-                  colorScheme:
-                      colorScheme.copyWith(background: theme.background, surface: theme.background)).copyWith(sliderTheme: sliderTheme);
-      return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: overlayStyle,
-              child: Provider<SudokuTheme>.value(value: theme,
-                child: MaterialApp(
-              theme: themeData.copyWith(buttonTheme: themeData.buttonTheme.copyWith(buttonColor: theme.secondary, textTheme: ButtonTextTheme.primary)),
+        final availableTheme = (state?.theme) ?? AvailableTheme.materialLight;
+        final theme = SudokuTheme.availableThemeMap[availableTheme];
+        final colorScheme = theme.brightness == Brightness.light
+            ? ColorScheme.light(
+                primary: theme.main,
+                secondary: theme.secondary,
+                primaryVariant: theme.mainDarkened,
+                secondaryVariant: theme.secondaryDarkened)
+            : ColorScheme.dark(
+                primary: theme.main,
+                secondary: theme.secondary,
+                primaryVariant: theme.mainDarkened,
+                secondaryVariant: theme.secondaryDarkened);
+        SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+        final isDark = theme.brightness == Brightness.dark;
+        final overlayStyle = SystemUiOverlayStyle(
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            statusBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+            statusBarColor: Colors.transparent,
+            systemNavigationBarDividerColor: Colors.transparent,
+            systemNavigationBarColor: theme.background,
+            systemNavigationBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark);
+        final sliderTheme = SliderThemeData(
+            activeTrackColor: theme.secondary, thumbColor: theme.secondary);
+        final themeData = ThemeData.from(
+                colorScheme: colorScheme.copyWith(
+                    background: theme.background, surface: theme.background))
+            .copyWith(sliderTheme: sliderTheme);
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: overlayStyle,
+          child: Provider<SudokuTheme>.value(
+            value: theme,
+            child: MaterialApp(
+              theme: themeData.copyWith(
+                  buttonTheme: themeData.buttonTheme.copyWith(
+                      buttonColor: theme.secondary,
+                      textTheme: ButtonTextTheme.primary)),
               title: "Sudoku",
               home: BlocProvider<MainMenuBloc>(
-                create: (BuildContext context) => MainMenuBloc(
-                    RepositoryProvider.of<BoardRepository>(context),
-                    RepositoryProvider.of<PreferencesRepository>(context)),child: MainMenu()),
+                  create: (BuildContext context) => MainMenuBloc(
+                      RepositoryProvider.of<BoardRepository>(context),
+                      RepositoryProvider.of<PreferencesRepository>(context)),
+                  child: MainMenu()),
               onGenerateRoute: onGeneratedRoute,
+            ),
           ),
-        ),
-      );
-    }, condition: condition,);
+        );
+      },
+      condition: condition,
+    );
   }
 }

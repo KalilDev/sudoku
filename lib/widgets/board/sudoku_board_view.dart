@@ -19,112 +19,129 @@ class SudokuBoardView extends StatelessWidget {
           }
           return true;
         },
-        builder: (BuildContext context, PrefsState _prefsState) =>
-            BlocBuilder<SudokuBloc, SudokuBlocState>(
-                builder: (BuildContext context, SudokuBlocState _state) => LayoutBuilder(builder: (context, constraints) {
-              final appBar = AppBar(
-                      title: const Text("Sudoku"),
-                      actions: [
-                        IconButton(
-                            icon: const Icon(Icons.settings),
-                            onPressed: () => openPrefs(context))
-                      ],
-                    );
-              final sliverAppBar = SliverAppBar(
-                      title: const Text("Sudoku"),
-                      actions: [
-                        IconButton(
-                            icon: const Icon(Icons.settings),
-                            onPressed: () => openPrefs(context))
-                      ],
-                    );
-              if (_prefsState is LoadingPrefsState)   {
-                return 
-                    Scaffold(
+        builder: (BuildContext context, PrefsState _prefsState) => BlocBuilder<
+                SudokuBloc, SudokuBlocState>(
+            builder: (BuildContext context, SudokuBlocState _state) =>
+                LayoutBuilder(builder: (context, constraints) {
+                  final appBar = AppBar(
+                    title: const Text("Sudoku"),
+                    actions: [
+                      IconButton(
+                          icon: const Icon(Icons.settings),
+                          onPressed: () => openPrefs(context))
+                    ],
+                  );
+                  final sliverAppBar = SliverAppBar(
+                    title: const Text("Sudoku"),
+                    actions: [
+                      IconButton(
+                          icon: const Icon(Icons.settings),
+                          onPressed: () => openPrefs(context))
+                    ],
+                  );
+                  if (_prefsState is LoadingPrefsState) {
+                    return Scaffold(
+                        appBar: appBar,
+                        body: const Center(child: CircularProgressIndicator()));
+                  }
+
+                  if (_state is SudokuErrorState) {
+                    return Scaffold(
                       appBar: appBar,
-                      body: const Center(child: CircularProgressIndicator())
-                );
-              }
+                      body: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_state.userFriendlyMessage),
+                            Text("Mensagem do erro: ${_state.message}")
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  final state = _state as SudokuBlocStateWithInfo;
+                  final snapOrNull = _state is SudokuSnapshot ? _state : null;
+                  final prefsState = _prefsState as PrefsSnap;
+                  if (snapOrNull?.validationState == Validation.correct &&
+                      !(snapOrNull?.wasDeleted ?? true)) {
+                    BlocProvider.of<SudokuBloc>(context).add(DeleteSudoku());
+                  }
+                  if (snapOrNull?.wasDeleted ?? false) {
+                    void pop([dynamic _]) => Navigator.of(context).pop();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      showDialog<void>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                                title: const Text("Parabéns"),
+                                content: const Text("Você completou o Sudoku!"),
+                                actions: [
+                                  FlatButton(
+                                      onPressed: pop,
+                                      child: const Text("Continuar"))
+                                ]);
+                          }).then(pop);
+                    });
+                  }
 
-              if (_state is SudokuErrorState) {
-                return Scaffold(
-                  appBar: appBar,
-                  body: Center(child: Column(mainAxisSize: MainAxisSize.min,children: [
-                  Text(_state.userFriendlyMessage),
-                  Text("Mensagem do erro: ${_state.message}")
-                ],),),);
-              }
-              final state = _state as SudokuBlocStateWithInfo;
-              final snapOrNull = _state is SudokuSnapshot ? _state : null;
-              final prefsState = _prefsState as PrefsSnap;
-              if (snapOrNull?.validationState == Validation.correct && !(snapOrNull?.wasDeleted ?? true)) {
-                BlocProvider.of<SudokuBloc>(context).add(DeleteSudoku());
-              }
-              if (snapOrNull?.wasDeleted ?? false) {
-                void pop([dynamic _]) => Navigator.of(context).pop();
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  showDialog<void>(context: context, builder: (BuildContext context) {
-                    return AlertDialog(title: const Text("Parabéns"), content: const Text("Você completou o Sudoku!"), actions: [
-                      FlatButton(onPressed: pop, child: const Text("Continuar"))
-                    ]);
-                  }).then(pop);
-                });
-              }
+                  final isPortrait = constraints.biggest.aspectRatio <= 1;
+                  final actionsOnChildren =
+                      constraints.biggest.aspectRatio >= 1.2;
+                  final sudokuActions = Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: SudokuActions(
+                          canRewind: snapOrNull?.canRewind,
+                          markType: snapOrNull?.markType,
+                          enabled: snapOrNull != null,
+                          isPortrait: !actionsOnChildren));
 
-              final isPortrait = constraints.biggest.aspectRatio <= 1;
-              final actionsOnChildren = constraints.biggest.aspectRatio >= 1.2;
-              final sudokuActions = Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: SudokuActions(
-                            canRewind: snapOrNull?.canRewind,
-                            markType: snapOrNull?.markType,
-                            enabled: snapOrNull != null,
-                            isPortrait: !actionsOnChildren));
-              
-              const numberSize = SudokuNumbers.buttonSize;
+                  const numberSize = SudokuNumbers.buttonSize;
 
-              final numberConstraints = BoxConstraints(
-                minHeight: isPortrait ? numberSize : double.infinity,
-                maxHeight: isPortrait ? 3 * numberSize : double.infinity,
-                minWidth: !isPortrait ? numberSize : double.infinity,
-                maxWidth: !isPortrait ? 3 * numberSize : double.infinity,
-              );
-              
-              final children = [
+                  final numberConstraints = BoxConstraints(
+                    minHeight: isPortrait ? numberSize : double.infinity,
+                    maxHeight: isPortrait ? 3 * numberSize : double.infinity,
+                    minWidth: !isPortrait ? numberSize : double.infinity,
+                    maxWidth: !isPortrait ? 3 * numberSize : double.infinity,
+                  );
+
+                  final children = [
                     Expanded(
                       child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: SudokuBoard(
-                            state: state.squares,
-                            animationOptions:
-                                prefsState.animationOptions,
-                          ),
+                        padding: const EdgeInsets.all(2.0),
+                        child: SudokuBoard(
+                          state: state.squares,
+                          animationOptions: prefsState.animationOptions,
+                        ),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: ConstrainedBox(
-                      constraints: numberConstraints,
-                      child: SudokuNumbers(
-                        state: state.numbers,
-                        enabled: snapOrNull != null,
-                        isPortrait: isPortrait),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: ConstrainedBox(
+                        constraints: numberConstraints,
+                        child: SudokuNumbers(
+                            state: state.numbers,
+                            enabled: snapOrNull != null,
+                            isPortrait: isPortrait),
+                      ),
                     ),
-                  ),
-                  if (actionsOnChildren) sudokuActions
-                ];
-              final widget = SliverFillRemaining(child: !isPortrait
-                              ? Row(children: children)
-                              : Column(children: children));
-              return 
-                  Scaffold(
-                    bottomNavigationBar: !actionsOnChildren? sudokuActions : null,
-                    body: CustomScrollView(slivers: [sliverAppBar, widget], physics: const SnapToEdgesAndPointsPhysics(points: [kToolbarHeight]),),
-              );
-            })));
+                    if (actionsOnChildren) sudokuActions
+                  ];
+                  final widget = SliverFillRemaining(
+                      child: !isPortrait
+                          ? Row(children: children)
+                          : Column(children: children));
+                  return Scaffold(
+                    bottomNavigationBar:
+                        !actionsOnChildren ? sudokuActions : null,
+                    body: CustomScrollView(
+                      slivers: [sliverAppBar, widget],
+                      physics: const SnapToEdgesAndPointsPhysics(
+                          points: [kToolbarHeight]),
+                    ),
+                  );
+                })));
   }
 }
-
 
 /// Scroll physics used by a [PageView].
 ///
@@ -137,13 +154,15 @@ class SudokuBoardView extends StatelessWidget {
 ///  * [PageView.physics], which can override the physics used by a page view.
 class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
   /// Creates physics for a [PageView].
-  const SnapToEdgesAndPointsPhysics({this.points, ScrollPhysics parent }) : super(parent: parent);
+  const SnapToEdgesAndPointsPhysics({this.points, ScrollPhysics parent})
+      : super(parent: parent);
 
   final List<double> points;
 
   @override
   SnapToEdgesAndPointsPhysics applyTo(ScrollPhysics ancestor) {
-    return SnapToEdgesAndPointsPhysics(points: points, parent: buildParent(ancestor));
+    return SnapToEdgesAndPointsPhysics(
+        points: points, parent: buildParent(ancestor));
   }
 
   // 0 = start of scroll
@@ -151,7 +170,7 @@ class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
   // 2 = points[1]..
   // n = n < points.length ? points[n] : end of scroll
   double _getPoint(ScrollMetrics position) {
-    final sortedPoints = points.toList()..sort((a,b)=>a.compareTo(b));
+    final sortedPoints = points.toList()..sort((a, b) => a.compareTo(b));
     final currentPos = position.pixels;
     int startI = 0;
     double start = 0.0;
@@ -168,7 +187,7 @@ class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
     }
     end ??= position.viewportDimension;
     final range = end - start;
-    return startI + (currentPos - start)/range;
+    return startI + (currentPos - start) / range;
   }
 
   double _getPixels(ScrollMetrics position, int point) {
@@ -181,7 +200,8 @@ class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
     return points[point - 1];
   }
 
-  double _getTargetPixels(ScrollMetrics position, Tolerance tolerance, double velocity) {
+  double _getTargetPixels(
+      ScrollMetrics position, Tolerance tolerance, double velocity) {
     double point = _getPoint(position);
     // TODO
     if (velocity < -tolerance.velocity) {
@@ -193,11 +213,13 @@ class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
   }
 
   @override
-  Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
+  Simulation createBallisticSimulation(
+      ScrollMetrics position, double velocity) {
     final Tolerance tolerance = this.tolerance;
     final double target = _getTargetPixels(position, tolerance, velocity);
     if (target != position.pixels) {
-      return ScrollSpringSimulation(spring, position.pixels, target, velocity, tolerance: tolerance);
+      return ScrollSpringSimulation(spring, position.pixels, target, velocity,
+          tolerance: tolerance);
     }
     return null;
   }

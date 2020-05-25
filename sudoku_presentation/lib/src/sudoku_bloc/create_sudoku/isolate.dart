@@ -10,13 +10,14 @@ class _IsolateSudokuParams {
   _IsolateSudokuParams(this.side, this.mask);
 }
 
-class IsolateChunkedSudoku implements ChunkedSudoku{
+class IsolateChunkedSudoku implements ChunkedSudoku {
   final Isolate _isolate;
   final ReceivePort _mainPort;
   final _IsolateSudokuParams _params;
   SendPort _isolatePort;
-  StreamSubscription<dynamic> _portSubscription; 
-  final StreamController<ChunkedSudokuSquare> _squareController = StreamController();
+  StreamSubscription<dynamic> _portSubscription;
+  final StreamController<ChunkedSudokuSquare> _squareController =
+      StreamController();
   final Completer<SudokuState> _completer = Completer<SudokuState>();
 
   IsolateChunkedSudoku(this._isolate, this._mainPort, this._params);
@@ -50,7 +51,6 @@ class IsolateChunkedSudoku implements ChunkedSudoku{
 
   @override
   Stream<ChunkedSudokuSquare> get squares => _squareController.stream;
-
 }
 
 void isolateChunkedSudoku(SendPort p) {
@@ -58,13 +58,15 @@ void isolateChunkedSudoku(SendPort p) {
   p.send(port.sendPort);
   port.listen((dynamic msg) {
     final sudokuMsg = msg as _IsolateSudokuParams;
-    rawCreateRandomSudoku(side: sudokuMsg.side, maskRate: sudokuMsg.mask).listen((piece) {
+    rawCreateRandomSudoku(side: sudokuMsg.side, maskRate: sudokuMsg.mask)
+        .listen((piece) {
       p.send(piece);
     });
   });
 }
 
-Future<ChunkedSudoku> genRandomSudoku(int side, SudokuDifficulty difficulty) async {
+Future<ChunkedSudoku> genRandomSudoku(
+    int side, SudokuDifficulty difficulty) async {
   final port = ReceivePort();
   final isolate = await Isolate.spawn(isolateChunkedSudoku, port.sendPort);
   final params = _IsolateSudokuParams(side, difficultyMaskMap[difficulty]);

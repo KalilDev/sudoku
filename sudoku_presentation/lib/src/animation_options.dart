@@ -12,7 +12,7 @@ class AnimationOptions {
   final bool textSize;
   final bool textColor;
   final AnimationSpeed speed;
-  
+
   const AnimationOptions(
       {@required this.selectSize,
       @required this.selectColor,
@@ -23,8 +23,14 @@ class AnimationOptions {
       @required this.textSize});
 
   bool get hasAnimations {
-    return selectSize || selectColor || textPosition || textOpacity || textSize || textColor;
+    return selectSize ||
+        selectColor ||
+        textPosition ||
+        textOpacity ||
+        textSize ||
+        textColor;
   }
+
   bool get hasTextStyleAnimations {
     if (speed == AnimationSpeed.none) {
       return textSize || textColor;
@@ -47,16 +53,20 @@ class AnimationOptions {
     }
     final bools = opts.take(opts.length - 1).toList();
     final boolDefaults = List.filled(6, "true");
-    final masked = (boolDefaults..setRange(0, bools.length, bools)).map((e) => e == "true").toList();
-    final speed = enumFromString<AnimationSpeed>(AnimationSpeed.values, opts.last, orElse: AnimationSpeed.normal);
+    final masked = (boolDefaults..setRange(0, bools.length, bools))
+        .map((e) => e == "true")
+        .toList();
+    final speed = enumFromString<AnimationSpeed>(
+        AnimationSpeed.values, opts.last,
+        orElse: AnimationSpeed.normal);
     return AnimationOptions(
-      selectSize: masked[0],
-      selectColor: masked[1],
-      textPosition: masked[2],
-      textOpacity: masked[3],
-      textColor: masked[4],
-      textSize: masked[5],
-      speed: speed);
+        selectSize: masked[0],
+        selectColor: masked[1],
+        textPosition: masked[2],
+        textOpacity: masked[3],
+        textColor: masked[4],
+        textSize: masked[5],
+        speed: speed);
   }
 
   List<String> toStringList() {
@@ -69,10 +79,16 @@ class AnimationOptions {
       textSize.toString(),
       speed.toString().split(".").last
     ];
-
   }
 
-  AnimationOptions copyWith({bool selectSize, bool selectColor, bool textPosition, bool textOpacity, bool textColor, bool textSize, AnimationSpeed speed}) {
+  AnimationOptions copyWith(
+      {bool selectSize,
+      bool selectColor,
+      bool textPosition,
+      bool textOpacity,
+      bool textColor,
+      bool textSize,
+      AnimationSpeed speed}) {
     return AnimationOptions(
       selectSize: selectSize ?? this.selectSize,
       selectColor: selectColor ?? this.selectColor,
@@ -82,6 +98,5 @@ class AnimationOptions {
       textSize: textSize ?? this.textSize,
       speed: speed ?? this.speed,
     );
-
   }
 }

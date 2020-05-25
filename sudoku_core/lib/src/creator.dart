@@ -16,7 +16,8 @@ class ChunkedSudoku {
     await _subscription.cancel();
   }
 
-  const ChunkedSudoku._(this._squaresController, this.onComplete, this._subscription);
+  const ChunkedSudoku._(
+      this._squaresController, this.onComplete, this._subscription);
 }
 
 abstract class ChunkedSudokuPiece {
@@ -40,7 +41,8 @@ ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5}) {
   // ignore: close_sinks
   final squaresController = StreamController<ChunkedSudokuSquare>();
   // ignore: cancel_subscriptions
-  final subscription = rawCreateRandomSudoku(side: side, maskRate: maskRate).listen((piece) {
+  final subscription =
+      rawCreateRandomSudoku(side: side, maskRate: maskRate).listen((piece) {
     if (piece is ChunkedSudokuSquare) {
       squaresController.add(piece);
     }
@@ -53,15 +55,17 @@ ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5}) {
 
 Future<SudokuState> createRandomSudoku({int side = 9, double maskRate = 0.5}) {
   final completer = Completer<SudokuState>();
-  rawCreateRandomSudoku(side: side, maskRate: maskRate).last.then((value) => completer.complete((value as ChunkedSudokuResult).state));
+  rawCreateRandomSudoku(side: side, maskRate: maskRate).last.then(
+      (value) => completer.complete((value as ChunkedSudokuResult).state));
   return completer.future;
 }
 
-Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate = 0.5}) async* {
+Stream<ChunkedSudokuPiece> rawCreateRandomSudoku(
+    {int side = 9, double maskRate = 0.5}) async* {
   final rand = Random();
 
   final state = SudokuState(side: side);
-  final validValues = List<int>.generate(side, (i) => i+1);
+  final validValues = List<int>.generate(side, (i) => i + 1);
   final guessNums = validValues.toList()..shuffle(rand);
   // Create an seed and set it to the first row of the initialState
   final seed = validValues.toList(growable: false)..shuffle(rand);
@@ -72,18 +76,16 @@ Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate 
   // but this is no fun, so we will remove all the numbers that we can
   state.initialState.setAll(0, state.solution);
   // Indices which we will try to remove
-  final gridPos = List<int>.generate(side*side, (i) => i)..shuffle(rand);
-  for(final pos in gridPos)
-  {
-    final y = pos~/side;
-    final x = pos%side;
+  final gridPos = List<int>.generate(side * side, (i) => i)..shuffle(rand);
+  for (final pos in gridPos) {
+    final y = pos ~/ side;
+    final x = pos % side;
     final temp = state.initialState.getValue(x, y);
     state.initialState.setValue(x, y, 0);
 
     // If now more than 1 solution , replace the removed cell back.
     final check = countSoln(state.initialState, state.sideSqrt, guessNums);
-    if(check != 1)
-    {
+    if (check != 1) {
       state.initialState.setValue(x, y, temp);
       yield ChunkedSudokuSquare(x, y, temp);
     } else {
@@ -93,7 +95,7 @@ Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate 
   // Ok, now initial state contains the ABSOLUTE minimum amount of values
   // for it to have an unique solution.
   final count = state.initialState.whereInner((n) => n != 0).length;
-  var toBeAdded = (side*side*maskRate).round() - count;
+  var toBeAdded = (side * side * maskRate).round() - count;
   if (toBeAdded < 0) {
     yield ChunkedSudokuResult(state..reset());
   } else {
@@ -114,29 +116,27 @@ Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate 
   }
 }
 
-int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums, {int initialSolnCount = 0})
-  {
-    var solnCount = initialSolnCount;
-    final unassignedLoc = findUnassignedLocation(state);
-    if(unassignedLoc == null)
-    {
-      return solnCount + 1;
-    }
-
-    for(var i=0;i<guessNums.length && solnCount<2;i++)
-    {
-        final safe = isSafe(state, unassignedLoc.y, unassignedLoc.x, sideSqrt, guessNums[i]);
-        if(safe)
-        {
-          state.setValue(unassignedLoc.x, unassignedLoc.y, guessNums[i]);
-          solnCount = countSoln(state, sideSqrt, guessNums, initialSolnCount: solnCount);
-        }
-
-        state.setValue(unassignedLoc.x, unassignedLoc.y, 0);
-    }
-    return solnCount;
-
+int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums,
+    {int initialSolnCount = 0}) {
+  var solnCount = initialSolnCount;
+  final unassignedLoc = findUnassignedLocation(state);
+  if (unassignedLoc == null) {
+    return solnCount + 1;
   }
+
+  for (var i = 0; i < guessNums.length && solnCount < 2; i++) {
+    final safe =
+        isSafe(state, unassignedLoc.y, unassignedLoc.x, sideSqrt, guessNums[i]);
+    if (safe) {
+      state.setValue(unassignedLoc.x, unassignedLoc.y, guessNums[i]);
+      solnCount =
+          countSoln(state, sideSqrt, guessNums, initialSolnCount: solnCount);
+    }
+
+    state.setValue(unassignedLoc.x, unassignedLoc.y, 0);
+  }
+  return solnCount;
+}
 
 class SudokuVec {
   final int x;
@@ -148,25 +148,21 @@ class SudokuVec {
   String toString() => '[$x, $y]';
 }
 
-SudokuVec/*?*/ findUnassignedLocation(BidimensionalList<int> grid)
-{
+SudokuVec /*?*/ findUnassignedLocation(BidimensionalList<int> grid) {
   final side = grid.length;
-    for (var y = 0; y < side; y++)
-    {
-        for (var x = 0; x < side; x++)
-        {
-            if (grid.getValue(x, y) == 0) {
-                final unassigned = SudokuVec(y,x);
-                return unassigned;
-            }
-        }
+  for (var y = 0; y < side; y++) {
+    for (var x = 0; x < side; x++) {
+      if (grid.getValue(x, y) == 0) {
+        final unassigned = SudokuVec(y, x);
+        return unassigned;
+      }
     }
+  }
 
-    return null;
+  return null;
 }
 
 Future<void> main() async {
-
   final sudoku = await createRandomSudoku(side: 9);
   print("Solution:");
   print(sudoku.solution);

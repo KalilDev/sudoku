@@ -6,7 +6,7 @@ import 'package:sudoku_presentation/src/theme.dart';
 class PrefsEvent<T> {
   final T v;
   final PrefsEventType type;
-  
+
   PrefsEvent(this.v, this.type);
 }
 
@@ -17,6 +17,7 @@ enum PrefsEventType {
 }
 
 abstract class PrefsState {}
+
 class LoadingPrefsState extends PrefsState {}
 
 class PrefsSnap extends PrefsState {
@@ -25,7 +26,9 @@ class PrefsSnap extends PrefsState {
 
   PrefsSnap(this.theme, this.animationOptions);
 
-  PrefsSnap copyWith({AvailableTheme theme, AnimationOptions animationOptions}) => PrefsSnap(theme ?? this.theme, animationOptions ?? this.animationOptions);
+  PrefsSnap copyWith(
+          {AvailableTheme theme, AnimationOptions animationOptions}) =>
+      PrefsSnap(theme ?? this.theme, animationOptions ?? this.animationOptions);
 }
 
 class PreferencesBloc extends Bloc<PrefsEvent<dynamic>, PrefsState> {
@@ -36,7 +39,8 @@ class PreferencesBloc extends Bloc<PrefsEvent<dynamic>, PrefsState> {
   Future<void> initialize() async {
     final themeName = await preferencesRepository.getCurrentTheme();
     final theme = parseAvailableTheme(themeName ?? '');
-    final animOpts = await preferencesRepository.getAnimationOptions() ?? AnimationOptions.defaultOptions;
+    final animOpts = await preferencesRepository.getAnimationOptions() ??
+        AnimationOptions.defaultOptions;
     final state = PrefsSnap(theme, animOpts);
     add(PrefsEvent<PrefsSnap>(state, PrefsEventType.loadedState));
   }
@@ -60,15 +64,17 @@ class PreferencesBloc extends Bloc<PrefsEvent<dynamic>, PrefsState> {
   Stream<PrefsState> mapEventToState(PrefsEvent<dynamic> event) async* {
     switch (event.type) {
       case PrefsEventType.animUpdate:
-        yield (state as PrefsSnap).copyWith(animationOptions: event.v as AnimationOptions);
+        yield (state as PrefsSnap)
+            .copyWith(animationOptions: event.v as AnimationOptions);
         updateAnim(event.v as AnimationOptions);
         break;
       case PrefsEventType.themeUpdate:
         yield (state as PrefsSnap).copyWith(theme: event.v as AvailableTheme);
         updateTheme(event.v as AvailableTheme);
         break;
-      case PrefsEventType.loadedState: yield event.v as PrefsState; break;
+      case PrefsEventType.loadedState:
+        yield event.v as PrefsState;
+        break;
     }
   }
-
 }

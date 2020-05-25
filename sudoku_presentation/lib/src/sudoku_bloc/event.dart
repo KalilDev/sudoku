@@ -12,12 +12,15 @@ class SudokuErrorEvent extends SudokuEvent {
 }
 
 class ActionReset extends SudokuEvent {}
+
 class ActionValidate extends SudokuEvent {}
+
 class ActionSetMark extends SudokuEvent {
   final MarkType type;
 
   ActionSetMark(this.type);
 }
+
 class ActionUndo extends SudokuEvent {}
 
 class LoadedEvent extends SudokuEvent {

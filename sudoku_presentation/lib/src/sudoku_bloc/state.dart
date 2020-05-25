@@ -14,16 +14,19 @@ class PossibleAdded extends SquareDelta {
   // The number that got added
   final int number;
 }
+
 class PossibleRemoved extends SquareDelta {
   const PossibleRemoved(int x, int y, this.number) : super(x, y);
   // The number that got removed
   final int number;
 }
+
 class NumChanged extends SquareDelta {
   const NumChanged(int x, int y, this.number) : super(x, y);
   // The number that was there before being replaced by the new one
   final int number;
 }
+
 class PossibleCleared extends SquareDelta {
   const PossibleCleared(int x, int y, this.possibleValues) : super(x, y);
   // The possible values that were cleared when the number was added
@@ -36,8 +39,8 @@ class SquareInfo {
   final List<int> possibleNumbers; // non-nullable (empty when none)
   final bool isInitial; // non nullable
   final bool isSelected; // non nullable
-  final Validation validation; // non-nullable 
-  
+  final Validation validation; // non-nullable
+
   static const _listEquality = ListEquality<int>();
 
   const SquareInfo(
@@ -46,8 +49,12 @@ class SquareInfo {
       this.isInitial,
       this.isSelected,
       this.validation});
-  static const SquareInfo empty =
-      SquareInfo(isInitial: false, isSelected: false, validation: Validation.notValidated, possibleNumbers: <int>[], number: 0);
+  static const SquareInfo empty = SquareInfo(
+      isInitial: false,
+      isSelected: false,
+      validation: Validation.notValidated,
+      possibleNumbers: <int>[],
+      number: 0);
 
   bool hasSameContentAs(SquareInfo other) =>
       number == other.number &&
@@ -55,8 +62,19 @@ class SquareInfo {
       isInitial == other.isInitial &&
       isSelected == other.isSelected &&
       validation == other.validation;
-  
-  SquareInfo copyWith({int number, List<int> possibleNumbers, bool isInitial, bool isSelected, Validation validation}) => SquareInfo(number: number ?? this.number, possibleNumbers: possibleNumbers ?? this.possibleNumbers, isInitial: isInitial ?? this.isInitial, isSelected: isSelected ?? this.isSelected, validation: validation ?? this.validation);
+
+  SquareInfo copyWith(
+          {int number,
+          List<int> possibleNumbers,
+          bool isInitial,
+          bool isSelected,
+          Validation validation}) =>
+      SquareInfo(
+          number: number ?? this.number,
+          possibleNumbers: possibleNumbers ?? this.possibleNumbers,
+          isInitial: isInitial ?? this.isInitial,
+          isSelected: isSelected ?? this.isSelected,
+          validation: validation ?? this.validation);
 }
 
 @immutable
@@ -80,7 +98,9 @@ class SudokuBlocStateWithInfo extends SudokuBlocState {
 
 @immutable
 class SudokuLoadingState extends SudokuBlocStateWithInfo {
-  SudokuLoadingState(BidimensionalList<SquareInfo> placeholderSquares, List<NumberInfo> numbers) : super(placeholderSquares, numbers);
+  SudokuLoadingState(BidimensionalList<SquareInfo> placeholderSquares,
+      List<NumberInfo> numbers)
+      : super(placeholderSquares, numbers);
 }
 
 class SudokuErrorState extends SudokuBlocState {
@@ -92,7 +112,6 @@ class SudokuErrorState extends SudokuBlocState {
 
 @immutable
 class SudokuSnapshot extends SudokuBlocStateWithInfo {
-
   final MarkType markType; // non nullable
   final bool canRewind; // non nullable
 
@@ -100,16 +119,21 @@ class SudokuSnapshot extends SudokuBlocStateWithInfo {
   final bool wasDeleted; // non-nullable
 
   SudokuSnapshot(
-      {
-      @required BidimensionalList<SquareInfo> squares,
+      {@required BidimensionalList<SquareInfo> squares,
       @required List<NumberInfo> numbers,
       @required this.canRewind,
       @required this.markType,
       @required this.validationState,
-      this.wasDeleted = false}) : super(squares, numbers);
+      this.wasDeleted = false})
+      : super(squares, numbers);
 
-  SudokuSnapshot deleted() => SudokuSnapshot(squares: squares, numbers: numbers, canRewind: canRewind, markType: markType, validationState: validationState, wasDeleted: true);
-
+  SudokuSnapshot deleted() => SudokuSnapshot(
+      squares: squares,
+      numbers: numbers,
+      canRewind: canRewind,
+      markType: markType,
+      validationState: validationState,
+      wasDeleted: true);
 }
 
 enum MarkType { possible, concrete }

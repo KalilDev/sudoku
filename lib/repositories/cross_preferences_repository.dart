@@ -3,7 +3,8 @@ import 'package:sudoku_presentation/common.dart';
 import 'package:sudoku_presentation/repositories.dart';
 
 class CrossPreferencesRepository implements PreferencesRepository {
-  Future<LocalStorageInterface> get prefs async => await LocalStorage.getInstance();
+  Future<LocalStorageInterface> get prefs async =>
+      await LocalStorage.getInstance();
 
   @override
   Future<AnimationOptions> getAnimationOptions() async {
@@ -17,7 +18,8 @@ class CrossPreferencesRepository implements PreferencesRepository {
   }
 
   @override
-  Future<String> getCurrentTheme() => prefs.then((pref) => pref.getString("currentTheme"));
+  Future<String> getCurrentTheme() =>
+      prefs.then((pref) => pref.getString("currentTheme"));
 
   @override
   Future<int> getMainMenuX() => prefs.then((pref) => pref.getInt("mainMenuX"));
@@ -33,18 +35,22 @@ class CrossPreferencesRepository implements PreferencesRepository {
   }
 
   @override
-  Future<void> updateMainMenuX(int x) => prefs.then((pref) => pref.setInt("mainMenuX", x));
+  Future<void> updateMainMenuX(int x) =>
+      prefs.then((pref) => pref.setInt("mainMenuX", x));
 
   @override
-  Future<void> updateMainMenuY(int y) => prefs.then((pref) => pref.setInt("mainMenuY", y));
-  
-  @override
-  Future<void> updateTheme(String themeName) => prefs.then((pref) => pref.setString("currentTheme", themeName));
+  Future<void> updateMainMenuY(int y) =>
+      prefs.then((pref) => pref.setInt("mainMenuY", y));
 
   @override
-  Future<bool> getAknowledgement() => prefs.then((pref)=>pref.getBool("storageAknowledgement"));
+  Future<void> updateTheme(String themeName) =>
+      prefs.then((pref) => pref.setString("currentTheme", themeName));
 
   @override
-  Future<void> updateAknowledgement(bool a) => prefs.then((pref)=>pref.setBool("storageAknowledgement", a));
+  Future<bool> getAknowledgement() =>
+      prefs.then((pref) => pref.getBool("storageAknowledgement"));
 
+  @override
+  Future<void> updateAknowledgement(bool a) =>
+      prefs.then((pref) => pref.setBool("storageAknowledgement", a));
 }

@@ -1,2 +1,2 @@
-export 'default.dart'
-  if (dart.library.isolate) 'isolate.dart' show genRandomSudoku;
+export 'default.dart' if (dart.library.isolate) 'isolate.dart'
+    show genRandomSudoku;
