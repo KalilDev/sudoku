@@ -9,8 +9,9 @@ import '../sudoku_button.dart';
 class SudokuNumbers extends StatelessWidget {
   final List<NumberInfo> state;
   final bool isPortrait;
+  final bool enabled;
 
-  const SudokuNumbers({Key key, @required this.state, @required this.isPortrait}) : super(key: key);
+  const SudokuNumbers({Key key, @required this.state, @required this.isPortrait, @required this.enabled}) : super(key: key);
 
   static double buttonSize = 52;
   static final buttonConstraints = BoxConstraints(
@@ -28,7 +29,7 @@ class SudokuNumbers extends StatelessWidget {
     final textStyle = Theme.of(context).textTheme.headline4;
     return Padding(
       padding: const EdgeInsets.all(3.0),
-      child: SudokuButton(filled: info.isSelected, textStyle: textStyle, constraints: buttonConstraints, child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)), onPressed: onTap, shapeBuilder: (c)=> CircleBorder(side: BorderSide(color: c)),),
+      child: SudokuButton(filled: info.isSelected, textStyle: textStyle, constraints: buttonConstraints, child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)), onPressed: enabled ? onTap : null, shapeBuilder: (c)=> CircleBorder(side: BorderSide(color: c)),),
     );
   }
 

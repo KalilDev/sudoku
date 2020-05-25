@@ -7,8 +7,9 @@ class SudokuActions extends StatelessWidget {
   final bool canRewind;
   final MarkType markType;
   final bool isPortrait;
+  final bool enabled;
 
-  const SudokuActions({Key key, @required this.canRewind, @required this.markType, @required this.isPortrait})
+  const SudokuActions({Key key, @required this.canRewind, @required this.markType, @required this.isPortrait, @required this.enabled})
       : super(key: key);
 
   static Map<IconData, Key> iconKeyMap = {};
@@ -31,7 +32,7 @@ class SudokuActions extends StatelessWidget {
     void changeMarkType() => bloc.add(ActionSetMark(
         markType == MarkType.concrete ? MarkType.possible : MarkType.concrete));
     void undo() => bloc.add(ActionUndo());
-    Widget buildButton({IconData icon, VoidCallback onPressed, bool filled = false}) => SudokuButton(shapeBuilder: shapeBuilder, constraints: buttonConstraints, child: Icon(icon), filled: filled,onPressed: onPressed,);
+    Widget buildButton({IconData icon, VoidCallback onPressed, bool filled = false}) => SudokuButton(shapeBuilder: shapeBuilder, constraints: buttonConstraints, child: Icon(icon), filled: filled,onPressed: enabled ? onPressed : null,);
     final children = [
       Spacer(),
       Expanded(flex: 3, child: buildButton(icon: Icons.sync, onPressed: resetBoard)),
@@ -45,7 +46,7 @@ class SudokuActions extends StatelessWidget {
       Spacer(),
       Expanded(
           flex: 3,
-          child: buildButton(icon: Icons.undo,  onPressed: canRewind ? undo : null)),
+          child: buildButton(icon: Icons.undo,  onPressed: (canRewind ?? false) ? undo : null)),
       Spacer(),
     ];
     return !isPortrait

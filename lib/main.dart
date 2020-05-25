@@ -63,7 +63,6 @@ class RootView extends StatelessWidget {
         builder: (context) => BlocProvider<SudokuBloc>(
               create: (BuildContext context) => SudokuBloc(sudokuConfiguration,
                   RepositoryProvider.of<BoardRepository>(context),
-                  compute
                   ),
               child: SudokuBoardView(),
             ));

@@ -37,7 +37,7 @@ class SudokuBoardView extends StatelessWidget {
                             onPressed: () => openPrefs(context))
                       ],
                     );
-              if (_state is SudokuLoadingState || _prefsState is LoadingPrefsState)   {
+              if (_prefsState is LoadingPrefsState)   {
                 return 
                     Scaffold(
                       appBar: appBar,
@@ -53,12 +53,13 @@ class SudokuBoardView extends StatelessWidget {
                   Text("Mensagem do erro: ${_state.message}")
                 ],),),);
               }
-              final state = _state as SudokuSnapshot;
+              final state = _state as SudokuBlocStateWithInfo;
+              final snapOrNull = _state is SudokuSnapshot ? _state : null;
               final prefsState = _prefsState as PrefsSnap;
-              if (state.validationState == Validation.correct && !state.wasDeleted) {
+              if (snapOrNull?.validationState == Validation.correct && !(snapOrNull?.wasDeleted ?? true)) {
                 BlocProvider.of<SudokuBloc>(context).add(DeleteSudoku());
               }
-              if (state.wasDeleted) {
+              if (snapOrNull?.wasDeleted ?? false) {
                 void pop([dynamic _]) => Navigator.of(context).pop();
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   showDialog<void>(context: context, builder: (BuildContext context) {
@@ -74,8 +75,9 @@ class SudokuBoardView extends StatelessWidget {
               final sudokuActions = Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: SudokuActions(
-                            canRewind: state.canRewind,
-                            markType: state.markType,
+                            canRewind: snapOrNull?.canRewind,
+                            markType: snapOrNull?.markType,
+                            enabled: snapOrNull != null,
                             isPortrait: !actionsOnChildren));
               
               final numberSize = SudokuNumbers.buttonSize;
@@ -104,6 +106,7 @@ class SudokuBoardView extends StatelessWidget {
                       constraints: numberConstraints,
                       child: SudokuNumbers(
                         state: state.numbers,
+                        enabled: snapOrNull != null,
                         isPortrait: isPortrait),
                     ),
                   ),
@@ -114,7 +117,7 @@ class SudokuBoardView extends StatelessWidget {
                               : Column(children: children));
               return 
                   Scaffold(
-                    bottomNavigationBar: !actionsOnChildren ? sudokuActions : null,
+                    bottomNavigationBar: !actionsOnChildren? sudokuActions : null,
                     body: CustomScrollView(slivers: [sliverAppBar, widget], physics: SnapToEdgesAndPointsPhysics(points: [kToolbarHeight]),),
               );
             })));
