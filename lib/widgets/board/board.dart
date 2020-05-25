@@ -74,7 +74,7 @@ class SudokuStaticSquare extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(padding),
       child: InkWell(
-        customBorder: CircleBorder(),
+        customBorder: const CircleBorder(),
         onTap: info.isInitial ? null : onTap,
         child: Ink(
           decoration: decoration,
@@ -120,7 +120,7 @@ class _SquareTween extends Tween<_SquareState> {
     if (t == 0) {
       return begin;
     }
-    if (t == 0) {
+    if (t == 1) {
       return end;
     }
     final textPos = Curves.easeIn.transform(t);
@@ -178,13 +178,13 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
         duration = Duration.zero;
         break;
       case AnimationSpeed.normal:
-        duration = Duration(milliseconds: 400);
+        duration = const Duration(milliseconds: 400);
         break;
       case AnimationSpeed.fast:
-        duration = Duration(milliseconds: 200);
+        duration = const Duration(milliseconds: 200);
         break;
       case AnimationSpeed.fastest:
-        duration = Duration(milliseconds: 100);
+        duration = const Duration(milliseconds: 100);
         break;
     }
     controller ??= AnimationController(vsync: this, duration: duration);
@@ -258,7 +258,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
     return Padding(
       padding: EdgeInsets.all(padding),
       child: InkWell(
-        customBorder: CircleBorder(),
+        customBorder: const CircleBorder(),
         onTap: targetInfo.isInitial ? null : onTap,
         child: Stack(
           fit: StackFit.expand,
@@ -269,7 +269,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
                     heightFactor: sizeFrac,
                     child: Ink(
                       decoration: decoration,
-                      child: SizedBox.expand(),
+                      child: const SizedBox.expand(),
                     ))),
             Align(
                 alignment: widget.animationOptions.textPosition
@@ -341,10 +341,10 @@ class SudokuBoard extends StatelessWidget {
       return GridView.count(
           crossAxisCount: state.length,
           childAspectRatio: 1,
-          children: children,
           addAutomaticKeepAlives: false,
           addRepaintBoundaries: false,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
+          children: children,
         );
     });
   }

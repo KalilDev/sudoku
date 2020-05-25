@@ -26,19 +26,6 @@ class SudokuState {
   BidimensionalList<List<int>> possibleValues;
   BidimensionalList<int> solution;
 
-  SudokuState.raw({
-    @required
-    int side,
-    @required
-    this.initialState,
-    @required
-    this.state,
-    @required
-    this.possibleValues,
-    @required
-    this.solution
-  }) : side = side, sideSqrt = sqrt(side).round();
-
   factory SudokuState({int side, BidimensionalList<int> initialState, BidimensionalList<List<int>> possibleValues, BidimensionalList<int> state, BidimensionalList<int> solution}) {
     final sideSqrt = sqrt(side).round();
     assert(sideSqrt * sideSqrt == side);
@@ -47,6 +34,19 @@ class SudokuState {
     state ??= initialState.toList();
     return SudokuState.raw(side: side, initialState: initialState, state: state, possibleValues: possibleValues, solution: solution);
   }
+
+  SudokuState.raw({
+    @required
+    this.side,
+    @required
+    this.initialState,
+    @required
+    this.state,
+    @required
+    this.possibleValues,
+    @required
+    this.solution
+  }) : sideSqrt = sqrt(side).round();
   
   SudokuState copy() => SudokuState(side: side, possibleValues: possibleValues.toList(), initialState: initialState, state: state.toList());
   
@@ -73,8 +73,9 @@ class SudokuState {
       if (result == 0) {
         return true; // result was that there was an invalid val.
       }
-      if (returnValue < result) // will set to 2 if result is 2
+      if (returnValue < result) { // will set to 2 if result is 2
         returnValue = result;
+      }
       return false;
     }
     final validations = [
@@ -111,7 +112,7 @@ class SudokuState {
   List<int> row(int y) => state.getRow(y);
   List<int> column(int x) => state.getColumn(x);
 
-  operator []=(int y, List<int> v) => state[y] = v;
+  void operator []=(int y, List<int> v) => state[y] = v;
   List<int> operator [](int y) => state[y];
 
   // Returns a list of the indices which failed the validation.
@@ -178,11 +179,11 @@ class SudokuState {
     final validValues = List<int>.generate(side, (i) => i+1);
     final guessNums = validValues..shuffle(rand);
     
-    while (true) {
+    for (;;) {
       bool failed = false;
       // Start with an fresh state
       solution = initialState.toList(growable: false);
-      guessNums..shuffle(rand);
+      guessNums.shuffle(rand);
       for (var x = 0; x < side && !failed; x++) {
         guessNums.shuffle(rand);
         for (var y = 0; y < side && !failed; y++) {
@@ -217,14 +218,16 @@ bool isSafe(BidimensionalList<int> grid, int row/*y*/, int col/*x*/, int boxSize
   // RowSafe
   for (int x = 0; x < side; x++)
   {
-      if (grid.getValue(x, row) == n)
+      if (grid.getValue(x, row) == n) {
           return false;
+      }
   }
   // Col safe
   for (int y = 0; y < side; y++)
   {
-      if (grid.getValue(col, y) == n)
+      if (grid.getValue(col, y) == n) {
           return false;
+      }
   }
   // BoxSafe
   final boxStartRow = row - row%boxSize;
@@ -233,8 +236,9 @@ bool isSafe(BidimensionalList<int> grid, int row/*y*/, int col/*x*/, int boxSize
   {
       for (int x = 0; x < boxSize; x++)
       {
-          if (grid.getValue(x+boxStartCol, y+boxStartRow) == n)
+          if (grid.getValue(x+boxStartCol, y+boxStartRow) == n) {
               return false;
+          }
       }
   }
 
@@ -251,11 +255,13 @@ class SquareViewer extends ListBase<int> {
   @override
   int get length => sideSqrt*sideSqrt;
 
+  @override
   set length(int _) => throw Exception("You can't change the size of the sudoku board with an viewer");
 
   List<int> _getIndexOnState(int index) {
-    if (index >= length)
+    if (index >= length) {
       throw StateError("Index out of bounds");
+    }
     final x = index % sideSqrt + i*sideSqrt;
     final y = index ~/ sideSqrt + j*sideSqrt;
     return [y, x];

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sudoku_presentation/common.dart';
@@ -18,21 +17,9 @@ void main() {
   runApp(MultiRepositoryProvider(
       providers: [
         RepositoryProvider<BoardRepository>(
-            create: (_) {
-              final supported = true;
-              if (supported) {
-                return LocalStorageBoardRepository();
-              }
-              return MockBoardRepository();
-            }),
+            create: (_) => LocalStorageBoardRepository()),
         RepositoryProvider<PreferencesRepository>(
-            create: (_) {
-              final supported = true;
-              if (supported) {
-                return CrossPreferencesRepository();
-              }
-              return MockPreferencesRepository();
-            }),
+            create: (_) => CrossPreferencesRepository()),
       ],
       child: BlocProvider<PreferencesBloc>(
         create: (BuildContext context) => PreferencesBloc(RepositoryProvider.of<PreferencesRepository>(context)),

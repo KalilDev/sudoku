@@ -6,26 +6,26 @@ import 'package:collection/collection.dart';
 abstract class SquareDelta {
   final int x;
   final int y;
-  SquareDelta(this.x, this.y);
+  const SquareDelta(this.x, this.y);
 }
 
 class PossibleAdded extends SquareDelta {
-  PossibleAdded(int x, int y, this.number) : super(x, y);
+  const PossibleAdded(int x, int y, this.number) : super(x, y);
   // The number that got added
   final int number;
 }
 class PossibleRemoved extends SquareDelta {
-  PossibleRemoved(int x, int y, this.number) : super(x, y);
+  const PossibleRemoved(int x, int y, this.number) : super(x, y);
   // The number that got removed
   final int number;
 }
 class NumChanged extends SquareDelta {
-  NumChanged(int x, int y, this.number) : super(x, y);
+  const NumChanged(int x, int y, this.number) : super(x, y);
   // The number that was there before being replaced by the new one
   final int number;
 }
 class PossibleCleared extends SquareDelta {
-  PossibleCleared(int x, int y, this.possibleValues) : super(x, y);
+  const PossibleCleared(int x, int y, this.possibleValues) : super(x, y);
   // The possible values that were cleared when the number was added
   final List<int> possibleValues;
 }
@@ -38,15 +38,15 @@ class SquareInfo {
   final bool isSelected; // non nullable
   final Validation validation; // non-nullable 
   
-  static final _listEquality = ListEquality<int>();
+  static const _listEquality = ListEquality<int>();
 
-  SquareInfo(
+  const SquareInfo(
       {this.number,
       this.possibleNumbers,
       this.isInitial,
       this.isSelected,
       this.validation});
-  static final SquareInfo empty =
+  static const SquareInfo empty =
       SquareInfo(isInitial: false, isSelected: false, validation: Validation.notValidated, possibleNumbers: <int>[], number: 0);
 
   bool hasSameContentAs(SquareInfo other) =>
@@ -64,7 +64,7 @@ class NumberInfo {
   final int number; // non nullable
   final bool isSelected; // non nullable
 
-  NumberInfo({this.number, this.isSelected}); // non nullable
+  const NumberInfo({this.number, this.isSelected}); // non nullable
 }
 
 @immutable
@@ -106,7 +106,7 @@ class SudokuSnapshot extends SudokuBlocStateWithInfo {
       @required this.canRewind,
       @required this.markType,
       @required this.validationState,
-      bool wasDeleted = false}) : wasDeleted = wasDeleted, super(squares, numbers);
+      this.wasDeleted = false}) : super(squares, numbers);
 
   SudokuSnapshot deleted() => SudokuSnapshot(squares: squares, numbers: numbers, canRewind: canRewind, markType: markType, validationState: validationState, wasDeleted: true);
 

@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sudoku/theme.dart';
+
 typedef ShapeBuilder = ShapeBorder Function(Color);
 
 class SudokuButton extends MaterialButton {

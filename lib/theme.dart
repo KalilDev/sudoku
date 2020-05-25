@@ -11,8 +11,7 @@ class SudokuTheme {
   final Color background;
   final Color invalid;
   final Brightness brightness;
-  const SudokuTheme.raw({@required Color main, Color secondary,  @required Color mainDarkened, Color secondaryDarkened, @required this.background, @required this.invalid,
-      @required this.brightness}) : secondary = secondary ?? main, main = main, secondaryDarkened = secondaryDarkened ?? mainDarkened, mainDarkened = mainDarkened;
+
   factory SudokuTheme({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg, Brightness brightness}) {
     final isDark = brightness == Brightness.dark;
     mixMainBg ??= isDark;
@@ -23,7 +22,7 @@ class SudokuTheme {
       secondary = (secondary as MaterialColor)[200];
     }
     invalid ??= isDark ? Colors.redAccent : Colors.red;
-    final _materialBg = isDark ? Color(0xFF121212) : Color(0xFFFAFAFA);
+    final _materialBg = isDark ? const Color(0xFF121212) : const Color(0xFFFAFAFA);
     final _background = mixMainBg ? Color.alphaBlend(main.withAlpha(isDark ? 20 : 40), background ?? _materialBg) : background ?? _materialBg;
     mainDarkened ??= Color.alphaBlend(main.withAlpha(isDark ? 90 : 120), _background);
     secondary ??= main;
@@ -31,6 +30,9 @@ class SudokuTheme {
     return SudokuTheme.raw(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: _background, invalid: invalid, brightness: brightness);
   }
 
+  const SudokuTheme.raw({@required this.main, @required this.secondary,  @required this.mainDarkened, this.secondaryDarkened, @required this.background, @required this.invalid,
+      @required this.brightness});
+  
   factory SudokuTheme.light({@required Color main, Color secondary, Color mainDarkened, Color secondaryDarkened, Color background, Color invalid, bool mixMainBg}) {
     return SudokuTheme(main: main, secondary: secondary, mainDarkened: mainDarkened, secondaryDarkened: secondaryDarkened, background: background, invalid: invalid, mixMainBg: mixMainBg, brightness: Brightness.light);
   }
@@ -46,7 +48,7 @@ class SudokuTheme {
   Color background,
   Color invalid,
   Brightness brightness,
-  }) => SudokuTheme.raw(main: main ?? this.main, mainDarkened: mainDarkened ?? this.mainDarkened, background: background ?? this.background, invalid: invalid ?? this.invalid, brightness: brightness ?? this.brightness);
+  }) => SudokuTheme.raw(main: main ?? this.main,secondary: secondary ?? this.secondary, mainDarkened: mainDarkened ?? this.mainDarkened, secondaryDarkened: secondaryDarkened ?? this.secondaryDarkened, background: background ?? this.background, invalid: invalid ?? this.invalid, brightness: brightness ?? this.brightness);
 
   static final Map<AvailableTheme, SudokuTheme> availableThemeMap = {
     AvailableTheme.darkGreen: darkGreen,
@@ -59,14 +61,14 @@ class SudokuTheme {
     AvailableTheme.desertDark: desertDark,
     AvailableTheme.pixelBlue: pixelBlue,
   };
-  static final darkGreen = SudokuTheme.dark(main: Colors.green);
-  static final blackGreen = SudokuTheme.dark(main: Colors.green[500], background: Color(0xFF0A0A0A));
-  static final materialLight = SudokuTheme.light(main: Colors.teal, secondary: Colors.blue);
-  static final materialDark = SudokuTheme.dark(main: Colors.teal, secondary: Colors.deepPurple);
-  static final seasideLight = SudokuTheme.light(main: Colors.indigo, secondary: Colors.deepPurple, background: Color(0xffdfe2f0));
-  static final seasideDark = SudokuTheme.dark(main: Colors.indigo, secondary: Colors.deepPurple, background: Color(0xFF25262d));
-  static final desertLight = SudokuTheme.light(main: Color(0xffc0b15c), secondary: Color(0xffc07f5c), mixMainBg: true);
-  static final desertDark = SudokuTheme.dark(main: Color(0xfff8f2a4), secondary: Color(0xfff8c8a4));
-  static final pixelBlue = SudokuTheme.light(main: Colors.blue);
+  static final SudokuTheme darkGreen = SudokuTheme.dark(main: Colors.green);
+  static final SudokuTheme blackGreen = SudokuTheme.dark(main: Colors.green[500], background: const Color(0xFF0A0A0A));
+  static final SudokuTheme materialLight = SudokuTheme.light(main: Colors.teal, secondary: Colors.blue);
+  static final SudokuTheme materialDark = SudokuTheme.dark(main: Colors.teal, secondary: Colors.deepPurple);
+  static final SudokuTheme seasideLight = SudokuTheme.light(main: Colors.indigo, secondary: Colors.deepPurple, background: const Color(0xffdfe2f0));
+  static final SudokuTheme seasideDark = SudokuTheme.dark(main: Colors.indigo, secondary: Colors.deepPurple, background: const Color(0xFF25262d));
+  static final SudokuTheme desertLight = SudokuTheme.light(main: const Color(0xffc0b15c), secondary: const Color(0xffc07f5c), mixMainBg: true);
+  static final SudokuTheme desertDark = SudokuTheme.dark(main: const Color(0xfff8f2a4), secondary: const Color(0xfff8c8a4));
+  static final SudokuTheme pixelBlue = SudokuTheme.light(main: Colors.blue);
   static final SudokuTheme defaultTheme = seasideDark;
 }

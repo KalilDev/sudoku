@@ -24,6 +24,11 @@ enum StateSource {
 }
 
 class SudokuConfiguration {
+  factory SudokuConfiguration(int side, int difficulty) {
+    assert(factorySide.contains(side));
+    return SudokuConfiguration._(side, difficulty, StateSource.storageIfPossible);
+  }
+
   SudokuConfiguration._copy(this.side, this.difficulty, this.source);
   SudokuConfiguration._(this.side, int difficulty, this.source) : difficulty = SudokuDifficulty.values[difficulty];
   final int side;
@@ -31,11 +36,6 @@ class SudokuConfiguration {
   final StateSource source;
 
   SudokuConfiguration newSudoku() => SudokuConfiguration._copy(side, difficulty, StateSource.random);
-
-  factory SudokuConfiguration(int side, int difficulty) {
-    assert(factorySide.contains(side));
-    return SudokuConfiguration._(side, difficulty, StateSource.storageIfPossible);
-  }
 
 
   static SudokuConfiguration four(int difficulty, StateSource source) => SudokuConfiguration._(4, difficulty, source);

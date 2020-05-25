@@ -28,7 +28,7 @@ class PrefsSnap extends PrefsState {
   PrefsSnap copyWith({AvailableTheme theme, AnimationOptions animationOptions}) => PrefsSnap(theme ?? this.theme, animationOptions ?? this.animationOptions);
 }
 
-class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
+class PreferencesBloc extends Bloc<PrefsEvent<dynamic>, PrefsState> {
   final PreferencesRepository preferencesRepository;
 
   PreferencesBloc(this.preferencesRepository);
@@ -57,7 +57,7 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
   }
 
   @override
-  Stream<PrefsState> mapEventToState(PrefsEvent event) async* {
+  Stream<PrefsState> mapEventToState(PrefsEvent<dynamic> event) async* {
     switch (event.type) {
       case PrefsEventType.animUpdate:
         yield (state as PrefsSnap).copyWith(animationOptions: event.v as AnimationOptions);

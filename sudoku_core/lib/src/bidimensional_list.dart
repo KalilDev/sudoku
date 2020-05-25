@@ -6,12 +6,6 @@ class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
   int _x;
   int _y;
 
-  factory _OneDBackedBidimensionalList.filled(int width, T fill, {int height, bool canMutate = false}) {
-    height ??= width;
-    final list = List<T>.filled(width*height, fill, growable: false);
-    return _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: canMutate);
-  }
-
   _OneDBackedBidimensionalList(
       {@required List<T> underlyingList, @required int width, @required int height, @required bool canMutate})
       : assert(underlyingList.length == width * (height ?? width)),
@@ -19,12 +13,23 @@ class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
         _y = height ?? width,
         _underlyingList = underlyingList,
         super._(canMutate);
+  
+  factory _OneDBackedBidimensionalList.filled(int width, T fill, {int height, bool canMutate = false}) {
+    height ??= width;
+    final list = List<T>.filled(width*height, fill, growable: false);
+    return _OneDBackedBidimensionalList(underlyingList: list, width: width, height: height, canMutate: canMutate);
+  }
 
+  @override
   int get height => _y;
+  @override
   set height(int n) {
     throw UnimplementedError();
   }
+
+  @override
   int get width => _x;
+  @override
   set width(int n) {
     throw UnimplementedError();
   }
@@ -34,7 +39,7 @@ class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
       copy ? _underlyingList.toList(growable: false) : _underlyingList;
   
   @override
-  BidimensionalList<T> toList({bool growable: true}) {
+  BidimensionalList<T> toList({bool growable = true}) {
     final list = _underlyingList.toList(growable: false);
     return _OneDBackedBidimensionalList(underlyingList: list, width: _x, height: _y, canMutate: growable);
   }
@@ -53,24 +58,27 @@ class _OneDBackedBidimensionalList<T> extends BidimensionalList<T> {
 class _TwoDBackedBidimensionalList<T> extends BidimensionalList<T> {
   List<List<T>> _underlyingList;
   int _x;
-  _TwoDBackedBidimensionalList._(this._underlyingList, this._x, bool canMutate) : super._(canMutate);
 
   factory _TwoDBackedBidimensionalList(
       List<List<T>> underlyingList, {bool canMutate = false}) {
-   final width = underlyingList.length > 0 ? underlyingList.first.length : 0;
+   final width = underlyingList.isNotEmpty ? underlyingList.first.length : 0;
    assert(underlyingList.every((e) => e.length == width));
   return _TwoDBackedBidimensionalList<T>._(underlyingList, width, canMutate);
   }
 
+  _TwoDBackedBidimensionalList._(this._underlyingList, this._x, bool canMutate) : super._(canMutate);
+
 
   @override
   int get height => _underlyingList.length;
+  @override
   set height(int n) {
     throw UnimplementedError();
   }
 
   @override
   int get width => _x;
+  @override
   set width(int n) {
     throw UnimplementedError();
   }
@@ -84,8 +92,9 @@ class _TwoDBackedBidimensionalList<T> extends BidimensionalList<T> {
 
   // TODO: ????
   @override
-  BidimensionalList<T> toList({bool growable: true}) => BidimensionalList.view2d(super.toList());
+  BidimensionalList<T> toList({bool growable = true}) => BidimensionalList.view2d(super.toList());
 
+  @override
   BidimensionalList<V> castInner<V>() => _OneDBackedBidimensionalList(underlyingList: flat().cast<V>(), width: width, height: height, canMutate: canMutate);
 }
 
@@ -112,7 +121,8 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
 
   @override
   int get length => height;
-  set length(_) => throw StateError(
+  @override
+  set length(int _) => throw StateError(
       "You can't change the size directly, change the width and the height");
 
   List<List<T>> get rows => this;
@@ -126,15 +136,12 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
     // TERRIBLY inneficient
     return reduce((rowA, rowB)=> [...rowA, ...rowB]).toList();
   }
-  /**
-   * Applies the function [f] to each element of this collection in iteration
-   * order.
-   */
-  void forEachInner(void f(T element)) => forEach((e)=>e.forEach(f));
+  
+  void forEachInner(void Function(T element) f) => forEach((e)=>e.forEach(f));
 
-  bool anyInner(bool test(T element)) => any((e)=>e.any(test));
+  bool anyInner(bool Function(T element) test) => any((e)=>e.any(test));
 
-  void forEachIndexed(void f(T element, int x, int y)) {
+  void forEachIndexed(void Function(T element, int x, int y) f) {
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
         final element = getValue(x, y);
@@ -143,17 +150,17 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
     }
   }
 
-  bool everyInner(bool test(T e)) => every((e)=>e.every(test));
+  bool everyInner(bool Function(T e) test) => every((e)=>e.every(test));
 
-  Iterable<V> mapInner<V>(V f(T element)) => map((e)=>e.map<V>(f)).reduce((a,b)=>a.followedBy(b));
-  Iterable<V> mapInnerIndexed<V>(V f(int x, int y, T element)) {
+  Iterable<V> mapInner<V>(V Function(T element) f) => map((e)=>e.map<V>(f)).reduce((a,b)=>a.followedBy(b));
+  Iterable<V> mapInnerIndexed<V>(V Function(int x, int y, T element) f) {
     return Iterable.generate(height*width, (i) {
       final x = i % width;
       final y = i ~/ width;
       return f(x, y, getValue(x, y));
     });
   }
-  Iterable<T> whereInner(bool test(T element)) => map((e)=>e.where(test)).reduce((a,b) => a.followedBy(b));
+  Iterable<T> whereInner(bool Function(T element) test) => map((e)=>e.where(test)).reduce((a,b) => a.followedBy(b));
 
   BidimensionalList<V> castInner<V>();
 
@@ -193,7 +200,7 @@ abstract class BidimensionalList<T> extends ListBase<List<T>> {
   void operator []=(int index, List<T> value) => setRow(index, value);
 
   @override
-  BidimensionalList<T> toList({bool growable: true});
+  BidimensionalList<T> toList({bool growable = true});
 
   @override
   String toString() => rows.join('\n');
@@ -217,6 +224,7 @@ class Viewer<T> extends ListBase<T> {
 
   @override
   int get length => _lengthGetter();
+  @override
   set length(int length) {
     if (_lengthSetter == null) {
       throw StateError("You can't change the length");

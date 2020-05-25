@@ -29,7 +29,7 @@ class CrossPreferencesRepository implements PreferencesRepository {
   Future<void> updateAnimationOptions(AnimationOptions options) async {
     final pref = await prefs;
     final optsStrings = options.toStringList();
-    pref.setStringList("animationOptions", optsStrings);
+    await pref.setStringList("animationOptions", optsStrings);
   }
 
   @override

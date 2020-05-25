@@ -1,12 +1,10 @@
-import 'dart:developer';
-
 import 'package:test/test.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:collection/collection.dart';
 
 //final _listEquality = ListEquality<dynamic>();
-final _iterEquality = IterableEquality<dynamic>();
-final _deepEquality = DeepCollectionEquality();
+const _iterEquality = IterableEquality<dynamic>();
+const _deepEquality = DeepCollectionEquality();
 
 Iterable<T> flatten<T>(Iterable<Iterable<T>> iter) {
   if (iter is List<Iterable<T>>) {
@@ -52,7 +50,7 @@ void main() {
     ]);
     final state = SudokuState(side: 4, initialState: board);
     expect(state.validateBoard(), Validation.correct);
-    expect(state.validateWithInfo().anyInner((e) => e == false), false);
+    expect(state.validateWithInfo().anyInner((e) => e != Validation.correct), false);
     expect(_deepEquality.equals(state.squares(), squares), true);
   });
   test("Test invalid sudokuState", () {

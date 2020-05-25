@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku_presentation/sudoku_bloc.dart';
-import 'package:sudoku_presentation/preferences_bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
+import 'package:sudoku_presentation/preferences_bloc.dart';
+import 'package:sudoku_presentation/sudoku_bloc.dart';
+
 import '../prefs_sheet.dart';
-import './numbers.dart';
-import './board.dart';
 import './actions.dart';
+import './board.dart';
+import './numbers.dart';
 
 class SudokuBoardView extends StatelessWidget {
   @override
@@ -22,18 +23,18 @@ class SudokuBoardView extends StatelessWidget {
             BlocBuilder<SudokuBloc, SudokuBlocState>(
                 builder: (BuildContext context, SudokuBlocState _state) => LayoutBuilder(builder: (context, constraints) {
               final appBar = AppBar(
-                      title: Text("Sudoku"),
+                      title: const Text("Sudoku"),
                       actions: [
                         IconButton(
-                            icon: Icon(Icons.settings),
+                            icon: const Icon(Icons.settings),
                             onPressed: () => openPrefs(context))
                       ],
                     );
               final sliverAppBar = SliverAppBar(
-                      title: Text("Sudoku"),
+                      title: const Text("Sudoku"),
                       actions: [
                         IconButton(
-                            icon: Icon(Icons.settings),
+                            icon: const Icon(Icons.settings),
                             onPressed: () => openPrefs(context))
                       ],
                     );
@@ -41,7 +42,7 @@ class SudokuBoardView extends StatelessWidget {
                 return 
                     Scaffold(
                       appBar: appBar,
-                      body: Center(child: CircularProgressIndicator())
+                      body: const Center(child: CircularProgressIndicator())
                 );
               }
 
@@ -63,8 +64,8 @@ class SudokuBoardView extends StatelessWidget {
                 void pop([dynamic _]) => Navigator.of(context).pop();
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   showDialog<void>(context: context, builder: (BuildContext context) {
-                    return AlertDialog(title: Text("Parabéns"), content: Text("Você completou o Sudoku!"), actions: [
-                      FlatButton(onPressed: pop, child: Text("Continuar"))
+                    return AlertDialog(title: const Text("Parabéns"), content: const Text("Você completou o Sudoku!"), actions: [
+                      FlatButton(onPressed: pop, child: const Text("Continuar"))
                     ]);
                   }).then(pop);
                 });
@@ -80,7 +81,7 @@ class SudokuBoardView extends StatelessWidget {
                             enabled: snapOrNull != null,
                             isPortrait: !actionsOnChildren));
               
-              final numberSize = SudokuNumbers.buttonSize;
+              const numberSize = SudokuNumbers.buttonSize;
 
               final numberConstraints = BoxConstraints(
                 minHeight: isPortrait ? numberSize : double.infinity,
@@ -92,7 +93,7 @@ class SudokuBoardView extends StatelessWidget {
               final children = [
                     Expanded(
                       child: Padding(
-                          padding: EdgeInsets.all(2.0),
+                          padding: const EdgeInsets.all(2.0),
                           child: SudokuBoard(
                             state: state.squares,
                             animationOptions:
@@ -101,7 +102,7 @@ class SudokuBoardView extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: ConstrainedBox(
                       constraints: numberConstraints,
                       child: SudokuNumbers(
@@ -118,7 +119,7 @@ class SudokuBoardView extends StatelessWidget {
               return 
                   Scaffold(
                     bottomNavigationBar: !actionsOnChildren? sudokuActions : null,
-                    body: CustomScrollView(slivers: [sliverAppBar, widget], physics: SnapToEdgesAndPointsPhysics(points: [kToolbarHeight]),),
+                    body: CustomScrollView(slivers: [sliverAppBar, widget], physics: const SnapToEdgesAndPointsPhysics(points: [kToolbarHeight]),),
               );
             })));
   }
@@ -182,10 +183,12 @@ class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
 
   double _getTargetPixels(ScrollMetrics position, Tolerance tolerance, double velocity) {
     double point = _getPoint(position);
-    if (velocity < -tolerance.velocity)
-      point -= 0.1; // TODO
-    else if (velocity > tolerance.velocity)
+    // TODO
+    if (velocity < -tolerance.velocity) {
+      point -= 0.1;
+    } else if (velocity > tolerance.velocity) {
       point += 0.1;
+    }
     return _getPixels(position, point.round());
   }
 
@@ -193,8 +196,9 @@ class SnapToEdgesAndPointsPhysics extends ScrollPhysics {
   Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
     final Tolerance tolerance = this.tolerance;
     final double target = _getTargetPixels(position, tolerance, velocity);
-    if (target != position.pixels)
+    if (target != position.pixels) {
       return ScrollSpringSimulation(spring, position.pixels, target, velocity, tolerance: tolerance);
+    }
     return null;
   }
 

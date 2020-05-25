@@ -13,8 +13,8 @@ class SudokuNumbers extends StatelessWidget {
 
   const SudokuNumbers({Key key, @required this.state, @required this.isPortrait, @required this.enabled}) : super(key: key);
 
-  static double buttonSize = 52;
-  static final buttonConstraints = BoxConstraints(
+  static const double buttonSize = 52;
+  static const BoxConstraints buttonConstraints = BoxConstraints(
     minWidth: 0,
     minHeight: 0,
     maxHeight: 2*buttonSize,
@@ -25,11 +25,11 @@ class SudokuNumbers extends StatelessWidget {
     void onTap() {
       context.bloc<SudokuBloc>().add(NumberTap(info.number));
     }
-    final textOrIcon = info.number == 0 ? Icon(Icons.clear) : Text(info.number.toString());
+    final textOrIcon = info.number == 0 ? const Icon(Icons.clear) : Text(info.number.toString());
     final textStyle = Theme.of(context).textTheme.headline4;
     return Padding(
       padding: const EdgeInsets.all(3.0),
-      child: SudokuButton(filled: info.isSelected, textStyle: textStyle, constraints: buttonConstraints, child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)), onPressed: enabled ? onTap : null, shapeBuilder: (c)=> CircleBorder(side: BorderSide(color: c)),),
+      child: SudokuButton(filled: info.isSelected, textStyle: textStyle, constraints: buttonConstraints, onPressed: enabled ? onTap : null, shapeBuilder: (c)=> CircleBorder(side: BorderSide(color: c)), child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)),),
     );
   }
 

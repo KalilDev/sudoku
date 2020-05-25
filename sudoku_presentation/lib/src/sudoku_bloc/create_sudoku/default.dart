@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 import 'package:sudoku_core/sudoku_core.dart';
 import '../../sudoku_configuration.dart';
 

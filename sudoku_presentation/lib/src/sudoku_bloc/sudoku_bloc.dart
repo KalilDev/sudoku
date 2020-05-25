@@ -1,15 +1,15 @@
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:developer';
 
+import 'package:bloc/bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku_presentation/src/repository/board_repository.dart';
-import 'state.dart';
-import 'event.dart';
-import 'package:bloc/bloc.dart';
+
 import '../sudoku_configuration.dart';
 import 'create_sudoku/create_sudoku.dart';
+import 'event.dart';
+import 'state.dart';
 
 class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   SudokuBloc(this.definition, this.repository);
@@ -280,7 +280,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         // only null on error
         if (snapshot != null) {
           yield snapshot;
-          scheduleSave(snapshot);
+          await scheduleSave(snapshot);
         }
       }
     }

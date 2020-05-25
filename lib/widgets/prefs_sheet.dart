@@ -37,17 +37,17 @@ Widget buildSingleThemePreview(
     MapEntry<AvailableTheme, SudokuTheme> entry, BuildContext context, bool enabled) {
   final rawTheme = entry.value;
   final theme = rawTheme.copyWith(main: rawTheme.background, mainDarkened: rawTheme.main);
-  final expand = BoxConstraints.expand(width: double.infinity, height: double.infinity);
+  const expand = BoxConstraints.expand(width: double.infinity, height: double.infinity);
   final shape = RoundedRectangleBorder(side: BorderSide(color: enabled ? rawTheme.main : rawTheme.mainDarkened, width: 2.0), borderRadius: BorderRadius.circular(4.0));
   final text = themeToString(entry.key);
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
     child: SudokuButton(elevation: 2.0,shapeBuilder: (_) => shape,theme: theme, filled: true, onPressed: enabled ? () => BlocProvider.of<PreferencesBloc>(context).add(
         PrefsEvent<AvailableTheme>(
-            entry.key, PrefsEventType.themeUpdate)) : null,child: Padding(
+            entry.key, PrefsEventType.themeUpdate)) : null, constraints: expand,child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Text(text, textAlign: TextAlign.center,),
-            ), constraints: expand,));
+            ),));
 }
 
 
@@ -65,7 +65,7 @@ List<Widget> buildThemes(BuildContext context, AvailableTheme currentTheme) {
         .map((t) => buildSingleThemePreview(t, context, t.key != currentTheme)).toList();
   return [
     SliverToBoxAdapter(child: buildSectionTitle("Temas:", context)),
-    SliverGrid(delegate: SliverChildListDelegate(themes), gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 200, childAspectRatio: 1.8))
+    SliverGrid(delegate: SliverChildListDelegate(themes), gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 200, childAspectRatio: 1.8))
   ];
 }
 
@@ -116,7 +116,7 @@ void openPrefs(BuildContext context) {
         return BlocBuilder<PreferencesBloc, PrefsState>(
           builder: (BuildContext context, PrefsState _state) {
             if (_state is LoadingPrefsState) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
             final state = _state as PrefsSnap;
             final opts = state.animationOptions;
@@ -124,7 +124,7 @@ void openPrefs(BuildContext context) {
               ...buildThemes(context, state.theme),
               ...buildAnimations(opts, context)
             ];
-            final widthConstraints = BoxConstraints(maxWidth: 900);
+            const widthConstraints = BoxConstraints(maxWidth: 900);
             return Center(child: ConstrainedBox(constraints: widthConstraints, child: CustomScrollView(slivers: slivers)));
           },
         );

@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:developer';
+import 'dart:math';
 
 import 'bidimensional_list.dart';
-import 'dart:math';
 import 'sudoku_state.dart';
 
 class ChunkedSudoku {
@@ -37,8 +36,10 @@ class ChunkedSudokuSquare extends ChunkedSudokuPiece {
 }
 
 ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5}) {
-  final squaresController = StreamController<ChunkedSudokuSquare>();
   final completer = Completer<SudokuState>();
+  // ignore: close_sinks
+  final squaresController = StreamController<ChunkedSudokuSquare>();
+  // ignore: cancel_subscriptions
   final subscription = rawCreateRandomSudoku(side: side, maskRate: maskRate).listen((piece) {
     if (piece is ChunkedSudokuSquare) {
       squaresController.add(piece);
@@ -71,12 +72,12 @@ Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate 
   // but this is no fun, so we will remove all the numbers that we can
   state.initialState.setAll(0, state.solution);
   // Indices which we will try to remove
-  List<int> gridPos = List<int>.generate(side*side, (i) => i)..shuffle(rand);
+  final gridPos = List<int>.generate(side*side, (i) => i)..shuffle(rand);
   for(final pos in gridPos)
   {
-    int y = pos~/side;
-    int x = pos%side;
-    int temp = state.initialState.getValue(x, y);
+    final y = pos~/side;
+    final x = pos%side;
+    final temp = state.initialState.getValue(x, y);
     state.initialState.setValue(x, y, 0);
 
     // If now more than 1 solution , replace the removed cell back.
@@ -113,8 +114,9 @@ Stream<ChunkedSudokuPiece> rawCreateRandomSudoku({int side = 9, double maskRate 
   }
 }
 
-int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums, {int solnCount = 0})
+int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums, {int initialSolnCount = 0})
   {
+    var solnCount = initialSolnCount;
     final unassignedLoc = findUnassignedLocation(state);
     if(unassignedLoc == null)
     {
@@ -127,7 +129,7 @@ int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums, {
         if(safe)
         {
           state.setValue(unassignedLoc.x, unassignedLoc.y, guessNums[i]);
-          solnCount = countSoln(state, sideSqrt, guessNums, solnCount: solnCount);
+          solnCount = countSoln(state, sideSqrt, guessNums, initialSolnCount: solnCount);
         }
 
         state.setValue(unassignedLoc.x, unassignedLoc.y, 0);
@@ -163,7 +165,7 @@ SudokuVec/*?*/ findUnassignedLocation(BidimensionalList<int> grid)
     return null;
 }
 
-void main() async {
+Future<void> main() async {
 
   final sudoku = await createRandomSudoku(side: 9);
   print("Solution:");

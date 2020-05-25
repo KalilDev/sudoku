@@ -35,10 +35,10 @@ class MainMenu extends StatelessWidget {
     if (needsResponse) {
       final didAccept = await showDialog<bool>(context: context, builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Aviso"),
-          content: Text("Você está usando uma plataforma que ainda não suporta salvar Sudokus. Caso você saia, todo o seu progresso será perdido."),
+          title: const Text("Aviso"),
+          content: const Text("Você está usando uma plataforma que ainda não suporta salvar Sudokus. Caso você saia, todo o seu progresso será perdido."),
           actions: [
-            FlatButton(onPressed: ()=>Navigator.of(context).pop(true), child: Text("Aceitar"))
+            FlatButton(onPressed: ()=>Navigator.of(context).pop(true), child: const Text("Aceitar"))
           ],
         );
       });
@@ -102,8 +102,8 @@ class MainMenu extends StatelessWidget {
                 ),
                 SudokuButton(
                   onPressed: () => launch(config.newSudoku(), state.storage, context),
-                  child: Text("Novo jogo"),
                   filled: true,
+                  child: const Text("Novo jogo"),
                 ),
                 if (state.storage == StorageAknowledgment.supported)
                   SudokuButton(
@@ -111,14 +111,14 @@ class MainMenu extends StatelessWidget {
                         ? () => launch(config, state.storage, context)
                         : null,
                     filled: true,
-                    child: Text("Continuar"),
+                    child: const Text("Continuar"),
                   )
       ];
       return Scaffold(
             appBar: AppBar(
-      title: Text("Sudoku"),
+      title: const Text("Sudoku"),
       actions: [
-        IconButton(icon: Icon(Icons.settings), onPressed: () => openPrefs(context))
+        IconButton(icon: const Icon(Icons.settings), onPressed: () => openPrefs(context))
       ],
             ),
             body: Center(

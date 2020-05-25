@@ -32,22 +32,22 @@ class SudokuActions extends StatelessWidget {
     void changeMarkType() => bloc.add(ActionSetMark(
         markType == MarkType.concrete ? MarkType.possible : MarkType.concrete));
     void undo() => bloc.add(ActionUndo());
-    Widget buildButton({IconData icon, VoidCallback onPressed, bool filled = false}) => SudokuButton(shapeBuilder: shapeBuilder, constraints: buttonConstraints, child: Icon(icon), filled: filled,onPressed: enabled ? onPressed : null,);
+    Widget buildButton({IconData icon, VoidCallback onPressed, bool filled = false}) => SudokuButton(shapeBuilder: shapeBuilder, constraints: buttonConstraints, filled: filled,onPressed: enabled ? onPressed : null, child: Icon(icon),);
     final children = [
-      Spacer(),
+      const Spacer(),
       Expanded(flex: 3, child: buildButton(icon: Icons.sync, onPressed: resetBoard)),
-      Spacer(),
+      const Spacer(),
       Expanded(flex: 3, child: buildButton(icon: Icons.check, onPressed: validate)),
-      Spacer(),
+      const Spacer(),
       Expanded(
           flex: 3,
           child: buildButton(icon: Icons.edit, onPressed: changeMarkType,
               filled: markType == MarkType.possible)),
-      Spacer(),
+      const Spacer(),
       Expanded(
           flex: 3,
           child: buildButton(icon: Icons.undo,  onPressed: (canRewind ?? false) ? undo : null)),
-      Spacer(),
+      const Spacer(),
     ];
     return !isPortrait
         ? Column(

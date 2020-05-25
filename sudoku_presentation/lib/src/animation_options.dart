@@ -1,5 +1,7 @@
-import 'common.dart';
 import 'package:meta/meta.dart';
+
+import 'common.dart';
+
 enum AnimationSpeed { none, normal, fast, fastest }
 
 class AnimationOptions {
@@ -10,6 +12,15 @@ class AnimationOptions {
   final bool textSize;
   final bool textColor;
   final AnimationSpeed speed;
+  
+  const AnimationOptions(
+      {@required this.selectSize,
+      @required this.selectColor,
+      @required this.textPosition,
+      @required this.textOpacity,
+      @required this.speed,
+      @required this.textColor,
+      @required this.textSize});
 
   bool get hasAnimations {
     return selectSize || selectColor || textPosition || textOpacity || textSize || textColor;
@@ -21,7 +32,7 @@ class AnimationOptions {
     return true;
   }
 
-  static final defaultOptions = AnimationOptions(
+  static const AnimationOptions defaultOptions = AnimationOptions(
       selectSize: true,
       selectColor: true,
       textPosition: true,
@@ -73,13 +84,4 @@ class AnimationOptions {
     );
 
   }
-  
-  AnimationOptions(
-      {@required this.selectSize,
-      @required this.selectColor,
-      @required this.textPosition,
-      @required this.textOpacity,
-      @required this.speed,
-      @required this.textColor,
-      @required this.textSize});
 }

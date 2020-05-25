@@ -42,7 +42,7 @@ class LocalStorageBoardRepository extends BoardRepository {
       this.status = status;
       return status;
       // ignore: avoid_catching_errors
-    } on PlatformNotSupportedError catch (e) {
+    } on PlatformNotSupportedError {
       return const StorageStatus(StorageStatusType.unsupported, "Essa plataforma não é suportada para o armazenamento persistente do Sudoku");
     } catch (e) {
       return StorageStatus(StorageStatusType.error, "O armazenamento não pode ser preparado: $e");
@@ -85,6 +85,7 @@ class LocalStorageBoardRepository extends BoardRepository {
       initialState: initialState,
       state: state,
       possibleValues: possibleValues,
+      solution: null, // Will be computed when needed
       side: _side
     );
     await null;

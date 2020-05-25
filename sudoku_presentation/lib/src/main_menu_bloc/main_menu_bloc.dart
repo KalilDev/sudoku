@@ -67,7 +67,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
   }
 
   Future<void> didAknowledge() async {
-    return await preferencesRepository.updateAknowledgement(true).catchError((dynamic e) => null);
+    return preferencesRepository.updateAknowledgement(true).catchError((dynamic e) => null);
   }
 
   Future<void> initialize() async {
@@ -115,11 +115,11 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
       yield event.state;
     }
     if (event is ChangeX) {
-      preferencesRepository.updateMainMenuX(event.x);
+      await preferencesRepository.updateMainMenuX(event.x);
       yield (state as MainMenuSnap).copyWith(difficultyX: event.x);
     }
     if (event is ChangeY) {
-      preferencesRepository.updateMainMenuY(event.y);
+      await preferencesRepository.updateMainMenuY(event.y);
       yield (state as MainMenuSnap).copyWith(sideY: event.y);
     }
     if (event is ReloadConfigurations) {
