@@ -55,6 +55,8 @@ class SquareInfo {
       isInitial == other.isInitial &&
       isSelected == other.isSelected &&
       validation == other.validation;
+  
+  SquareInfo copyWith({int number, List<int> possibleNumbers, bool isInitial, bool isSelected, Validation validation}) => SquareInfo(number: number ?? this.number, possibleNumbers: possibleNumbers ?? this.possibleNumbers, isInitial: isInitial ?? this.isInitial, isSelected: isSelected ?? this.isSelected, validation: validation ?? this.validation);
 }
 
 @immutable
@@ -68,7 +70,18 @@ class NumberInfo {
 @immutable
 abstract class SudokuBlocState {}
 
-class SudokuLoadingState extends SudokuBlocState {}
+class SudokuBlocStateWithInfo extends SudokuBlocState {
+  final BidimensionalList<SquareInfo> squares; // non nullable
+  final List<NumberInfo> numbers; // non nullable
+  int get side => squares.length;
+
+  SudokuBlocStateWithInfo(this.squares, this.numbers);
+}
+
+@immutable
+class SudokuLoadingState extends SudokuBlocStateWithInfo {
+  SudokuLoadingState(BidimensionalList<SquareInfo> placeholderSquares, List<NumberInfo> numbers) : super(placeholderSquares, numbers);
+}
 
 class SudokuErrorState extends SudokuBlocState {
   final String message;
@@ -78,10 +91,7 @@ class SudokuErrorState extends SudokuBlocState {
 }
 
 @immutable
-class SudokuSnapshot extends SudokuBlocState {
-  final BidimensionalList<SquareInfo> squares; // non nullable
-  final List<NumberInfo> numbers; // non nullable
-  int get side => squares.length;
+class SudokuSnapshot extends SudokuBlocStateWithInfo {
 
   final MarkType markType; // non nullable
   final bool canRewind; // non nullable
@@ -91,12 +101,12 @@ class SudokuSnapshot extends SudokuBlocState {
 
   SudokuSnapshot(
       {
-        @required this.squares,
-      @required this.numbers,
+      @required BidimensionalList<SquareInfo> squares,
+      @required List<NumberInfo> numbers,
       @required this.canRewind,
       @required this.markType,
       @required this.validationState,
-      bool wasDeleted = false}) : wasDeleted = wasDeleted;
+      bool wasDeleted = false}) : wasDeleted = wasDeleted, super(squares, numbers);
 
   SudokuSnapshot deleted() => SudokuSnapshot(squares: squares, numbers: numbers, canRewind: canRewind, markType: markType, validationState: validationState, wasDeleted: true);
 

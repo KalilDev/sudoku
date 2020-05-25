@@ -25,6 +25,11 @@ class LoadedEvent extends SudokuEvent {
   LoadedEvent(this.state);
 }
 
+class PieceLoadedEvent extends SudokuEvent {
+  final ChunkedSudokuSquare piece;
+  PieceLoadedEvent(this.piece);
+}
+
 class DeleteSudoku extends SudokuEvent {}
 
 class SquareTap extends SudokuEvent {

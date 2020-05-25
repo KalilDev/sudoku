@@ -1,4 +1,13 @@
 
+const Map<SudokuDifficulty, double> difficultyMaskMap = {
+  SudokuDifficulty.begginer: 0.7,
+  SudokuDifficulty.easy: 0.55,
+  SudokuDifficulty.medium: 0.45,
+  SudokuDifficulty.hard: 0.32,
+  SudokuDifficulty.extreme: 0.38,
+  SudokuDifficulty.impossible: 0.24
+};
+
 enum SudokuDifficulty {
   begginer,
   easy,
