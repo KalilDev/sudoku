@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'bidimensional_list.dart';
 import 'sudoku_state.dart';
+import 'sudoku_utils.dart';
 
 class ChunkedSudoku {
   final StreamController<ChunkedSudokuSquare> _squaresController;
@@ -138,31 +139,7 @@ int countSoln(BidimensionalList<int> state, int sideSqrt, List<int> guessNums,
   return solnCount;
 }
 
-class SudokuVec {
-  final int x;
-  final int y;
-
-  const SudokuVec(this.y, this.x);
-
-  @override
-  String toString() => '[$x, $y]';
-}
-
-SudokuVec /*?*/ findUnassignedLocation(BidimensionalList<int> grid) {
-  final side = grid.length;
-  for (var y = 0; y < side; y++) {
-    for (var x = 0; x < side; x++) {
-      if (grid.getValue(x, y) == 0) {
-        final unassigned = SudokuVec(y, x);
-        return unassigned;
-      }
-    }
-  }
-
-  return null;
-}
-
-Future<void> main() async {
+/*Future<void> main() async {
   final sudoku = await createRandomSudoku(side: 9);
   print("Solution:");
   print(sudoku.solution);
@@ -170,4 +147,4 @@ Future<void> main() async {
   print(sudoku.initialState);
   print("State:");
   print(sudoku.state);
-}
+}*/

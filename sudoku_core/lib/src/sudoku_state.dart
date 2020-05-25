@@ -3,12 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:meta/meta.dart';
 import 'bidimensional_list.dart';
-
-Iterable<T> setDiff1d<T>(Iterable<T> a, Iterable<T> b) =>
-    a.where((e) => !b.contains(e));
-Iterable<T> intersect1d<T>(Iterable<T> a, Iterable<T> b) =>
-    a.where((e) => b.contains(e));
-Iterable<T> union1d<T>(Iterable<T> a, Iterable<T> b) => a.followedBy(b);
+import 'sudoku_utils.dart';
 
 enum Validation {
   /// At least one element is invalid. The sudoku may or may not be filled.
@@ -114,9 +109,8 @@ class SudokuState {
   // May take a while
   BidimensionalList<Validation> validateWithInfo() {
     if (solution == null) {
-      // We will solve the board, and then do this again
+      // We will solve the board, and then do this
       solve();
-      return validateWithInfo();
     }
     final list = BidimensionalList<Validation>.generate(side, (x, y) {
       final current = state.getValue(x, y);
@@ -186,81 +180,39 @@ class SudokuState {
     return 1;
   }
 
-  void solve() {
-    switch (validateBoard()) {
-      case Validation.correct:
-        // already solved
-        solution = state.toList(growable: false);
-        return;
-        break;
-      default:
+  bool _solve() {
+    final unassigned = findUnassignedLocation(solution);
+    if (unassigned == null) {
+      // There isn't any remaining value to be filled, so this is
+      // the solution.
+      return true;
     }
 
-    final rand = Random();
-    var tries = 0;
     final validValues = List<int>.generate(side, (i) => i + 1);
-    final guessNums = validValues..shuffle(rand);
-
-    for (;;) {
-      bool failed = false;
-      // Start with an fresh state
-      solution = initialState.toList(growable: false);
-      guessNums.shuffle(rand);
-      for (var x = 0; x < side && !failed; x++) {
-        guessNums.shuffle(rand);
-        for (var y = 0; y < side && !failed; y++) {
-          if (solution.getValue(x, y) != 0) {
-            // this value is solved already.
-            continue;
-          }
-          failed = true;
-          for (final guess in guessNums) {
-            if (isSafe(solution, y, x, sideSqrt, guess)) {
-              solution.setValue(x, y, guess);
-              failed = false;
-              break;
-            }
-          }
+    for (final n in validValues) {
+      if (isSafe(solution, unassigned.y, unassigned.x, sideSqrt, n)) {
+        solution.setValue(unassigned.x, unassigned.y, n);
+        // Solve the next value, and retry with the next n in [validValues]
+        // if we coudn't find an solution with this state. (backtrack)
+        if (_solve()) {
+          return true;
         }
+
+        solution.setValue(unassigned.x, unassigned.y, 0);
       }
-      tries++;
-      if (failed) {
-        continue;
-      }
-      break;
     }
-    print(tries);
+    // We couldn't find an valid value for this [unassigned] pos.
+    // Backtrack
+    return false;
+  }
+
+  // Use an backtracking solver
+  void solve() {
+    solution = initialState.toList(growable: false);
+    _solve();
   }
 }
 
-bool isSafe(BidimensionalList<int> grid, int row /*y*/, int col /*x*/,
-    int boxSize, int n) {
-  final side = grid.length;
-  // RowSafe
-  for (int x = 0; x < side; x++) {
-    if (grid.getValue(x, row) == n) {
-      return false;
-    }
-  }
-  // Col safe
-  for (int y = 0; y < side; y++) {
-    if (grid.getValue(col, y) == n) {
-      return false;
-    }
-  }
-  // BoxSafe
-  final boxStartRow = row - row % boxSize;
-  final boxStartCol = col - col % boxSize;
-  for (int y = 0; y < boxSize; y++) {
-    for (int x = 0; x < boxSize; x++) {
-      if (grid.getValue(x + boxStartCol, y + boxStartRow) == n) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
 
 class SquareViewer extends ListBase<int> {
   final List<List<int>> state;
