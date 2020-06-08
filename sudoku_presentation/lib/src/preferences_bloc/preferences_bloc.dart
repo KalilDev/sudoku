@@ -54,22 +54,32 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
 
   @override
   Stream<PrefsState> mapEventToState(PrefsEvent event) async* {
-    if (state is! PrefsErrorState) {
-      if (event is PrefsLoadedEvent) {
-        yield event.state;
-      }
-      if (state is! PrefsSnap) {
-        throw StateException("State should'be been PrefsSnap before it started being mutated!");
-      }
-      if (event is AnimationOptionsUpdatedEvent) {
-          yield (state as PrefsSnap)
-              .copyWith(animationOptions: event.animationOptions);
-          updateAnim(event.animationOptions);
-      }
-      if (event is ThemeUpdatedEvent) {
-          yield (state as PrefsSnap).copyWith(theme: event.newTheme);
-          updateTheme(event.newTheme);
-      }
+    var handled = false;
+    handled = state is PrefsErrorState;
+    if (event is PrefsLoadedEvent && !handled) {
+      handled = true;
+      yield event.state;
+    }
+    if (state is! PrefsSnap && !handled) {
+      throw StateException('It is impossible to handle $event while the state is not PrefsSnap').withMessage('Houve um probleminha nas preferencias');
+    }
+    final snap = state as PrefsSnap;
+    if (event is AnimationOptionsUpdatedEvent && !handled) {
+      handled = true;
+      yield snap.copyWith(animationOptions: event.animationOptions);
+      updateAnim(event.animationOptions);
+    }
+    if (event is ThemeUpdatedEvent && !handled) {
+      handled = true;
+      yield snap.copyWith(theme: event.newTheme);
+      updateTheme(event.newTheme);
+    }
+    if (event is PrefsErrorEvent && !handled) {
+      handled = true;
+      yield PrefsErrorState.fromError(event.error, state);
+    }
+    if (!handled) {
+      throw StateException('$event was not handled').withMessage('Houve um probleminha nas preferencias');
     }
   }
 }

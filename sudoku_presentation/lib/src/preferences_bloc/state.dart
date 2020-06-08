@@ -23,4 +23,5 @@ class PrefsErrorState extends UserFriendlyError implements PrefsState {
   final PrefsState previousState;
 
   PrefsErrorState({@required this.previousState, @required Error error, @required String userFriendlyMessage}) : super(error, userFriendlyMessage);
+  factory PrefsErrorState.fromError(UserFriendlyError error, PrefsState previousState) => PrefsErrorState(previousState: previousState,error: error.error, userFriendlyMessage: error.userFriendlyMessage);
 }
