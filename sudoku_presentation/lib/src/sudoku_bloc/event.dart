@@ -1,14 +1,15 @@
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:meta/meta.dart';
-import 'state.dart' show MarkType, SudokuErrorState;
+import 'package:sudoku_presentation/errors.dart';
+import 'state.dart' show MarkType;
 
 @immutable
 abstract class SudokuEvent {}
 
 class SudokuErrorEvent extends SudokuEvent {
-  final SudokuErrorState state;
+  final UserFriendly<Error> error;
 
-  SudokuErrorEvent(this.state);
+  SudokuErrorEvent(this.error);
 }
 
 class ActionReset extends SudokuEvent {}

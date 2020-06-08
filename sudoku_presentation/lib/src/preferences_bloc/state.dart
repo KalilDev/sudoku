@@ -19,9 +19,9 @@ class PrefsSnap extends PrefsState {
 }
 
 @immutable
-class PrefsErrorState extends UserFriendlyError implements PrefsState {
+class PrefsErrorState extends PrefsState {
   final PrefsState previousState;
+  final UserFriendly<Error> error;
 
-  PrefsErrorState({@required this.previousState, @required Error error, @required String userFriendlyMessage}) : super(error, userFriendlyMessage);
-  factory PrefsErrorState.fromError(UserFriendlyError error, PrefsState previousState) => PrefsErrorState(previousState: previousState,error: error.error, userFriendlyMessage: error.userFriendlyMessage);
+  PrefsErrorState({@required this.previousState, @required this.error});
 }

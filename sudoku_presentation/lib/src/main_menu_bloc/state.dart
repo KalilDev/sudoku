@@ -1,6 +1,7 @@
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:meta/meta.dart';
 import 'package:sudoku_presentation/models.dart';
+import 'package:sudoku_presentation/errors.dart';
 
 @immutable
 abstract class MainMenuState {}
@@ -30,9 +31,9 @@ class MainMenuSnap extends MainMenuState {
           storage: storage ?? this.storage);
 }
 
-class MainMenuErrorState extends MainMenuState {
-  final String message;
-  final String userFriendlyMessage;
+class MainMenuErrorState extends  MainMenuState {
+  final MainMenuState previousState;
+  final UserFriendly<Error> error;
 
-  MainMenuErrorState({this.message, this.userFriendlyMessage});
+  MainMenuErrorState({this.previousState, this.error});
 }

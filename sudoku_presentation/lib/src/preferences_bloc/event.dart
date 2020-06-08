@@ -26,7 +26,7 @@ class AnimationOptionsUpdatedEvent extends PrefsEvent {
 }
 
 class PrefsErrorEvent extends PrefsEvent {
-  final UserFriendlyError error;
+  final UserFriendly<Error> error;
 
   PrefsErrorEvent(this.error);
 }

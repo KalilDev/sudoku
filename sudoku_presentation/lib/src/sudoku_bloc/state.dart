@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:collection/collection.dart';
+import 'package:sudoku_presentation/errors.dart';
 
 @immutable
 abstract class SquareDelta {
@@ -104,10 +105,10 @@ class SudokuLoadingState extends SudokuBlocStateWithInfo {
 }
 
 class SudokuErrorState extends SudokuBlocState {
-  final String message;
-  final String userFriendlyMessage;
-
-  SudokuErrorState({this.message, this.userFriendlyMessage});
+  final SudokuBlocState previousState;
+  final UserFriendly<Error> error;
+  
+  SudokuErrorState({this.error, this.previousState});
 }
 
 @immutable

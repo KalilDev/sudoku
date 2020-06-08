@@ -15,7 +15,7 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
   @override
   void onError(Object error, StackTrace stackTrace) {
     if (closed || error is! Error) {
-      // TODO
+      // TODO, handle exceptions on an non obtrusive way for the user
     } else {
       add(PrefsErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador de preferencias.')));
     }
@@ -33,7 +33,7 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
 
   @override
   PrefsState get initialState {
-    initialize().catchError(onError);
+    initialize().withErrorMessage('Erro na inicialização das preferências', onError: onError);
     return LoadingPrefsState();
   }
 
@@ -55,7 +55,13 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
   @override
   Stream<PrefsState> mapEventToState(PrefsEvent event) async* {
     var handled = false;
+    // Ignore events if we are in an error state. This will help me to debug.
     handled = state is PrefsErrorState;
+    
+    if (event is PrefsErrorEvent && !handled) {
+      handled = true;
+      yield PrefsErrorState(error: event.error, previousState: state);
+    }
     if (event is PrefsLoadedEvent && !handled) {
       handled = true;
       yield event.state;
@@ -73,10 +79,6 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
       handled = true;
       yield snap.copyWith(theme: event.newTheme);
       updateTheme(event.newTheme);
-    }
-    if (event is PrefsErrorEvent && !handled) {
-      handled = true;
-      yield PrefsErrorState.fromError(event.error, state);
     }
     if (!handled) {
       throw StateException('$event was not handled').withMessage('Houve um probleminha nas preferencias');

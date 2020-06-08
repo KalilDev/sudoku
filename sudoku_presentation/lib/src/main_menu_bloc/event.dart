@@ -1,13 +1,14 @@
 import 'package:meta/meta.dart';
+import 'package:sudoku_presentation/errors.dart';
 import 'state.dart';
 
 @immutable
 abstract class MainMenuEvent {}
 
 class MainMenuErrorEvent extends MainMenuEvent {
-  final MainMenuErrorState state;
+  final UserFriendly<Error> error;
 
-  MainMenuErrorEvent(this.state);
+  MainMenuErrorEvent(this.error);
 }
 
 class AknowledgeStorageEvent extends MainMenuEvent {}

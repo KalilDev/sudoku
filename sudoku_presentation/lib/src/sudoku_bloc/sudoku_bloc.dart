@@ -6,6 +6,7 @@ import 'package:sudoku_core/sudoku_core.dart';
 
 import 'package:sudoku_presentation/repositories.dart';
 import 'package:sudoku_presentation/models.dart';
+import 'package:sudoku_presentation/errors.dart';
 import 'create_sudoku/create_sudoku.dart';
 import 'event.dart';
 import 'state.dart';
@@ -27,30 +28,23 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
 
   Future<void> scheduleSave(SudokuSnapshot snap) async {
     if (repository.currentStatus().type == StorageStatusType.ready) {
-      //debugger();
-      await catchFuture(
-          repository.scheduleSave(definition.side, definition.difficulty, snap),
-          "Houve um erro inesperado ao salvar o Sudoku");
+      await repository.scheduleSave(definition.side, definition.difficulty, snap).withErrorMessage("Houve um erro inesperado ao salvar o Sudoku");
     }
   }
 
-  Future<T> catchFuture<T>(Future<T> future, String userFriendlyMessage) =>
-      future.catchError((dynamic e) {
-        emitError(msg: e.toString(), userFriendlyMsg: userFriendlyMessage);
-        return null;
-      });
-
-  void emitError({String msg, String userFriendlyMsg}) => add(SudokuErrorEvent(
-      SudokuErrorState(message: msg, userFriendlyMessage: userFriendlyMsg)));
+  Future<void> cleanupChunked() async {
+    await chunkedSubs.cancel();
+    await chunked.cancel();
+    chunked = null;
+    chunkedSubs = null;
+  }
 
   @override
   void onError(Object error, StackTrace stackTrace) {
-    if (closed) {
-      print(error.toString());
+    if (closed || error is! Error) {
+      // TODO, handle exceptions on an non obtrusive way for the user
     } else {
-      emitError(
-          msg: error.toString(),
-          userFriendlyMsg: "Houve um erro inesperado, o desenvolvedor é burro");
+      add(SudokuErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador de preferencias.')));
     }
     super.onError(error, stackTrace);
   }
@@ -64,28 +58,22 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
           status = await repository.prepareStorage();
         }
         if (status.type != StorageStatusType.ready) {
-          emitError(
-              msg: status.message,
-              userFriendlyMsg:
-                  "Ao tentar carregar o estado armazenado do Sudoku, o armazenamento não pode ser preparado, ao invés, ele ficou com o status ${status.type}");
-          return;
+          throw StateError(status.message).withMessage("Ao tentar carregar o estado armazenado do Sudoku, o armazenamento não pode ser preparado, ao invés, ele ficou com o status ${status.type}");
         }
-        state = await catchFuture(
-            repository.loadSudoku(definition.side, definition.difficulty),
+        state = await repository.loadSudoku(definition.side, definition.difficulty).withErrorMessage(
             "Ao tentar carregar o Sudoku armazenado, ocorreu um erro inesperado.");
         break;
       case StateSource.random:
-        chunked = await catchFuture(
-            genRandomSudoku(definition.side, definition.difficulty),
+        chunked = await genRandomSudoku(definition.side, definition.difficulty).withErrorMessage(
             "Ao tentar criar um Sudoku, ocorreu um erro inesperado.");
         chunkedSubs =
             chunked.squares.listen((square) => add(PieceLoadedEvent(square)));
         state = await chunked.onComplete;
-        await chunkedSubs.cancel();
-        await chunked.cancel();
-        chunked = null;
-        chunkedSubs = null;
+        await cleanupChunked();
         break;
+      // We will access the repository again to get which [source] we want, and
+      // call [initialize] again with the desired source, which will be
+      // guaranteed not to be storageIfPossible
       case StateSource.storageIfPossible:
         var status = repository.currentStatus();
         if (status.type == StorageStatusType.unawaited) {
@@ -94,29 +82,24 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         if (status.type != StorageStatusType.ready) {
           return initialize(StateSource.random);
         }
-        final hasState = await catchFuture(
-            repository.hasConfiguration(definition.side, definition.difficulty),
+        final hasState = await repository.hasConfiguration(definition.side, definition.difficulty).withErrorMessage(
             "Ao tentar checar se há esta configuração de Sudoku no armazenamento, houve um erro inesperado");
-        // Error
-        if (hasState == null) {
-          return;
-        }
         return initialize(hasState ? StateSource.storage : StateSource.random);
         break;
     }
-    // State is only null in case errors happened
-    if (state != null) {
-      add(LoadedEvent(state));
-    }
+    add(LoadedEvent(state));
   }
 
   @override
   SudokuBlocState get initialState {
     validation = BidimensionalList<Validation>.filled(
         definition.side, Validation.notValidated);
-    initialize(definition.source).catchError(onError);
+
+    initialize(definition.source).withErrorMessage('Erro na inicialização do sudoku', onError: onError);
+
     final numbers = List<NumberInfo>.generate(
         definition.side + 1, (i) => NumberInfo(number: i, isSelected: false));
+
     return SudokuLoadingState(
         BidimensionalList<SquareInfo>.filled(definition.side, SquareInfo.empty),
         numbers);
@@ -262,68 +245,112 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         repository.currentStatus().type == StorageStatusType.ready) {
       await repository.freeSudoku(definition.side, definition.difficulty);
     }
-    await chunkedSubs?.cancel();
-    await chunked?.cancel();
+    if (chunkedSubs != null) {
+      await cleanupChunked();
+    }
     closed = true;
     return super.close();
   }
 
   @override
   Stream<SudokuBlocState> mapEventToState(SudokuEvent event) async* {
-    if (state is! SudokuErrorState && !closed) {
-      if (event is LoadedEvent) {
-        sudokuState = event.state;
+    var handled = false;
+    // Ignore events if we are in an error state. This will help me to debug.
+    handled = state is SudokuErrorState;
+
+    if (event is SudokuErrorEvent && !handled) {
+      handled = true;
+      yield SudokuErrorState(error: event.error, previousState: state);
+    }
+
+    if (event is LoadedEvent && !handled) {
+      handled = true;
+      sudokuState = event.state;
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+
+    if (state is! SudokuBlocStateWithInfo && !handled) {
+      throw StateException('The state needs to have info about the squares before the next events').withMessage('Houve um probleminha no sudoku');
+    }
+
+    final stateWithInfo = state as SudokuBlocStateWithInfo;
+
+    if (event is PieceLoadedEvent && !handled) {
+      handled = true;
+      if (event.piece.n != 0) {
+        final newSquares = stateWithInfo.squares.toList();
+        final prevInfo = newSquares[event.piece.y][event.piece.x];
+        newSquares[event.piece.y][event.piece.x] =
+            prevInfo.copyWith(number: event.piece.n, isInitial: true);
+        yield SudokuLoadingState(newSquares, stateWithInfo.numbers);
       }
-      if (sudokuState != null) {
-        if (event is ActionReset) {
-          sudokuState.reset();
-          deltas.clear();
-        }
-        if (event is ActionUndo) {
-          undo();
-        }
-        if (event is ActionSetMark) {
-          markType = event.type;
-        }
-        if (event is ActionValidate) {
-          validation = sudokuState.validateWithInfo();
-        }
-        if (event is SquareTap) {
-          squareTap(event.x, event.y);
-        }
-        if (event is NumberTap) {
-          numberTap(event.number);
+    }
+
+    if ((state is! SudokuSnapshot || sudokuState == null) && !handled) {
+      throw StateException('The state needs to be an snapshot with an sudokuState before the next events').withMessage('Houve um probleminha no sudoku');
+    }
+
+    final snap = state as SudokuSnapshot;
+
+    if (event is ActionReset && !handled) {
+      handled = true;
+      sudokuState.reset();
+      deltas.clear();
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+    if (event is ActionUndo && !handled) {
+      handled = true;
+      undo();
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+    if (event is ActionSetMark && !handled) {
+      handled = true;
+      markType = event.type;
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+    if (event is ActionValidate && !handled) {
+      handled = true;
+      validation = sudokuState.validateWithInfo();
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+    if (event is SquareTap && !handled) {
+      handled = true;
+      squareTap(event.x, event.y);
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+    if (event is NumberTap && !handled) {
+      handled = true;
+      numberTap(event.number);
+      final newSnap = await genSnapshot();
+      yield newSnap;
+      await scheduleSave(newSnap);
+    }
+
+    if (event is DeleteSudoku && !handled) {
+      handled = true;
+      if (!snap.wasDeleted) {
+        if (repository.currentStatus().type == StorageStatusType.ready) {
+          await repository.deleteSudoku(definition.side, definition.difficulty).withErrorMessage(
+              "Houve um erro inesperado ao deletar o Sudoku armazenado");
         }
       }
-      if (event is PieceLoadedEvent) {
-        if (event.piece.n != 0) {
-          final currentState = state as SudokuBlocStateWithInfo;
-          final newSquares = currentState.squares.toList();
-          final prevInfo = newSquares[event.piece.y][event.piece.x];
-          newSquares[event.piece.y][event.piece.x] =
-              prevInfo.copyWith(number: event.piece.n, isInitial: true);
-          yield SudokuLoadingState(newSquares, currentState.numbers);
-        }
-      } else if (event is DeleteSudoku) {
-        if (!(state as SudokuSnapshot).wasDeleted) {
-          if (repository.currentStatus().type == StorageStatusType.ready) {
-            await catchFuture(
-                repository.deleteSudoku(definition.side, definition.difficulty),
-                "Houve um erro inesperado ao deletar o Sudoku armazenado");
-          }
-          yield (state as SudokuSnapshot).deleted();
-        }
-      } else if (event is SudokuErrorEvent) {
-        yield event.state;
-      } else {
-        final snapshot = await catchFuture(genSnapshot(),
-            "Houve um erro inesperado ao gerar o estado atual do Sudoku");
-        // only null on error
-        if (snapshot != null) {
-          yield snapshot;
-          await scheduleSave(snapshot);
-        }
-      }
+      yield snap.deleted();
+    }
+    
+    if (!handled) {
+      throw StateException('$event was not handled').withMessage('Houve um probleminha no sudoku');
     }
   }
 }
