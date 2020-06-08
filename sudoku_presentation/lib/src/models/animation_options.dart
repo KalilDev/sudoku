@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import 'common.dart';
+import 'enum_parser.dart';
 
 enum AnimationSpeed { none, normal, fast, fastest }
 

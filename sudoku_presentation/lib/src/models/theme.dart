@@ -1,4 +1,4 @@
-import 'common.dart';
+import 'enum_parser.dart';
 
 AvailableTheme parseAvailableTheme(String s) =>
     enumFromString(AvailableTheme.values, s,

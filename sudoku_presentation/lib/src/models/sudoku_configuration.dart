@@ -36,10 +36,10 @@ class SudokuConfiguration {
       SudokuConfiguration._(16, difficulty, source);
   static List<SudokuConfiguration Function(int, StateSource)> factories = [
     four,
-    nine, /*sixteen*/
+    nine, sixteen
   ];
   static List<int> factorySide = [
     4,
-    9, /*16*/
+    9, 16
   ];
 }
