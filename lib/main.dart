@@ -87,10 +87,16 @@ class RootView extends StatelessWidget {
                 isDark ? Brightness.light : Brightness.dark);
         final sliderTheme = SliderThemeData(
             activeTrackColor: theme.secondary, thumbColor: theme.secondary);
+        final dialogTheme = DialogTheme(
+            backgroundColor:
+                Color.alphaBlend(theme.main.withAlpha(10), theme.background),
+            shape: RoundedRectangleBorder(
+                side: BorderSide(color: theme.mainDarkened, width: 2.0),
+                borderRadius: BorderRadius.circular(8.0)));
         final themeData = ThemeData.from(
                 colorScheme: colorScheme.copyWith(
                     background: theme.background, surface: theme.background))
-            .copyWith(sliderTheme: sliderTheme);
+            .copyWith(sliderTheme: sliderTheme, dialogTheme: dialogTheme);
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: overlayStyle,
           child: Provider<SudokuTheme>.value(
