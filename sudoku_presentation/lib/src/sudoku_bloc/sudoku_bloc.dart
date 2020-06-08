@@ -241,6 +241,9 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   }
 
   void numberTap(int n) {
+    if (n > sudokuState.side || n < 0) {
+      return;
+    }
     if (n != selectedNum) {
       selectedNum = n;
     } else {
