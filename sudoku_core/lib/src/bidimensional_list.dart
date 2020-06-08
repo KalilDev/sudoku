@@ -104,7 +104,7 @@ class _TwoDBackedBidimensionalList<T> extends BidimensionalList<T> {
   // TODO: ????
   @override
   BidimensionalList<T> toList({bool growable = true}) =>
-      BidimensionalList.view2d(super.toList());
+      BidimensionalList.view2d(_underlyingList.map((e) => e.toList()).toList());
 
   @override
   BidimensionalList<V> castInner<V>() => _OneDBackedBidimensionalList(
