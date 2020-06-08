@@ -1,3 +1,3 @@
 library sudoku_presentation.preferences_bloc;
 
-export 'src/preferences_bloc.dart';
+export 'src/preferences_bloc/bloc.dart';

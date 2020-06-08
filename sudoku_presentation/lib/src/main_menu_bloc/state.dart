@@ -1,6 +1,6 @@
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:meta/meta.dart';
-import '../sudoku_configuration.dart';
+import 'package:sudoku_presentation/models.dart';
 
 @immutable
 abstract class MainMenuState {}

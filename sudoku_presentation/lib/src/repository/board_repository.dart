@@ -1,5 +1,5 @@
 import 'package:sudoku_core/sudoku_core.dart';
-import 'package:sudoku_presentation/src/sudoku_configuration.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/src/sudoku_bloc/state.dart';
 
 enum StorageStatusType { unawaited, ready, unsupported, error }

@@ -3,9 +3,9 @@ import 'dart:collection';
 
 import 'package:bloc/bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
-import 'package:sudoku_presentation/src/repository/board_repository.dart';
 
-import '../sudoku_configuration.dart';
+import 'package:sudoku_presentation/repositories.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'create_sudoku/create_sudoku.dart';
 import 'event.dart';
 import 'state.dart';

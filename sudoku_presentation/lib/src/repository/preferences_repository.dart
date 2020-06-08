@@ -1,4 +1,4 @@
-import 'package:sudoku_presentation/src/animation_options.dart';
+import 'package:sudoku_presentation/models.dart';
 
 abstract class PreferencesRepository {
   Future<String> getCurrentTheme();

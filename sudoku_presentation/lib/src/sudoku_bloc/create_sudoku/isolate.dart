@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'package:sudoku_core/sudoku_core.dart';
-import '../../sudoku_configuration.dart';
+import 'package:sudoku_presentation/models.dart';
 
 class _IsolateSudokuParams {
   final int side;
