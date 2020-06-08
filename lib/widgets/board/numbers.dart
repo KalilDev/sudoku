@@ -41,6 +41,7 @@ class SudokuNumbers extends StatelessWidget {
         filled: info.isSelected,
         textStyle: textStyle,
         constraints: buttonConstraints,
+        padding: EdgeInsets.zero,
         onPressed: enabled ? onTap : null,
         shapeBuilder: (c) => CircleBorder(side: BorderSide(color: c)),
         child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)),

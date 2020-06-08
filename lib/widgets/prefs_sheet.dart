@@ -68,18 +68,16 @@ Widget buildSingleThemePreview(MapEntry<AvailableTheme, SudokuTheme> entry,
         shapeBuilder: (_) => shape,
         theme: theme,
         filled: true,
+        useSecondary: false,
         onPressed: enabled
             ? () => BlocProvider.of<PreferencesBloc>(context).add(
                 PrefsEvent<AvailableTheme>(
                     entry.key, PrefsEventType.themeUpdate))
             : null,
         constraints: expand,
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-          ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
         ),
       ));
 }

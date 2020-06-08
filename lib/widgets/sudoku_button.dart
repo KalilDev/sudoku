@@ -25,7 +25,8 @@ class SudokuButton extends MaterialButton {
       this.theme,
       double elevation,
       this.borderWidth,
-      this.borderRadius})
+      this.borderRadius,
+      EdgeInsetsGeometry padding})
       : assert(
             shapeBuilder == null ||
                 (borderWidth == null && borderRadius == null),
@@ -33,7 +34,7 @@ class SudokuButton extends MaterialButton {
         filled = filled ?? false,
         useSecondary = useSecondary ?? true,
         super(
-            key: key, onPressed: onPressed, child: child, elevation: elevation);
+            key: key, onPressed: onPressed, child: child, elevation: elevation, padding: padding);
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +69,7 @@ class SudokuButton extends MaterialButton {
       hoverColor: buttonTheme.getHoverColor(this),
       highlightColor: buttonTheme.getHighlightColor(this),
       splashColor: buttonTheme.getSplashColor(this),
+      padding: buttonTheme.getPadding(this),
       elevation: elevation ?? 0,
       focusElevation: buttonTheme.getFocusElevation(this),
       hoverElevation: buttonTheme.getHoverElevation(this),
