@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/repositories.dart';
@@ -7,15 +9,20 @@ import 'state.dart';
 
 class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
   final PreferencesRepository preferencesRepository;
+  final ExceptionHandler onException;
 
-  PreferencesBloc(this.preferencesRepository);
+  PreferencesBloc({this.preferencesRepository, this.onException});
 
   bool closed = false;
 
   @override
   void onError(Object error, StackTrace stackTrace) {
     if (closed || error is! Error) {
-      // TODO, handle exceptions on an non obtrusive way for the user
+      if (onException == null) {
+        debugger();
+      } else {
+        onException(error);
+      }
     } else {
       add(PrefsErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador de preferencias.')));
     }
@@ -57,7 +64,7 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
     var handled = false;
     // Ignore events if we are in an error state. This will help me to debug.
     handled = state is PrefsErrorState;
-    
+
     if (event is PrefsErrorEvent && !handled) {
       handled = true;
       yield PrefsErrorState(error: event.error, previousState: state);

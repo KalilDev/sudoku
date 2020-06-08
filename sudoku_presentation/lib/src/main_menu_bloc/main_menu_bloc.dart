@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku_presentation/models.dart';
@@ -10,14 +12,19 @@ import 'state.dart';
 class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
   final BoardRepository boardRepository;
   final PreferencesRepository preferencesRepository;
-  MainMenuBloc(this.boardRepository, this.preferencesRepository);
+  final ExceptionHandler onException;
+  MainMenuBloc({this.boardRepository, this.preferencesRepository, this.onException});
   
   bool closed = false;
 
   @override
   void onError(Object error, StackTrace stackTrace) {
     if (closed || error is! Error) {
-      // TODO, handle exceptions on an non obtrusive way for the user
+      if (onException == null) {
+        debugger();
+      } else {
+        onException(error);
+      }
     } else {
       add(MainMenuErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador do menu principal.')));
     }

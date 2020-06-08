@@ -1,0 +1,1 @@
+typedef ExceptionHandler = void Function(Object exception);

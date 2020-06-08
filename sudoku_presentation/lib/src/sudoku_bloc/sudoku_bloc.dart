@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
@@ -12,9 +13,10 @@ import 'event.dart';
 import 'state.dart';
 
 class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
-  SudokuBloc(this.definition, this.repository);
+  SudokuBloc({this.definition, this.repository, this.onException});
   final SudokuConfiguration definition;
   final BoardRepository repository;
+  final ExceptionHandler onException;
 
   final Queue<SquareDelta> deltas = DoubleLinkedQueue();
   List<int> selectedSquare; // [x, y] or null in case none
@@ -42,7 +44,11 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
   @override
   void onError(Object error, StackTrace stackTrace) {
     if (closed || error is! Error) {
-      // TODO, handle exceptions on an non obtrusive way for the user
+      if (onException == null) {
+        debugger();
+      } else {
+        onException(error);
+      }
     } else {
       add(SudokuErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador de preferencias.')));
     }
