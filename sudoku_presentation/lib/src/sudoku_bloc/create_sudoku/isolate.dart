@@ -66,7 +66,8 @@ void isolateChunkedSudoku(SendPort p) {
 }
 
 Future<ChunkedSudoku> genRandomSudoku(
-    int side, SudokuDifficulty difficulty) async {
+    int side, SudokuDifficulty difficulty, [NextFrameProvider frameProvider]) async {
+  // [frameProvider] is ignored
   final port = ReceivePort();
   final isolate = await Isolate.spawn(isolateChunkedSudoku, port.sendPort);
   final params = _IsolateSudokuParams(side, difficultyMaskMap[difficulty]);

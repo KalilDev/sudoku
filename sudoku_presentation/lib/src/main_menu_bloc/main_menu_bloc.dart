@@ -130,10 +130,11 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
     }
 
     if (state is! MainMenuSnap && !handled) {
-      throw StateException('It is impossible to handle $event while the state is not PrefsSnap').withMessage('Houve um probleminha no menu principal');
+      throw StateException('It is impossible to handle $event while the state is not PrefsSnap').withErrorMessage('Houve um probleminha no menu principal');
     }
 
-    final snap = state as MainMenuSnap;
+    final snap = handled ? null : state as MainMenuSnap;
+    
     if (event is ChangeX && !handled) {
       handled = true;
       await preferencesRepository.updateMainMenuX(event.x);
@@ -155,7 +156,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
           .copyWith(storage: StorageAknowledgment.unsupportedAknowledged);
     }
     if (!handled) {
-      throw StateException('$event was not handled').withMessage('Houve um probleminha no menu principal');
+      throw StateException('$event was not handled').withErrorMessage('Houve um probleminha no menu principal');
     }
   }
 }

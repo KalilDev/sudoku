@@ -3,14 +3,14 @@ import 'package:sudoku_presentation/errors.dart';
 
 class ExceptionHandlerBloc extends Bloc<UserFriendly<Object>, UserFriendly<Object>>{
   @override
-  UserFriendly<Object> get initialState => null;
+  UserFriendly<Object> get initialState => const UserFriendly<String>('Ok', 'Everything is fine');
 
   void handler(Object exception) {
     if (exception is UserFriendly) {
       add(exception);
       return;
     }
-    add(exception.withMessage('Ocorreu um erro inesperado'));
+    add(exception.withErrorMessage('Ocorreu um erro inesperado'));
   }
 
   @override

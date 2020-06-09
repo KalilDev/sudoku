@@ -13,10 +13,11 @@ import 'event.dart';
 import 'state.dart';
 
 class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
-  SudokuBloc({this.definition, this.repository, this.onException});
+  SudokuBloc({this.definition, this.repository, this.onException, this.frameProvider});
   final SudokuConfiguration definition;
   final BoardRepository repository;
   final ExceptionHandler onException;
+  final NextFrameProvider frameProvider;
 
   final Queue<SquareDelta> deltas = DoubleLinkedQueue();
   List<int> selectedSquare; // [x, y] or null in case none
@@ -70,7 +71,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
             "Ao tentar carregar o Sudoku armazenado, ocorreu um erro inesperado.");
         break;
       case StateSource.random:
-        chunked = await genRandomSudoku(definition.side, definition.difficulty).withErrorMessage(
+        chunked = await genRandomSudoku(definition.side, definition.difficulty, frameProvider).withErrorMessage(
             "Ao tentar criar um Sudoku, ocorreu um erro inesperado.");
         chunkedSubs =
             chunked.squares.listen((square) => add(PieceLoadedEvent(square)));
@@ -281,7 +282,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
       throw StateException('The state needs to have info about the squares before the next events').withMessage('Houve um probleminha no sudoku');
     }
 
-    final stateWithInfo = state as SudokuBlocStateWithInfo;
+    final stateWithInfo = handled ? null : state as SudokuBlocStateWithInfo;
 
     if (event is PieceLoadedEvent && !handled) {
       handled = true;
@@ -298,7 +299,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
       throw StateException('The state needs to be an snapshot with an sudokuState before the next events').withMessage('Houve um probleminha no sudoku');
     }
 
-    final snap = state as SudokuSnapshot;
+    final snap = handled ? null : state as SudokuSnapshot;
 
     if (event is ActionReset && !handled) {
       handled = true;

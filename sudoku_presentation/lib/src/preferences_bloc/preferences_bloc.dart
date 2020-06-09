@@ -76,7 +76,9 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
     if (state is! PrefsSnap && !handled) {
       throw StateException('It is impossible to handle $event while the state is not PrefsSnap').withMessage('Houve um probleminha nas preferencias');
     }
-    final snap = state as PrefsSnap;
+
+    final snap = handled ? null : state as PrefsSnap;
+
     if (event is AnimationOptionsUpdatedEvent && !handled) {
       handled = true;
       yield snap.copyWith(animationOptions: event.animationOptions);

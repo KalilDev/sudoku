@@ -1,55 +1,71 @@
-import 'package:meta/meta.dart';
+import 'dart:async';
 
+import 'package:meta/meta.dart';
 extension ToUserFriendly on Object {
-  UserFriendly<This> withMessage<This extends Object>(String userFriendlyMessage) {
-    if (this is UserFriendly<This>) {
-      final casted = this as UserFriendly<This>;
+  UserFriendly<dynamic> withErrorMessage(String _userFriendlyMessage) {
+    if (this is UserFriendly) {
+      final casted = this as UserFriendly;
       final hasMessage = casted.userFriendlyMessage != null;
-      // [userFriendlyMessage] will be ignored
-      return hasMessage ? casted : UserFriendly<This>(casted.value, userFriendlyMessage);
+      // [_userFriendlyMessage] will be ignored. This is needed in case this is
+      // an UserFriendly<Object> but the value is an Error or Exception.
+      final userFriendlyMessage = hasMessage ? casted.userFriendlyMessage : _userFriendlyMessage;
+      if (casted.value is Error) {
+        return UserFriendlyError(casted.value as Error, userFriendlyMessage);
+      }
+      if (casted.value is Exception) {
+        return UserFriendlyException(casted.value as Exception, userFriendlyMessage);
+      }
+      return UserFriendly<Object>(casted.value, userFriendlyMessage);
     }
-    return UserFriendly<This>(this as This, userFriendlyMessage);
+
+    if (this is Error) {
+      return UserFriendlyError(this as Error, _userFriendlyMessage);
+    }
+    if (this is Exception) {
+      return UserFriendlyException(this as Exception, _userFriendlyMessage);
+    }
+
+    return UserFriendly<Object>(this, _userFriendlyMessage);
   }
+}
+
+extension ErrorWithMessage on Error {
+  UserFriendlyError withMessage(String _userFriendlyMessage) => this.withErrorMessage(_userFriendlyMessage) as UserFriendlyError;
+}
+
+extension ExceptionWithMessage on Exception {
+  UserFriendlyException withMessage(String _userFriendlyMessage) => this.withErrorMessage(_userFriendlyMessage) as UserFriendlyException;
 }
 
 // Ignore an error. Just for readability
-void ignore([dynamic _, dynamic __]) {}
+T ignore<T>([dynamic _, dynamic __]) => null;
 
 extension ToUserFriendlyFuture<T> on Future<T> {
-  Future<T> withErrorMessage(String userFriendlyMessage, {Function onError}) =>
-    catchError((Object error) {
-      final userFriendlyError = error.withMessage(userFriendlyMessage);
-      if (onError == null) {
-        // Rethrow the error, now with the proper message.
-        throw userFriendlyError;
-      }
-      // investigate this. onError may be Fuction(Object) or Function(Object, StackTrace)
-      return onError(userFriendlyError);
+  Future<T> withErrorMessage(String userFriendlyMessage, {Function onError, bool Function(Object) test}) {
+    final newFuture = catchError((Object error) {
+      final userFriendlyError = error.withErrorMessage(userFriendlyMessage);
+      // Rethrow the error, now with the proper message. It is an
+      // UserFriendlyError if [error] is an [Error], an UserFriendlyException if
+      // [error] is an Exception and an UserFriendly<Object> if [error] is
+      // anything else.
+      // ignore: only_throw_errors
+      throw userFriendlyError;
     });
-  Future<T> ignoreError() => catchError(ignore);
-}
-
-extension ToUserFriendlyError on Error {
-  UserFriendlyError withMessage(String userFriendlyMessage) {
-    if (this is UserFriendly<Error>) {
-      final casted = this as UserFriendly<Error>;
-      final hasMessage = casted.userFriendlyMessage != null;
-      // [userFriendlyMessage] will be ignored
-      return hasMessage ? UserFriendlyError(casted.value, casted.userFriendlyMessage) : UserFriendlyError(casted.value, userFriendlyMessage);
-    }
-    return UserFriendlyError(this, userFriendlyMessage);
+    // We can't just run the onError function because we don't know it's
+    // signature. It could be Function(Object) or Function(Object, StackTrace)
+    return onError == null ? newFuture : newFuture.catchError(onError, test: test);
   }
+  Future<T> ignoreError() => catchError(ignore);
+  Future<T> withDefault(T value) => then((T result) => result ?? value);
 }
 
-extension ToUserFriendlyException on Exception {
-  UserFriendlyException withMessage(String userFriendlyMessage) {
-    if (this is UserFriendly<Exception>) {
-      final casted = this as UserFriendly<Exception>;
-      final hasMessage = casted.userFriendlyMessage != null;
-      // [userFriendlyMessage] will be ignored
-      return hasMessage ? UserFriendlyException(casted.value, casted.userFriendlyMessage) : UserFriendlyException(casted.value, userFriendlyMessage);
+extension RetryFutureCallback<T> on Future<T> Function() {
+  Future<T> retry([int times = 3]) {
+    if (times == 0) {
+      return this.call();
     }
-    return UserFriendlyException(this, userFriendlyMessage);
+    // ignore the error and retry
+    return this.call().catchError((Object error) => retry(times - 1));
   }
 }
 
