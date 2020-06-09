@@ -5,6 +5,56 @@ import 'bidimensional_list.dart';
 import 'sudoku_state.dart';
 import 'sudoku_utils.dart';
 
+typedef NextFrameProvider = Future<void> Function();
+
+class TimedStreamTransformer<T> extends StreamTransformerBase<T, T> {
+  final Duration frameQuota;
+  final NextFrameProvider frameProvider;
+  final Stopwatch timer = Stopwatch();
+  StreamSubscription<T> subs;
+  StreamController<T> controller = StreamController<T>();
+  bool pausedOrStopped = false;
+
+  static Future<void> defaultFrameProvider() => Future<void>.delayed(const Duration(milliseconds: 14));
+  static const Duration defaultFrameQuota = Duration(milliseconds: 5);
+
+  TimedStreamTransformer({this.frameQuota = defaultFrameQuota, this.frameProvider = defaultFrameProvider});
+
+  Future<void> maybeResumeLater() => frameProvider().then((_) => maybeResume());
+
+  void onDone() {
+    controller.close();
+    pausedOrStopped = true;
+  }
+
+  void onData(T data) {
+    controller.add(data);
+    if (timer.elapsed >= frameQuota) {
+      subs.pause();
+      maybeResumeLater();
+      timer.stop();
+    }
+  }
+
+  void maybeResume() {
+    if (!pausedOrStopped) {
+      timer..reset()..start();
+      subs.resume();
+    }
+  }
+
+  @override
+  Stream<T> bind(Stream<T> stream) {
+    // check this
+    timer.start();
+    subs = stream.listen(onData, onError: controller.addError, onDone: onDone);
+    controller.onCancel = onDone;
+    controller.onPause = () {subs.pause(); pausedOrStopped = true; timer.stop();};
+    controller.onResume = () {pausedOrStopped = false;maybeResume();};
+    return controller.stream;
+  }
+}
+
 class ChunkedSudoku {
   final StreamController<ChunkedSudokuSquare> _squaresController;
   final Future<SudokuState> onComplete;
@@ -37,13 +87,17 @@ class ChunkedSudokuSquare extends ChunkedSudokuPiece {
   const ChunkedSudokuSquare(this.x, this.y, this.n);
 }
 
-ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5}) {
+ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5, NextFrameProvider frameProvider = TimedStreamTransformer.defaultFrameProvider}) {
   final completer = Completer<SudokuState>();
   // ignore: close_sinks
   final squaresController = StreamController<ChunkedSudokuSquare>();
+  var chunkedStream = rawCreateRandomSudoku(side: side, maskRate: maskRate);
+  if (frameProvider != null) {
+    chunkedStream = chunkedStream.transform(TimedStreamTransformer<ChunkedSudokuPiece>(frameProvider: frameProvider));
+  }
   // ignore: cancel_subscriptions
   final subscription =
-      rawCreateRandomSudoku(side: side, maskRate: maskRate).listen((piece) {
+      chunkedStream.listen((piece) {
     if (piece is ChunkedSudokuSquare) {
       squaresController.add(piece);
     }
@@ -54,9 +108,13 @@ ChunkedSudoku chunkedCreateRandomSudoku({int side = 9, double maskRate = 0.5}) {
   return ChunkedSudoku._(squaresController, completer.future, subscription);
 }
 
-Future<SudokuState> createRandomSudoku({int side = 9, double maskRate = 0.5}) {
+Future<SudokuState> asyncCreateRandomSudoku({int side = 9, double maskRate = 0.5, NextFrameProvider frameProvider = TimedStreamTransformer.defaultFrameProvider}) {
   final completer = Completer<SudokuState>();
-  rawCreateRandomSudoku(side: side, maskRate: maskRate).last.then(
+  var chunkedStream = rawCreateRandomSudoku(side: side, maskRate: maskRate);
+  if (frameProvider != null) {
+    chunkedStream = chunkedStream.transform(TimedStreamTransformer<ChunkedSudokuPiece>(frameProvider: frameProvider));
+  }
+  chunkedStream.last.then(
       (value) => completer.complete((value as ChunkedSudokuResult).state));
   return completer.future;
 }
