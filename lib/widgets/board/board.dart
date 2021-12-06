@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:material_you/material_you.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,13 +40,15 @@ TextStyle getTextStyle(
     SquareInfo info, double squareSide, BuildContext context) {
   final noMainNumber = info.number == 0;
   final theme = Theme.of(context);
-  final smallestTextStyle = theme.textTheme.overline;
-  final biggestTextStyle = theme.textTheme.headline4;
+  final textTheme = context.textTheme;
+  final smallestTextStyle = textTheme.labelMedium;
+  final biggestTextStyle = textTheme.headlineMedium;
   final absoluteBiggest = squareSide * 0.8;
   final constrainedTextStyle = biggestTextStyle.copyWith(
-      fontSize: absoluteBiggest
-          .clamp(smallestTextStyle.fontSize, biggestTextStyle.fontSize)
-          .toDouble());
+    fontSize: absoluteBiggest
+        .clamp(smallestTextStyle.fontSize, biggestTextStyle.fontSize)
+        .toDouble(),
+  );
   final style = noMainNumber ? smallestTextStyle : constrainedTextStyle;
   final color = getColor(info, context);
   if (color == null) {
