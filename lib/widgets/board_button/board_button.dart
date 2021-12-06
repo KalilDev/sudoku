@@ -10,6 +10,7 @@ class BoardButton extends StatelessWidget {
     Key key,
     this.onTap,
     this.onFocused,
+    this.isLoading,
     this.isSelected,
     this.text,
     this.isBottomText,
@@ -18,6 +19,7 @@ class BoardButton extends StatelessWidget {
   }) : super(key: key);
   final VoidCallback onTap;
   final VoidCallback onFocused;
+  final bool isLoading;
   final bool isSelected;
   final bool isInitial;
   final bool isBottomText;
@@ -44,6 +46,7 @@ class BoardButton extends StatelessWidget {
       padding: EdgeInsets.all(sizeClassPaddingMap[context.sizeClass]),
       child: BoardButtonContainer(
         isEnabled: !isInitial,
+        isForegroundEnabled: !isLoading,
         isSelected: isSelected,
         onFocusChanged: _onFocusChange,
         animationOptions: animationOptions,

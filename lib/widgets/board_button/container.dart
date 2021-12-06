@@ -8,12 +8,14 @@ class BoardButtonContainer extends StatefulWidget {
   const BoardButtonContainer({
     Key key,
     this.isEnabled,
+    this.isForegroundEnabled,
     this.isSelected,
     this.onFocusChanged,
     this.animationOptions,
     this.child,
   }) : super(key: key);
   final bool isEnabled;
+  final bool isForegroundEnabled;
   final bool isSelected;
   final ValueChanged<bool> onFocusChanged;
   final AnimationOptions animationOptions;
@@ -32,7 +34,7 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
     final scheme = context.colorScheme;
     backgroundColor = MaterialStateProperty.resolveWith((states) {
       if (states.contains(MaterialState.disabled)) {
-        return scheme.surfaceVariant.withOpacity(0.38);
+        return scheme.surfaceVariant.withOpacity(0.6);
       }
       if (states.contains(MaterialState.selected)) {
         return scheme.tertiaryContainer;
@@ -41,7 +43,7 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
     });
     foregroundColor = MaterialStateProperty.resolveWith((states) {
       if (states.contains(MaterialState.disabled)) {
-        return scheme.onSurface;
+        return scheme.onSurface.withOpacity(0.38 / 0.8);
       }
       if (states.contains(MaterialState.selected)) {
         return scheme.onTertiaryContainer;
@@ -52,8 +54,12 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
 
   @override
   Widget build(BuildContext context) {
-    final states = {
+    final backgroundStates = {
       if (!widget.isEnabled) MaterialState.disabled,
+      if (widget.isSelected) MaterialState.selected,
+    };
+    final foregroundStates = {
+      if (!widget.isForegroundEnabled) MaterialState.disabled,
       if (widget.isSelected) MaterialState.selected,
     };
     return Focus(
@@ -62,9 +68,9 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
       descendantsAreFocusable: widget.isEnabled,
       skipTraversal: !widget.isEnabled,
       child: _AnimatedBoardButtonContainer(
-        backgroundColor: backgroundColor.resolve(states),
+        backgroundColor: backgroundColor.resolve(backgroundStates),
         animateBackground: widget.animationOptions.selectColor,
-        foregroundColor: foregroundColor.resolve(states),
+        foregroundColor: foregroundColor.resolve(foregroundStates),
         animateForeground: widget.animationOptions.textColor,
         duration: durationForSpeed(widget.animationOptions.speed),
         backgroundPosition:

@@ -27,10 +27,10 @@ class BoardButtonTextAnimation extends StatelessWidget {
         final maxTextHeight = constraints.maxHeight;
         var textStyle = bottom
             ? context.textTheme.labelMedium.copyWith(
-                color: color.withOpacity(0.6),
+                color: color.withOpacity(0.6 * color.opacity),
               )
             : context.textTheme.headlineMedium.copyWith(
-                color: color.withOpacity(0.8),
+                color: color.withOpacity(0.8 * color.opacity),
               );
         final textStyleHeight = textStyle.height ?? 1.0;
         if (textStyleHeight * textStyle.fontSize >= maxTextHeight) {
