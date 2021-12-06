@@ -4,7 +4,7 @@ description: A library with the core utilities for the Sudoku Flutter app.
 homepage: https://www.github.com/kalildev/sudoku
 
 environment:
-  sdk: '>=2.9.0-5.0 <2.9.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 #dependencies:
 #  path: ^1.6.0

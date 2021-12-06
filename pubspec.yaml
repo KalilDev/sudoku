@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  bloc: any
-  flutter_bloc: any
+  bloc: ^4.0.0
+  flutter_bloc: ^4.0.0
   cross_local_storage: any
   localstorage: any
   path_provider_linux: any
