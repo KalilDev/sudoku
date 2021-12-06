@@ -226,16 +226,15 @@ void openPrefs(BuildContext context) {
             final state = _state as PrefsSnap;
             final opts = state.animationOptions;
             final slivers = [
+              SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
               ...buildThemes(context, state.theme),
-              ...buildAnimations(opts, context)
+              ...buildAnimations(opts, context),
+              SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
             ];
             const widthConstraints = BoxConstraints(maxWidth: 900);
-            return ConstrainedBox(
-              constraints: widthConstraints,
-              child: CustomScrollView(
-                slivers: slivers,
-                shrinkWrap: true,
-              ),
+            return CustomScrollView(
+              slivers: slivers,
+              shrinkWrap: true,
             );
           },
         ),
