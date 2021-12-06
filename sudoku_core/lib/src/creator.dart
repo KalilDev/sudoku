@@ -15,10 +15,13 @@ class TimedStreamTransformer<T> extends StreamTransformerBase<T, T> {
   StreamController<T> controller = StreamController<T>();
   bool pausedOrStopped = false;
 
-  static Future<void> defaultFrameProvider() => Future<void>.delayed(const Duration(milliseconds: 14));
-  static const Duration defaultFrameQuota = Duration(milliseconds: 5);
+  static Future<void> defaultFrameProvider() =>
+      Future<void>.delayed(const Duration(milliseconds: 14));
+  static const Duration defaultFrameQuota = Duration(milliseconds: 7);
 
-  TimedStreamTransformer({this.frameQuota = defaultFrameQuota, this.frameProvider = defaultFrameProvider});
+  TimedStreamTransformer(
+      {this.frameQuota = defaultFrameQuota,
+      this.frameProvider = defaultFrameProvider});
 
   Future<void> maybeResumeLater() => frameProvider().then((_) => maybeResume());
 
