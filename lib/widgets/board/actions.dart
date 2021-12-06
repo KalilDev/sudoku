@@ -45,7 +45,7 @@ class SudokuActions extends StatelessWidget {
       side: MaterialStateProperty.resolveWith(
         (states) => BorderSide(
             color: states.contains(MaterialState.disabled)
-                ? scheme.onSurface.withOpacity(0.38)
+                ? scheme.outline.withOpacity(0.38)
                 : theme.mainDarkened),
       ),
       padding: MaterialStateProperty.all(EdgeInsets.zero),
