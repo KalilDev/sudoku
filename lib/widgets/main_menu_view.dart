@@ -1,13 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_widgets/material_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:sudoku/theme.dart';
 import 'package:sudoku/widgets/board/board.dart';
-import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku/widgets/exception_snackbar.dart';
+import 'package:sudoku_presentation/errors.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/main_menu_bloc.dart';
+import 'package:sudoku_presentation/exception_handler_bloc.dart';
 
-import 'prefs_sheet.dart';
-import 'sudoku_button.dart';
+import 'prefs_fullscreen_dialog.dart';
 
 String difficultyToString(SudokuDifficulty difficulty) {
   switch (difficulty) {
@@ -81,8 +85,9 @@ class MainMenu extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(_state.userFriendlyMessage),
-                Text("Mensagem do erro: ${_state.message}")
+                Text(_state.error.getText(kDebugMode)),
+                Text(
+                    "Mensagem do erro: ${_state.error.getExtraText(kDebugMode)}")
               ],
             ),
           ),
@@ -143,17 +148,29 @@ class MainMenu extends StatelessWidget {
               icon: const Icon(Icons.settings),
               onPressed: () => openPrefs(context),
             ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: widthConstraints,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+          ),
+          body: BlocListener<ExceptionHandlerBloc, UserFriendly<Object>>(
+            listener: showExceptionSnackbar,
+            child: Center(
+              child: ListView(
+                shrinkWrap: true,
+                padding: EdgeInsets.all(context.minMargin),
                 children: [
-                  boardWidget,
-                  Flexible(
-                    child: Column(
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: widthConstraints,
+                      child: boardWidget,
+                    ),
+                  ),
+                  SizedBox(height: context.minMargin / 2),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: widthConstraints,
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: optionsWidgets),
+                        children: optionsWidgets,
+                      ),
+                    ),
                   ),
                 ],
               ),
