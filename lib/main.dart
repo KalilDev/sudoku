@@ -18,6 +18,11 @@ import 'package:sudoku_presentation/preferences_bloc.dart';
 import 'package:sudoku_presentation/repositories.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
 
+Future<void> flutterFrameProvider() {
+  final onFrame = Completer<void>();
+  WidgetsBinding.instance.scheduleFrameCallback((_) => onFrame.complete());
+  return onFrame.future;
+}
 
 void main() {
   runPlatformThemedApp(
@@ -64,13 +69,15 @@ class RootView extends StatelessWidget {
       sudokuConfiguration = SudokuConfiguration(numbers[0], numbers[1]);
     }
     return MaterialPageRoute<void>(
-        builder: (context) => BlocProvider<SudokuBloc>(
-              create: (BuildContext context) => SudokuBloc(
-                sudokuConfiguration,
-                RepositoryProvider.of<BoardRepository>(context),
-              ),
-              child: SudokuBoardView(),
-            ));
+      builder: (context) => BlocProvider<SudokuBloc>(
+        create: (BuildContext context) => SudokuBloc(
+            definition: sudokuConfiguration,
+            repository: RepositoryProvider.of<BoardRepository>(context),
+            onException: BlocProvider.of<ExceptionHandlerBloc>(context).handler,
+            frameProvider: flutterFrameProvider),
+        child: SudokuBoardView(),
+      ),
+    );
   }
 
   static MonetTheme monetThemeFromSudokuTheme(SudokuTheme theme) =>
