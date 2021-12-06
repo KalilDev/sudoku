@@ -200,6 +200,8 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
           "Tamanho", opts.textSize, (b) => update(opts.copyWith(textSize: b))),
       buildSingle(
           "Cor", opts.textColor, (b) => update(opts.copyWith(textColor: b))),
+      buildSingle("Texto", opts.textString,
+          (b) => update(opts.copyWith(textString: b))),
     ]))
   ];
 }
