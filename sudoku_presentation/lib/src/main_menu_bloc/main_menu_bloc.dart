@@ -65,13 +65,12 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
     return sudokuConfigurations.castInner<SudokuConfiguration>();
   }
 
-  Future<int> getStoredX() => preferencesRepository.getMainMenuX().then((v) => v ?? 0).withErrorMessage("There was an error while getting the stored difficulty");
+  Future<int> getStoredX() => preferencesRepository.getMainMenuX().withDefault(0).withErrorMessage("There was an error while getting the stored difficulty");
 
-  Future<int> getStoredY() => preferencesRepository.getMainMenuY().then((v) => v ?? 1).withErrorMessage("There was an error while getting the stored side");
+  Future<int> getStoredY() => preferencesRepository.getMainMenuY().withDefault(1).withErrorMessage("There was an error while getting the stored side");
 
   Future<bool> getAknowledgement() => preferencesRepository
-            .getAknowledgement()
-            .ignoreError().then((value) => value ?? false);
+            .getAknowledgement().orElse(false);
 
   Future<void> didAknowledge() => preferencesRepository
         .updateAknowledgement(true)
@@ -131,7 +130,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
     }
 
     if (state is! MainMenuSnap && !handled) {
-      throw StateException('It is impossible to handle $event while the state is not PrefsSnap').withErrorMessage('Houve um probleminha no menu principal');
+      throw StateException('It is impossible to handle $event while the state is not PrefsSnap').withMessage('Houve um probleminha no menu principal');
     }
 
     final snap = handled ? null : state as MainMenuSnap;
@@ -157,7 +156,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
           .copyWith(storage: StorageAknowledgment.unsupportedAknowledged);
     }
     if (!handled) {
-      throw StateException('$event was not handled').withErrorMessage('Houve um probleminha no menu principal');
+      throw StateException('$event was not handled').withMessage('Houve um probleminha no menu principal');
     }
   }
 }
