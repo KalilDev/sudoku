@@ -55,8 +55,9 @@ extension ToUserFriendlyFuture<T> on Future<T> {
     // signature. It could be Function(Object) or Function(Object, StackTrace)
     return onError == null ? newFuture : newFuture.catchError(onError, test: test);
   }
-  Future<T> ignoreError() => catchError(ignore);
+  Future<T> ignoreError() => catchError((Object _, StackTrace __) => ignore<T>(_, __));
   Future<T> withDefault(T value) => then((T result) => result ?? value);
+  Future<T> orElse(T value) => ignoreError().withDefault(value) as Future<T>;
 }
 
 extension RetryFutureCallback<T> on Future<T> Function() {
@@ -76,12 +77,18 @@ class UserFriendly<T> {
 
   const UserFriendly(this.value, this.userFriendlyMessage);
 
+  String getText(bool isDebug) => isDebug ? value.toString() : userFriendlyMessage;
+  String getExtraText(bool isDebug) => isDebug ? userFriendlyMessage : value.toString();
+
   @override
   String toString() => value.toString();
 }
 
 class UserFriendlyError extends UserFriendly<Error> implements Error {
   const UserFriendlyError(Error value, String userFriendlyMessage) : super(value, userFriendlyMessage);
+
+  @override
+  String getExtraText(bool isDebug) => isDebug ? stackTrace.toString() : super.getExtraText(isDebug);
 
   @override
   StackTrace get stackTrace => value.stackTrace;
