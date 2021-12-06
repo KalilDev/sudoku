@@ -121,6 +121,7 @@ class SudokuBoardView extends StatelessWidget {
                         child: SudokuBoard(
                           state: state.squares,
                           disabled: snapOrNull == null,
+                          loading: state is SudokuLoadingState,
                           animationOptions: prefsState.animationOptions,
                         ),
                       ),

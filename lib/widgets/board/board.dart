@@ -17,6 +17,7 @@ class SudokuAnimatedSquare extends StatelessWidget {
     this.y,
     this.squareSide,
     this.disabled,
+    this.loading,
     this.animationOptions,
   }) : super(key: key);
   final SquareInfo info;
@@ -24,6 +25,7 @@ class SudokuAnimatedSquare extends StatelessWidget {
   final int y;
   final double squareSide;
   final bool disabled;
+  final bool loading;
   final AnimationOptions animationOptions;
 
   @override
@@ -39,8 +41,9 @@ class SudokuAnimatedSquare extends StatelessWidget {
     }
 
     return BoardButton(
-      onTap: disabled ? null : onTap,
-      onFocused: disabled ? null : onFocused,
+      onTap: disabled || info.isInitial ? null : onTap,
+      onFocused: disabled || info.isInitial ? null : onFocused,
+      isLoading: loading,
       isInitial: info.isInitial,
       isSelected: info.isSelected,
       isBottomText: info.number == 0,
@@ -56,8 +59,14 @@ class SudokuBoard extends StatelessWidget {
   final BidimensionalList<SquareInfo> state;
   final AnimationOptions animationOptions;
   final bool disabled;
-  const SudokuBoard({Key key, this.state, this.animationOptions, this.disabled})
-      : super(key: key);
+  final bool loading;
+  const SudokuBoard({
+    Key key,
+    this.state,
+    this.animationOptions,
+    this.disabled,
+    this.loading,
+  }) : super(key: key);
 
   Widget buildNumber(SquareInfo info, int x, int y, double childSize) {
     final key = ValueKey("Square: $x, $y");
@@ -67,6 +76,7 @@ class SudokuBoard extends StatelessWidget {
       x: x,
       y: y,
       disabled: disabled,
+      loading: loading,
       squareSide: childSize,
       key: key,
       animationOptions: animationOptions,
