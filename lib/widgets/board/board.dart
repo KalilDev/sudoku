@@ -4,7 +4,7 @@ import 'package:material_you/material_you.dart';
 import 'package:sudoku_core/sudoku_core.dart';
 import 'package:sudoku/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
 import 'package:provider/provider.dart';
 
@@ -68,11 +68,13 @@ class SudokuStaticSquare extends StatelessWidget {
   final int x;
   final int y;
   final double squareSide;
+  final bool disabled;
   const SudokuStaticSquare(
       {@required Key key,
       @required this.info,
       @required this.x,
       @required this.y,
+      this.disabled,
       this.squareSide})
       : super(key: key);
 
@@ -89,7 +91,8 @@ class SudokuStaticSquare extends StatelessWidget {
       padding: EdgeInsets.all(padding),
       child: InkWell(
         customBorder: const CircleBorder(),
-        onTap: info.isInitial ? null : onTap,
+        onTap: disabled || info.isInitial ? null : onTap,
+        onFocusChange: (a) => a ? onTap() : null,
         child: Ink(
           decoration: decoration,
           child: Align(alignment: getTextAlignment(info), child: text),
@@ -104,6 +107,7 @@ class SudokuAnimatedSquare extends StatefulWidget {
   final int x;
   final int y;
   final double squareSide;
+  final bool disabled;
   final AnimationOptions animationOptions;
 
   const SudokuAnimatedSquare(
@@ -112,6 +116,7 @@ class SudokuAnimatedSquare extends StatefulWidget {
       @required this.x,
       @required this.y,
       @required this.animationOptions,
+      this.disabled,
       this.squareSide})
       : super(key: key);
 
@@ -280,7 +285,7 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
       padding: EdgeInsets.all(padding),
       child: InkWell(
         customBorder: const CircleBorder(),
-        onTap: targetInfo.isInitial ? null : onTap,
+        onTap: widget.disabled || targetInfo.isInitial ? null : onTap,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -331,7 +336,8 @@ class _SudokuSquareState extends State<SudokuAnimatedSquare>
 class SudokuBoard extends StatelessWidget {
   final BidimensionalList<SquareInfo> state;
   final AnimationOptions animationOptions;
-  const SudokuBoard({Key key, this.state, this.animationOptions})
+  final bool disabled;
+  const SudokuBoard({Key key, this.state, this.animationOptions, this.disabled})
       : super(key: key);
 
   Widget buildNumber(SquareInfo info, int x, int y, double childSize) {
@@ -341,6 +347,7 @@ class SudokuBoard extends StatelessWidget {
         info: info,
         x: x,
         y: y,
+        disabled: disabled,
         squareSide: childSize,
         key: key,
         animationOptions: animationOptions,
@@ -350,6 +357,7 @@ class SudokuBoard extends StatelessWidget {
       info: info,
       x: x,
       y: y,
+      disabled: disabled,
       squareSide: childSize,
       key: key,
     );
