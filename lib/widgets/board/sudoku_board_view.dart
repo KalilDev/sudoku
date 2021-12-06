@@ -23,7 +23,7 @@ class SudokuBoardView extends StatelessWidget {
                 SudokuBloc, SudokuBlocState>(
             builder: (BuildContext context, SudokuBlocState _state) =>
                 LayoutBuilder(builder: (context, constraints) {
-                  final appBar = AppBar(
+                  final appBar = MD3SmallAppBar(
                     title: const Text("Sudoku"),
                     actions: [
                       IconButton(
@@ -31,7 +31,9 @@ class SudokuBoardView extends StatelessWidget {
                           onPressed: () => openPrefs(context))
                     ],
                   );
-                  final sliverAppBar = SliverAppBar(
+                  final sliverAppBar = MD3SliverAppBar(
+                    expandable: false,
+                    pinned: false,
                     title: const Text("Sudoku"),
                     actions: [
                       IconButton(
@@ -72,13 +74,14 @@ class SudokuBoardView extends StatelessWidget {
                       showDialog<void>(
                           context: context,
                           builder: (BuildContext context) {
-                            return AlertDialog(
-                                title: const Text("Parabéns"),
+                            return MD3BasicDialog(
+                                title: const Text('Parabéns'),
+                                icon: Icon(Icons.celebration),
                                 content: const Text("Você completou o Sudoku!"),
                                 actions: [
-                                  FlatButton(
+                                  TextButton(
                                       onPressed: pop,
-                                      child: const Text("Continuar"))
+                                      child: const Text("Início"))
                                 ]);
                           }).then(pop);
                     });
