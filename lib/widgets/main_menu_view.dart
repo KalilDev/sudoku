@@ -99,19 +99,15 @@ class MainMenu extends StatelessWidget {
       final sideCounts = configs.map((row) => row.first.side).toList();
       final config = state.configurations[state.sideY][state.difficultyX];
       const widthConstraints = BoxConstraints(maxWidth: 450);
-      final boardWidget = Flexible(
-        child: Center(
-          child: AspectRatio(
-              aspectRatio: 1,
-              child: Hero(
-                tag: "SudokuBG",
-                child: CustomPaint(
-                  painter: SudokuBgPainter(
-                      sideCounts[state.sideY], theme.main, Colors.transparent),
-                ),
-              )),
-        ),
-      );
+      final boardWidget = AspectRatio(
+          aspectRatio: 1,
+          child: Hero(
+            tag: "SudokuBG",
+            child: CustomPaint(
+              painter: SudokuBgPainter(
+                  sideCounts[state.sideY], theme.main, Colors.transparent),
+            ),
+          ));
       final optionsWidgets = [
         Text("Lado: " + sideCounts[state.sideY].toString()),
         MD3Slider(
