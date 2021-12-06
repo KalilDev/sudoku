@@ -1,10 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_widgets/material_widgets.dart';
+import 'package:sudoku/widgets/exception_snackbar.dart';
 import 'package:sudoku_core/sudoku_core.dart';
+import 'package:sudoku_presentation/errors.dart';
 import 'package:sudoku_presentation/preferences_bloc.dart';
+import 'package:sudoku_presentation/exception_handler_bloc.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
 
-import '../prefs_sheet.dart';
+import '../prefs_fullscreen_dialog.dart';
 import './actions.dart';
 import './board.dart';
 import './numbers.dart';
@@ -54,8 +60,9 @@ class SudokuBoardView extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(_state.userFriendlyMessage),
-                            Text("Mensagem do erro: ${_state.message}")
+                            Text(_state.error.getText(kDebugMode)),
+                            Text(
+                                "Mensagem do erro: ${_state.error.getExtraText(kDebugMode)}")
                           ],
                         ),
                       ),
@@ -95,7 +102,7 @@ class SudokuBoardView extends StatelessWidget {
                       child: SudokuActions(
                           canRewind: snapOrNull?.canRewind,
                           markType: snapOrNull?.markType,
-                          enabled: snapOrNull != null,
+                          disabled: snapOrNull == null,
                           isPortrait: !actionsOnChildren));
 
                   const numberSize = SudokuNumbers.buttonSize;
@@ -113,6 +120,7 @@ class SudokuBoardView extends StatelessWidget {
                         padding: const EdgeInsets.all(2.0),
                         child: SudokuBoard(
                           state: state.squares,
+                          disabled: snapOrNull == null,
                           animationOptions: prefsState.animationOptions,
                         ),
                       ),
@@ -123,7 +131,7 @@ class SudokuBoardView extends StatelessWidget {
                         constraints: numberConstraints,
                         child: SudokuNumbers(
                             state: state.numbers,
-                            enabled: snapOrNull != null,
+                            disabled: snapOrNull == null,
                             isPortrait: isPortrait),
                       ),
                     ),
@@ -134,14 +142,17 @@ class SudokuBoardView extends StatelessWidget {
                           ? Row(children: children)
                           : Column(children: children));
                   return Scaffold(
-                    bottomNavigationBar:
-                        !actionsOnChildren ? sudokuActions : null,
-                    body: CustomScrollView(
-                      slivers: [sliverAppBar, widget],
-                      physics: const SnapToEdgesAndPointsPhysics(
-                          points: [kToolbarHeight]),
-                    ),
-                  );
+                      bottomNavigationBar:
+                          !actionsOnChildren ? sudokuActions : null,
+                      body: BlocListener<ExceptionHandlerBloc,
+                          UserFriendly<Object>>(
+                        listener: showExceptionSnackbar,
+                        child: CustomScrollView(
+                          slivers: [sliverAppBar, widget],
+                          physics:
+                              const SnapToEdgesAndPointsPhysics(points: [64]),
+                        ),
+                      ));
                 })));
   }
 }
