@@ -407,6 +407,8 @@ class SudokuBoard extends StatelessWidget {
     );
   }
 
+  static const kMaxIconSize = 124.0;
+
   @override
   Widget build(BuildContext context) {
     return MediaQuery.removePadding(
@@ -417,16 +419,22 @@ class SudokuBoard extends StatelessWidget {
       removeRight: true,
       child: Align(
         alignment: Alignment.center,
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              SizedBox.expand(child: buildBackground(context)),
-              SizedBox.expand(
-                child: buildGrid(context),
-              )
-            ],
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: kMaxIconSize * state.length,
+            maxWidth: kMaxIconSize * state.length,
+          ),
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(child: buildBackground(context)),
+                Positioned.fill(
+                  child: buildGrid(context),
+                )
+              ],
+            ),
           ),
         ),
       ),
