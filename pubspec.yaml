@@ -19,6 +19,7 @@ dependencies:
     path: ./sudoku_core/
   sudoku_presentation:
     path: ./sudoku_presentation/
+  material_widgets: ^0.4.0-preview.4
 
 dev_dependencies:
   flutter_test:
