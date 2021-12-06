@@ -228,6 +228,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
       sudokuState[y][x] = 0;
       sudokuState.possibleValues[y][x] = delta.possibleValues;
     }
+    validation[y][x] = Validation.notValidated;
   }
 
   void numberTap(int n) {
@@ -305,6 +306,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
       handled = true;
       sudokuState.reset();
       deltas.clear();
+      validation = BidimensionalList<Validation>.filled(definition.side, Validation.notValidated);
       final newSnap = await genSnapshot();
       yield newSnap;
       await scheduleSave(newSnap);
