@@ -61,22 +61,29 @@ Widget buildSingleThemePreview(
   bool enabled,
 ) {
   final rawTheme = entry.value;
-  final theme =
-      rawTheme.copyWith(main: rawTheme.background, mainDarkened: rawTheme.main);
+  final themes = monetThemeFromSudokuTheme(rawTheme) ??
+      generateTheme(context.palette.primaryColor);
+  var themeMode = rawTheme.themeMode;
+  if (themeMode == ThemeMode.system) {
+    themeMode = MediaQuery.platformBrightnessOf(context) == Brightness.dark
+        ? ThemeMode.dark
+        : ThemeMode.light;
+  }
+  final theme = themeMode == ThemeMode.dark ? themes.dark : themes.light;
   final text = themeToString(entry.key);
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
     child: ColoredCard(
       color: CustomColorScheme(
-        color: theme.main,
-        onColor: theme.main,
-        colorContainer: theme.main.withOpacity(enabled ? 1.0 : 0.38),
-        onColorContainer: rawTheme.main.withOpacity(enabled ? 1.0 : 0.38),
+        color: theme.background.withOpacity(enabled ? 1.0 : 0.38),
+        onColor: theme.primary.withOpacity(enabled ? 1.0 : 0.38),
+        colorContainer: theme.background.withOpacity(enabled ? 1.0 : 0.38),
+        onColorContainer: theme.primary.withOpacity(enabled ? 1.0 : 0.38),
       ),
       style: CardStyle(
         side: MaterialStateProperty.resolveWith(
           (states) => BorderSide(
-            color: rawTheme.main.withOpacity(enabled ? 1.0 : 0.6),
+            color: theme.primary.withOpacity(enabled ? 1.0 : 0.6),
             width: 2.0,
           ),
         ),
@@ -104,17 +111,7 @@ Widget buildSectionTitle(String title, BuildContext context) => Padding(
     );
 
 List<Widget> buildThemes(BuildContext context, AvailableTheme currentTheme) {
-  final monetTheme = generateTheme(context.palette.primaryColor);
-  final monetThemes = {
-    AvailableTheme.monetAuto:
-        MediaQuery.platformBrightnessOf(context) == Brightness.dark
-            ? monetTheme.dark
-            : monetTheme.light,
-    AvailableTheme.monetLight: monetTheme.light,
-    AvailableTheme.monetDark: monetTheme.dark,
-  }.map((key, value) => MapEntry(key, sudokuThemeFromMonetScheme(value)));
   final themes = SudokuTheme.availableThemeMap.entries
-      .followedBy(monetThemes.entries)
       .map((t) => buildSingleThemePreview(t, context, t.key != currentTheme))
       .toList();
   return [
@@ -267,12 +264,7 @@ class PrefsBasicDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MD3BasicDialog(
-      actions: [
-        TextButton(
-          child: Text('Salvar'),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ],
+      dividerAfterTitle: false,
       title: Text('Configurações'),
       content: BlocBuilder<PreferencesBloc, PrefsState>(
         builder: (BuildContext context, PrefsState _state) {

@@ -10,7 +10,7 @@ import 'package:sudoku_presentation/preferences_bloc.dart';
 import 'package:sudoku_presentation/exception_handler_bloc.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
 
-import '../prefs_fullscreen_dialog.dart';
+import '../prefs_dialog.dart';
 import './actions.dart';
 import './board.dart';
 import './numbers.dart';

@@ -102,7 +102,7 @@ class SudokuBoard extends StatelessWidget {
   }
 
   Widget buildBackground(BuildContext context) {
-    final theme = Provider.of<SudokuTheme>(context);
+    final scheme = context.colorScheme;
     return Hero(
       tag: "SudokuBG",
       flightShuttleBuilder: (
@@ -114,15 +114,24 @@ class SudokuBoard extends StatelessWidget {
       ) =>
           AnimatedBuilder(
         builder: (BuildContext context, _) => CustomPaint(
-            painter: SudokuBgPainter(
-                state.length,
-                theme.main,
-                Color.lerp(
-                    theme.background, theme.mainDarkened, animation.value))),
+          painter: SudokuBgPainter(
+            state.length,
+            scheme.primary,
+            Color.lerp(
+              scheme.background,
+              scheme.primary,
+              animation.value,
+            ),
+          ),
+        ),
         animation: animation,
       ),
       child: CustomPaint(
-        painter: SudokuBgPainter(state.length, theme.main, theme.mainDarkened),
+        painter: SudokuBgPainter(
+          state.length,
+          scheme.primary,
+          scheme.primary,
+        ),
       ),
     );
   }

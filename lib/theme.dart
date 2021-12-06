@@ -1,132 +1,82 @@
 import 'package:flutter/material.dart'
     show Brightness, Color, Colors, MaterialColor;
+import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:sudoku_presentation/models.dart';
 
-SudokuTheme sudokuThemeFromMonetScheme(MonetColorScheme scheme) =>
-    SudokuTheme.raw(
-      main: scheme.primary,
-      mainDarkened: scheme.primary,
-      secondary: scheme.tertiaryContainer,
-      secondaryDarkened: scheme.tertiary,
-      background: scheme.background,
-      invalid: scheme.surfaceVariant,
-      brightness: scheme.brightness,
-    );
+MonetTheme monetThemeFromSudokuTheme(SudokuTheme theme) => theme.theme;
 
 @immutable
 class SudokuTheme {
-  final Color main;
-  final Color secondary;
-  final Color secondaryDarkened;
-  final Color mainDarkened;
-  final Color background;
-  final Color invalid;
-  final Brightness brightness;
+  final MonetTheme theme;
+  final ThemeMode themeMode;
 
-  factory SudokuTheme(
-      {@required Color main,
-      Color secondary,
-      Color mainDarkened,
-      Color secondaryDarkened,
-      Color background,
-      Color invalid,
-      bool mixMainBg,
-      Brightness brightness}) {
-    final isDark = brightness == Brightness.dark;
-    mixMainBg ??= isDark;
-    if (main is MaterialColor && isDark) {
-      main = (main as MaterialColor)[200];
+  factory SudokuTheme({
+    @required Color mainSeed,
+    Color secondarySeed,
+    Color background,
+    bool mixMainBg = false,
+    ThemeMode themeMode,
+  }) {
+    if (background != null) {
+      if (themeMode == ThemeMode.system) {
+        throw StateError(
+            'Only one themeMode is allowed when specifying an background!');
+      }
     }
-    if (secondary is MaterialColor && isDark) {
-      secondary = (secondary as MaterialColor)[200];
-    }
-    invalid ??= isDark ? Colors.redAccent : Colors.red;
+    final isDark = themeMode == ThemeMode.dark;
     final _materialBg =
         isDark ? const Color(0xFF121212) : const Color(0xFFFAFAFA);
     final _background = mixMainBg
         ? Color.alphaBlend(
-            main.withAlpha(isDark ? 20 : 40), background ?? _materialBg)
+            mainSeed.withAlpha(isDark ? 20 : 40), background ?? _materialBg)
         : background ?? _materialBg;
-    mainDarkened ??=
-        Color.alphaBlend(main.withAlpha(isDark ? 90 : 120), _background);
-    secondary ??= main;
-    secondaryDarkened ??=
-        Color.alphaBlend(secondary.withAlpha(isDark ? 90 : 120), _background);
-    return SudokuTheme.raw(
-        main: main,
-        secondary: secondary,
-        mainDarkened: mainDarkened,
-        secondaryDarkened: secondaryDarkened,
-        background: _background,
-        invalid: invalid,
-        brightness: brightness);
-  }
-
-  const SudokuTheme.raw(
-      {@required this.main,
-      @required this.secondary,
-      @required this.mainDarkened,
-      this.secondaryDarkened,
-      @required this.background,
-      @required this.invalid,
-      @required this.brightness});
-
-  factory SudokuTheme.light(
-      {@required Color main,
-      Color secondary,
-      Color mainDarkened,
-      Color secondaryDarkened,
-      Color background,
-      Color invalid,
-      bool mixMainBg}) {
-    return SudokuTheme(
-        main: main,
-        secondary: secondary,
-        mainDarkened: mainDarkened,
-        secondaryDarkened: secondaryDarkened,
+    final monetTheme = generateTheme(
+      mainSeed,
+      tertiarySeed: secondarySeed,
+    ).override(
+      // Only one will be used, so its ok to change on both brightness
+      light: (t) => t.copyWith(
         background: background,
-        invalid: invalid,
-        mixMainBg: mixMainBg,
-        brightness: Brightness.light);
-  }
-  factory SudokuTheme.dark(
-      {@required Color main,
-      Color secondary,
-      Color mainDarkened,
-      Color secondaryDarkened,
-      Color background,
-      Color invalid,
-      bool mixMainBg}) {
-    return SudokuTheme(
-        main: main,
-        secondary: secondary,
-        mainDarkened: mainDarkened,
-        secondaryDarkened: secondaryDarkened,
+        surface: background,
+      ),
+      dark: (t) => t.copyWith(
         background: background,
-        invalid: invalid,
-        mixMainBg: mixMainBg,
-        brightness: Brightness.dark);
+        surface: background,
+      ),
+    );
+    return SudokuTheme.raw(theme: monetTheme, themeMode: themeMode);
   }
 
-  SudokuTheme copyWith({
-    Color main,
+  const SudokuTheme.raw({this.theme, this.themeMode});
+
+  factory SudokuTheme.light({
+    @required Color main,
     Color secondary,
-    Color secondaryDarkened,
-    Color mainDarkened,
     Color background,
-    Color invalid,
-    Brightness brightness,
-  }) =>
-      SudokuTheme.raw(
-          main: main ?? this.main,
-          secondary: secondary ?? this.secondary,
-          mainDarkened: mainDarkened ?? this.mainDarkened,
-          secondaryDarkened: secondaryDarkened ?? this.secondaryDarkened,
-          background: background ?? this.background,
-          invalid: invalid ?? this.invalid,
-          brightness: brightness ?? this.brightness);
+    bool mixMainBg = false,
+  }) {
+    return SudokuTheme(
+        mainSeed: main,
+        secondarySeed: secondary,
+        mixMainBg: mixMainBg,
+        background: background,
+        themeMode: ThemeMode.light);
+  }
+  factory SudokuTheme.dark({
+    @required Color main,
+    Color secondary,
+    Color background,
+    bool mixMainBg = false,
+  }) {
+    return SudokuTheme(
+        mainSeed: main,
+        secondarySeed: secondary,
+        mixMainBg: mixMainBg,
+        background: background,
+        themeMode: ThemeMode.dark);
+  }
 
   static final Map<AvailableTheme, SudokuTheme> availableThemeMap = {
     AvailableTheme.darkGreen: darkGreen,
@@ -138,7 +88,11 @@ class SudokuTheme {
     AvailableTheme.desertLight: desertLight,
     AvailableTheme.desertDark: desertDark,
     AvailableTheme.pixelBlue: pixelBlue,
+    AvailableTheme.monetAuto: monetAuto,
+    AvailableTheme.monetLight: monetLight,
+    AvailableTheme.monetDark: monetDark,
   };
+
   static final SudokuTheme darkGreen = SudokuTheme.dark(main: Colors.green);
   static final SudokuTheme blackGreen = SudokuTheme.dark(
       main: Colors.green[500], background: const Color(0xFF0A0A0A));
@@ -161,5 +115,11 @@ class SudokuTheme {
   static final SudokuTheme desertDark = SudokuTheme.dark(
       main: const Color(0xfff8f2a4), secondary: const Color(0xfff8c8a4));
   static final SudokuTheme pixelBlue = SudokuTheme.light(main: Colors.blue);
-  static final SudokuTheme defaultTheme = seasideDark;
+  static const SudokuTheme monetAuto =
+      SudokuTheme.raw(themeMode: ThemeMode.system);
+  static const SudokuTheme monetLight =
+      SudokuTheme.raw(themeMode: ThemeMode.light);
+  static const SudokuTheme monetDark =
+      SudokuTheme.raw(themeMode: ThemeMode.dark);
+  static const SudokuTheme defaultTheme = monetAuto;
 }

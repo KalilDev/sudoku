@@ -11,7 +11,7 @@ import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/main_menu_bloc.dart';
 import 'package:sudoku_presentation/exception_handler_bloc.dart';
 
-import 'prefs_fullscreen_dialog.dart';
+import 'prefs_dialog.dart';
 
 String difficultyToString(SudokuDifficulty difficulty) {
   switch (difficulty) {
@@ -95,7 +95,6 @@ class MainMenu extends StatelessWidget {
       }
       final state = _state as MainMenuSnap;
       final configs = state.configurations;
-      final theme = Provider.of<SudokuTheme>(context);
       final sideCounts = configs.map((row) => row.first.side).toList();
       final config = state.configurations[state.sideY][state.difficultyX];
       const widthConstraints = BoxConstraints(maxWidth: 450);
@@ -105,7 +104,10 @@ class MainMenu extends StatelessWidget {
             tag: "SudokuBG",
             child: CustomPaint(
               painter: SudokuBgPainter(
-                  sideCounts[state.sideY], theme.main, Colors.transparent),
+                sideCounts[state.sideY],
+                context.colorScheme.primary,
+                Colors.transparent,
+              ),
             ),
           ));
       final optionsWidgets = [

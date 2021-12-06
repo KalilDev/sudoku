@@ -40,13 +40,13 @@ class SudokuActions extends StatelessWidget {
     final bloc = context.bloc<SudokuBloc>();
 
     final scheme = context.colorScheme;
-    final theme = Provider.of<SudokuTheme>(context);
     final buttonStyle = ButtonStyle(
       side: MaterialStateProperty.resolveWith(
         (states) => BorderSide(
-            color: states.contains(MaterialState.disabled)
-                ? scheme.outline.withOpacity(0.38)
-                : theme.mainDarkened),
+          color: states.contains(MaterialState.disabled)
+              ? scheme.outline.withOpacity(0.38)
+              : scheme.primary,
+        ),
       ),
       padding: MaterialStateProperty.all(EdgeInsets.zero),
     ).merge(isPortrait ? portraitButtonSize : landscapeButtonSize);

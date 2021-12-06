@@ -37,16 +37,16 @@ class SudokuNumbers extends StatelessWidget {
         ? const Icon(Icons.clear)
         : Text(info.number.toString());
     final textStyle = context.textTheme.headlineSmall;
-    final theme = Provider.of<SudokuTheme>(context);
     final scheme = context.colorScheme;
     final style = buttonSytle
         .copyWith(
           textStyle: MaterialStateProperty.all(textStyle),
           side: MaterialStateProperty.resolveWith(
             (states) => BorderSide(
-                color: states.contains(MaterialState.disabled)
-                    ? scheme.outline.withOpacity(0.38)
-                    : theme.mainDarkened),
+              color: states.contains(MaterialState.disabled)
+                  ? scheme.outline.withOpacity(0.38)
+                  : scheme.primary,
+            ),
           ),
         )
         .merge(

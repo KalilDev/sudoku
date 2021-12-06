@@ -80,22 +80,6 @@ class RootView extends StatelessWidget {
     );
   }
 
-  static MonetTheme monetThemeFromSudokuTheme(SudokuTheme theme) =>
-      generateTheme(
-        theme.main,
-        tertiarySeed: theme.secondary,
-      ).override(
-        // Only one will be used, so its ok to change both brightness
-        light: (t) => t.copyWith(
-          background: theme.background,
-          surface: theme.background,
-        ),
-        dark: (t) => t.copyWith(
-          background: theme.background,
-          surface: theme.background,
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PreferencesBloc, PrefsState>(
@@ -104,12 +88,7 @@ class RootView extends StatelessWidget {
         final availableTheme = state?.theme ?? AvailableTheme.monetAuto;
         final theme = SudokuTheme.availableThemeMap[availableTheme];
 
-        final themeMode = availableTheme == AvailableTheme.monetAuto
-            ? ThemeMode.system
-            : availableTheme == AvailableTheme.monetDark ||
-                    theme?.brightness == Brightness.dark
-                ? ThemeMode.dark
-                : ThemeMode.light;
+        final themeMode = theme.themeMode;
 
         if (_state is PrefsErrorState) {
           return MaterialApp(
@@ -129,9 +108,7 @@ class RootView extends StatelessWidget {
           );
         }
 
-        final isMonet = availableTheme == AvailableTheme.monetAuto ||
-            availableTheme == AvailableTheme.monetLight ||
-            availableTheme == AvailableTheme.monetDark;
+        final isMonet = theme.theme == null;
 
         return MD3Themes(
           monetThemeForFallbackPalette:
@@ -144,10 +121,7 @@ class RootView extends StatelessWidget {
             title: "Sudoku",
             builder: (context, home) => AnimatedMonetColorScheme(
               themeMode: themeMode,
-              child: Provider<SudokuTheme>.value(
-                value: sudokuThemeFromMonetScheme(context.colorScheme),
-                child: home,
-              ),
+              child: home,
             ),
             home: BlocProvider<MainMenuBloc>(
               create: (BuildContext context) => MainMenuBloc(
