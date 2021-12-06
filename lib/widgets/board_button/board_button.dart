@@ -8,14 +8,16 @@ import 'package:sudoku_presentation/models.dart';
 class BoardButton extends StatelessWidget {
   const BoardButton({
     Key key,
-    this.onSelected,
+    this.onTap,
+    this.onFocused,
     this.isSelected,
     this.text,
     this.isBottomText,
     this.animationOptions,
     this.isInitial,
   }) : super(key: key);
-  final VoidCallback onSelected;
+  final VoidCallback onTap;
+  final VoidCallback onFocused;
   final bool isSelected;
   final bool isInitial;
   final bool isBottomText;
@@ -24,7 +26,7 @@ class BoardButton extends StatelessWidget {
 
   void _onFocusChange(bool focused) {
     if (focused) {
-      onSelected?.call();
+      onFocused?.call();
     }
   }
 
@@ -51,7 +53,7 @@ class BoardButton extends StatelessWidget {
             maxWidth: maxButtonSize,
           ),
           child: InkResponse(
-            onTap: onSelected,
+            onTap: onTap,
             child: BoardButtonTextAnimation(
               text: text,
               isBottom: isBottomText,

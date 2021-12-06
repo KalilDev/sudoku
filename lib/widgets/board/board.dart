@@ -28,12 +28,19 @@ class SudokuAnimatedSquare extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void onSelected() {
-      context.bloc<SudokuBloc>().add(SquareTap(x, y));
+    final bloc = context.bloc<SudokuBloc>();
+    void onTap() {
+      bloc.add(SquareTap(x, y));
+    }
+
+    void onFocused() {
+      if (bloc.selectedNum == null && !info.isSelected)
+        bloc.add(SquareTap(x, y));
     }
 
     return BoardButton(
-      onSelected: disabled ? null : onSelected,
+      onTap: disabled ? null : onTap,
+      onFocused: disabled ? null : onFocused,
       isInitial: info.isInitial,
       isSelected: info.isSelected,
       isBottomText: info.number == 0,
