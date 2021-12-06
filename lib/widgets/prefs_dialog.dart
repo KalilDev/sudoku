@@ -208,37 +208,96 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
 
 void openPrefs(BuildContext context) {
   final nav = Navigator.of(context);
-  nav.push<void>(
-    MaterialPageRoute(
-      builder: (context) => MD3FullScreenDialog(
-        action: Center(
-          child: TextButton(
-            child: Text('Salvar'),
-            onPressed: () => nav.pop(),
-          ),
-        ),
-        title: Text('Configurações'),
-        body: BlocBuilder<PreferencesBloc, PrefsState>(
-          builder: (BuildContext context, PrefsState _state) {
-            if (_state is LoadingPrefsState) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final state = _state as PrefsSnap;
-            final opts = state.animationOptions;
-            final slivers = [
-              SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
-              ...buildThemes(context, state.theme),
-              ...buildAnimations(opts, context),
-              SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
-            ];
-            const widthConstraints = BoxConstraints(maxWidth: 900);
-            return CustomScrollView(
-              slivers: slivers,
-              shrinkWrap: true,
-            );
-          },
+  if (context.sizeClass == MD3WindowSizeClass.compact) {
+    nav.push<void>(
+      MaterialPageRoute(
+        builder: (context) => PrefsFullscreenDialog(),
+      ),
+    );
+    return;
+  }
+  showDialog<void>(context: context, builder: (context) => PrefsBasicDialog());
+}
+
+class PrefsFullscreenDialog extends StatelessWidget {
+  const PrefsFullscreenDialog({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MD3FullScreenDialog(
+      action: Center(
+        child: TextButton(
+          child: Text('Salvar'),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-    ),
-  );
+      title: Text('Configurações'),
+      body: BlocBuilder<PreferencesBloc, PrefsState>(
+        builder: (BuildContext context, PrefsState _state) {
+          if (_state is LoadingPrefsState) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final state = _state as PrefsSnap;
+          final opts = state.animationOptions;
+          final slivers = [
+            SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
+            ...buildThemes(context, state.theme),
+            ...buildAnimations(opts, context),
+            SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
+          ];
+          const widthConstraints = BoxConstraints(maxWidth: 900);
+          return CustomScrollView(
+            slivers: slivers,
+            shrinkWrap: true,
+          );
+        },
+      ),
+    );
+  }
+}
+
+// TODO: needs MD3BasicDialog.scrollable
+class PrefsBasicDialog extends StatelessWidget {
+  const PrefsBasicDialog({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MD3BasicDialog(
+      actions: [
+        TextButton(
+          child: Text('Salvar'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+      title: Text('Configurações'),
+      content: BlocBuilder<PreferencesBloc, PrefsState>(
+        builder: (BuildContext context, PrefsState _state) {
+          if (_state is LoadingPrefsState) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final state = _state as PrefsSnap;
+          final opts = state.animationOptions;
+          final slivers = [
+            SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
+            ...buildThemes(context, state.theme),
+            ...buildAnimations(opts, context),
+            SliverToBoxAdapter(child: SizedBox(height: context.minMargin)),
+          ];
+          return SizedBox(
+            // TODO: this cannot be infinite, otherwise IntrinsicWidth would
+            // crash with the scrollview
+            width: 1024,
+            height: 416,
+            child: CustomScrollView(
+              slivers: slivers,
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
