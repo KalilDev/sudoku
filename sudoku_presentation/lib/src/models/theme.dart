@@ -1,10 +1,12 @@
 import 'enum_parser.dart';
 
 AvailableTheme parseAvailableTheme(String s) =>
-    enumFromString(AvailableTheme.values, s,
-        orElse: AvailableTheme.materialLight);
+    enumFromString(AvailableTheme.values, s, orElse: AvailableTheme.monetAuto);
 
 enum AvailableTheme {
+  monetLight,
+  monetDark,
+  monetAuto,
   darkGreen,
   blackGreen,
   materialLight,

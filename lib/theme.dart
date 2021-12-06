@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart'
     show Brightness, Color, Colors, MaterialColor;
+import 'package:material_widgets/material_widgets.dart';
 import 'package:meta/meta.dart';
-import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/models.dart';
+
+SudokuTheme sudokuThemeFromMonetScheme(MonetColorScheme scheme) =>
+    SudokuTheme.raw(
+      main: scheme.primary,
+      mainDarkened: scheme.primary,
+      secondary: scheme.tertiaryContainer,
+      secondaryDarkened: scheme.tertiary,
+      background: scheme.background,
+      invalid: scheme.surfaceVariant,
+      brightness: scheme.brightness,
+    );
 
 @immutable
 class SudokuTheme {
