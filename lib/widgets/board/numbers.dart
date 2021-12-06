@@ -2,29 +2,31 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_widgets/material_widgets.dart';
+import 'package:sudoku/theme.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
 
-import '../sudoku_button.dart';
+import 'package:provider/provider.dart';
 
 class SudokuNumbers extends StatelessWidget {
   final List<NumberInfo> state;
   final bool isPortrait;
-  final bool enabled;
+  final bool disabled;
 
   const SudokuNumbers(
       {Key key,
       @required this.state,
       @required this.isPortrait,
-      @required this.enabled})
+      @required this.disabled})
       : super(key: key);
 
   static const double buttonSize = 52;
-  static const BoxConstraints buttonConstraints = BoxConstraints(
-    minWidth: 0,
-    minHeight: 0,
-    maxHeight: 2 * buttonSize,
-    maxWidth: 2 * buttonSize,
-  );
+  static final buttonSytle = ButtonStyle(
+      minimumSize: MaterialStateProperty.all(Size.zero),
+      fixedSize: MaterialStateProperty.all(Size.infinite),
+      maximumSize: MaterialStateProperty.all(Size.square(buttonSize * 2)),
+      padding: MaterialStateProperty.all(EdgeInsets.zero),
+      shape: MaterialStateProperty.all(CircleBorder()));
 
   Widget renderNumber(NumberInfo info, BuildContext context) {
     void onTap() {
@@ -35,16 +37,32 @@ class SudokuNumbers extends StatelessWidget {
         ? const Icon(Icons.clear)
         : Text(info.number.toString());
     final textStyle = Theme.of(context).textTheme.headline4;
+    final theme = Provider.of<SudokuTheme>(context);
+    final scheme = context.colorScheme;
+    final style = buttonSytle
+        .copyWith(
+          textStyle: MaterialStateProperty.all(textStyle),
+          side:
+              MaterialStateProperty.all(BorderSide(color: theme.mainDarkened)),
+        )
+        .merge(
+          info.isSelected
+              ? FilledButton.styleFrom(
+                  backgroundColor: scheme.primary,
+                  foregroundColor: scheme.onPrimary,
+                  disabledColor: scheme.onSurface,
+                  stateLayerOpacityTheme: context.stateOverlayOpacity,
+                )
+              : const ButtonStyle(),
+        );
+    final child = AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon));
     return Padding(
       padding: const EdgeInsets.all(3.0),
-      child: SudokuButton(
-        filled: info.isSelected,
-        textStyle: textStyle,
-        constraints: buttonConstraints,
-        padding: EdgeInsets.zero,
-        onPressed: enabled ? onTap : null,
-        shapeBuilder: (c) => CircleBorder(side: BorderSide(color: c)),
-        child: AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon)),
+      child: TextButton(
+        key: const ObjectKey(const Object()),
+        onPressed: disabled ? null : onTap,
+        style: style,
+        child: child,
       ),
     );
   }
