@@ -44,14 +44,15 @@ class MainMenu extends StatelessWidget {
       final didAccept = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
+            return MD3BasicDialog(
               title: const Text("Aviso"),
               content: const Text(
                   "Você está usando uma plataforma que ainda não suporta salvar Sudokus. Caso você saia, todo o seu progresso será perdido."),
               actions: [
-                FlatButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text("Aceitar"))
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text("Aceitar"),
+                )
               ],
             );
           });
@@ -108,7 +109,7 @@ class MainMenu extends StatelessWidget {
       );
       final optionsWidgets = [
         Text("Lado: " + sideCounts[state.sideY].toString()),
-        Slider(
+        MD3Slider(
           divisions: sideCounts.length - 1,
           value: state.sideY.toDouble(),
           onChanged: (v) => setSide(v.round(), context),
@@ -116,35 +117,32 @@ class MainMenu extends StatelessWidget {
         ),
         Text("Dificuldade: " +
             difficultyToString(SudokuDifficulty.values[state.difficultyX])),
-        Slider(
+        MD3Slider(
           divisions: configs.width - 1,
           value: state.difficultyX.toDouble(),
           onChanged: (v) => setDifficulty(v.round(), context),
           max: configs.width - 1.0,
         ),
-        SudokuButton(
+        FilledButton(
           onPressed: () => launch(config.newSudoku(), state.storage, context),
-          filled: true,
           child: const Text("Novo jogo"),
         ),
+        SizedBox(height: 8.0),
         if (state.storage == StorageAknowledgment.supported)
-          SudokuButton(
+          FilledTonalButton(
             onPressed: config.source == StateSource.storage
                 ? () => launch(config, state.storage, context)
                 : null,
-            filled: true,
             child: const Text("Continuar"),
           )
       ];
       return Scaffold(
-          appBar: AppBar(
+          appBar: MD3CenterAlignedAppBar(
             title: const Text("Sudoku"),
-            actions: [
-              IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () => openPrefs(context))
-            ],
-          ),
+            trailing: IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => openPrefs(context),
+            ),
           body: Center(
             child: ConstrainedBox(
               constraints: widthConstraints,
