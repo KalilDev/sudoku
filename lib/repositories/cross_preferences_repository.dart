@@ -1,5 +1,5 @@
 import 'package:cross_local_storage/cross_local_storage.dart';
-import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/repositories.dart';
 
 class CrossPreferencesRepository implements PreferencesRepository {

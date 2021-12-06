@@ -5,7 +5,7 @@ import 'package:localstorage/localstorage.dart';
 // The dude who made localstorage didn't export it
 // ignore: implementation_imports
 import 'package:localstorage/src/errors.dart';
-import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/repositories.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
 import 'package:sudoku_core/sudoku_core.dart';
