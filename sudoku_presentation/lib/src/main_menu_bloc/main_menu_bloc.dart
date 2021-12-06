@@ -28,6 +28,7 @@ class MainMenuBloc extends Bloc<MainMenuEvent, MainMenuState> {
     } else {
       add(MainMenuErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador do menu principal.')));
     }
+    return;
     super.onError(error, stackTrace);
   }
 

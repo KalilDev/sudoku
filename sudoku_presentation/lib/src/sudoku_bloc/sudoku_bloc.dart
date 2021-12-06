@@ -53,6 +53,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
     } else {
       add(SudokuErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador de preferencias.')));
     }
+    return;
     super.onError(error, stackTrace);
   }
 
@@ -114,6 +115,7 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
 
   Future<SudokuSnapshot> genSnapshot() async {
     await null;
+    final timer = Stopwatch()..start();
     final squares = BidimensionalList<SquareInfo>.generate(sudokuState.side,
         (int x, int y) {
       final isSelected = selectedSquare == null
@@ -142,6 +144,8 @@ class SudokuBloc extends Bloc<SudokuEvent, SudokuBlocState> {
         canRewind: canRewind,
         markType: markType,
         validationState: validationState);
+    timer.stop();
+    print('genSnapshot took ${timer.elapsedMicroseconds/1000}ms');
     return snapshot;
   }
 

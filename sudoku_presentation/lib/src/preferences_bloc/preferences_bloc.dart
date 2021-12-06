@@ -26,6 +26,7 @@ class PreferencesBloc extends Bloc<PrefsEvent, PrefsState> {
     } else {
       add(PrefsErrorEvent((error as Error).withMessage('Erro inesperado no gerenciador de preferencias.')));
     }
+    return;
     super.onError(error, stackTrace);
   }
 
