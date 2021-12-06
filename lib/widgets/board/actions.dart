@@ -1,50 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:material_widgets/material_widgets.dart';
+import 'package:sudoku/theme.dart';
 import 'package:sudoku_presentation/sudoku_bloc.dart';
-import '../sudoku_button.dart';
+
+import 'package:provider/provider.dart';
 
 class SudokuActions extends StatelessWidget {
   final bool canRewind;
   final MarkType markType;
   final bool isPortrait;
-  final bool enabled;
+  final bool disabled;
 
   const SudokuActions(
       {Key key,
       @required this.canRewind,
       @required this.markType,
       @required this.isPortrait,
-      @required this.enabled})
+      @required this.disabled})
       : super(key: key);
 
   static Map<IconData, Key> iconKeyMap = {};
+
+  static final portraitButtonSize = ButtonStyle(
+    minimumSize: MaterialStateProperty.all(Size(52, 36)),
+    maximumSize: MaterialStateProperty.all(Size(112, 42)),
+    fixedSize: MaterialStateProperty.all(Size.infinite),
+  );
+
+  static final landscapeButtonSize = ButtonStyle(
+    minimumSize: MaterialStateProperty.all(Size(36, 52)),
+    maximumSize: MaterialStateProperty.all(Size(42, 112)),
+    fixedSize: MaterialStateProperty.all(Size.infinite),
+  );
 
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
     final bloc = context.bloc<SudokuBloc>();
 
-    final buttonConstraints = BoxConstraints(
-      minWidth: isPortrait ? 52.0 : 36.0,
-      minHeight: !isPortrait ? 52.0 : 36.0,
-      maxHeight: isPortrait ? 42.0 : 112.0,
-      maxWidth: !isPortrait ? 42.0 : 112.0,
-    );
-    ShapeBorder shapeBuilder(Color c) =>
-        StadiumBorder(side: BorderSide(color: c));
+    final scheme = context.colorScheme;
+    final theme = Provider.of<SudokuTheme>(context);
+    final buttonStyle = ButtonStyle(
+      side: MaterialStateProperty.resolveWith(
+        (states) => BorderSide(
+            color: states.contains(MaterialState.disabled)
+                ? scheme.onSurface.withOpacity(0.38)
+                : theme.mainDarkened),
+      ),
+      padding: MaterialStateProperty.all(EdgeInsets.zero),
+    ).merge(isPortrait ? portraitButtonSize : landscapeButtonSize);
 
     void resetBoard() => bloc.add(ActionReset());
     void validate() => bloc.add(ActionValidate());
     void changeMarkType() => bloc.add(ActionSetMark(
         markType == MarkType.concrete ? MarkType.possible : MarkType.concrete));
     void undo() => bloc.add(ActionUndo());
-    Widget buildButton(
-            {IconData icon, VoidCallback onPressed, bool filled = false}) =>
-        SudokuButton(
-          shapeBuilder: shapeBuilder,
-          constraints: buttonConstraints,
-          filled: filled,
-          onPressed: enabled ? onPressed : null,
+    Widget buildButton({
+      IconData icon,
+      VoidCallback onPressed,
+      bool filled = false,
+    }) =>
+        TextButton(
+          onPressed: disabled ? null : onPressed,
+          style: buttonStyle.merge(
+            filled
+                ? FilledTonalButton.styleFrom(
+                    backgroundColor: scheme.primary,
+                    foregroundColor: scheme.onPrimary,
+                    disabledColor: scheme.onSurface,
+                    stateLayerOpacityTheme: context.stateOverlayOpacity,
+                  )
+                : const ButtonStyle(),
+          ),
           child: Icon(icon),
         );
     final children = [
