@@ -1,9 +1,9 @@
+import 'package:material_widgets/material_widgets.dart';
 import 'package:sudoku/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku/widgets/sudoku_button.dart';
 
-import 'package:sudoku_presentation/common.dart';
+import 'package:sudoku_presentation/models.dart';
 import 'package:sudoku_presentation/preferences_bloc.dart';
 
 Color getTextColorForBrightness(Brightness b) =>
@@ -29,6 +29,12 @@ String themeToString(AvailableTheme theme) {
       return "Deserto escuro";
     case AvailableTheme.pixelBlue:
       return "Azul Pixel";
+    case AvailableTheme.monetLight:
+      return 'Material You Claro';
+    case AvailableTheme.monetDark:
+      return 'Material You Escuro';
+    case AvailableTheme.monetAuto:
+      return 'Material You Automatico';
     default:
       return 'Desconhecido';
   }
@@ -49,37 +55,44 @@ String speedToString(AnimationSpeed speed) {
   }
 }
 
-Widget buildSingleThemePreview(MapEntry<AvailableTheme, SudokuTheme> entry,
-    BuildContext context, bool enabled) {
+Widget buildSingleThemePreview(
+  MapEntry<AvailableTheme, SudokuTheme> entry,
+  BuildContext context,
+  bool enabled,
+) {
   final rawTheme = entry.value;
   final theme =
       rawTheme.copyWith(main: rawTheme.background, mainDarkened: rawTheme.main);
-  const expand =
-      BoxConstraints.expand(width: double.infinity, height: double.infinity);
-  final shape = RoundedRectangleBorder(
-      side: BorderSide(
-          color: enabled ? rawTheme.main : rawTheme.mainDarkened, width: 2.0),
-      borderRadius: BorderRadius.circular(4.0));
   final text = themeToString(entry.key);
   return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-      child: SudokuButton(
-        elevation: 2.0,
-        shapeBuilder: (_) => shape,
-        theme: theme,
-        filled: true,
-        useSecondary: false,
-        onPressed: enabled
-            ? () => BlocProvider.of<PreferencesBloc>(context).add(
-                PrefsEvent<AvailableTheme>(
-                    entry.key, PrefsEventType.themeUpdate))
-            : null,
-        constraints: expand,
+    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+    child: ColoredCard(
+      color: CustomColorScheme(
+        color: theme.main,
+        onColor: theme.main,
+        colorContainer: theme.main.withOpacity(enabled ? 1.0 : 0.38),
+        onColorContainer: rawTheme.main.withOpacity(enabled ? 1.0 : 0.38),
+      ),
+      style: CardStyle(
+        side: MaterialStateProperty.resolveWith(
+          (states) => BorderSide(
+            color: rawTheme.main.withOpacity(enabled ? 1.0 : 0.6),
+            width: 2.0,
+          ),
+        ),
+      ),
+      onPressed: enabled
+          ? () => BlocProvider.of<PreferencesBloc>(context)
+              .add(ThemeUpdatedEvent(entry.key))
+          : null,
+      child: Center(
         child: Text(
           text,
           textAlign: TextAlign.center,
         ),
-      ));
+      ),
+    ),
+  );
 }
 
 Widget buildSectionTitle(String title, BuildContext context) => Padding(
@@ -91,16 +104,50 @@ Widget buildSectionTitle(String title, BuildContext context) => Padding(
     );
 
 List<Widget> buildThemes(BuildContext context, AvailableTheme currentTheme) {
+  final monetTheme = generateTheme(context.palette.primaryColor);
+  final monetThemes = {
+    AvailableTheme.monetAuto:
+        MediaQuery.platformBrightnessOf(context) == Brightness.dark
+            ? monetTheme.dark
+            : monetTheme.light,
+    AvailableTheme.monetLight: monetTheme.light,
+    AvailableTheme.monetDark: monetTheme.dark,
+  }.map((key, value) => MapEntry(key, sudokuThemeFromMonetScheme(value)));
   final themes = SudokuTheme.availableThemeMap.entries
+      .followedBy(monetThemes.entries)
       .map((t) => buildSingleThemePreview(t, context, t.key != currentTheme))
       .toList();
   return [
     SliverToBoxAdapter(child: buildSectionTitle("Temas:", context)),
     SliverGrid(
-        delegate: SliverChildListDelegate(themes),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 200, childAspectRatio: 1.8))
+      delegate: SliverChildListDelegate(themes),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 200,
+        childAspectRatio: 1.8,
+      ),
+    )
   ];
+}
+
+class MD3SwitchListTile extends StatelessWidget {
+  const MD3SwitchListTile({
+    Key key,
+    this.onChanged,
+    this.title,
+    this.value,
+  }) : super(key: key);
+
+  final ValueChanged<bool> onChanged;
+  final Widget title;
+  final bool value;
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: title,
+      onTap: () => onChanged(!value),
+      trailing: MD3Switch(value: value, onChanged: onChanged),
+    );
+  }
 }
 
 List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
@@ -114,16 +161,15 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
   final sliderEnabled = opts.hasAnimations || opts.speed == AnimationSpeed.none;
   final speed = !opts.hasAnimations ? AnimationSpeed.none : opts.speed;
   Widget buildSingle(String name, bool enabled, ValueChanged<bool> onChange) {
-    return CheckboxListTile(
-        value: enabled,
-        onChanged: checksEnabled ? onChange : null,
-        title: Text(name),
-        activeColor: Theme.of(context).colorScheme.secondary,
-        checkColor: Theme.of(context).colorScheme.onPrimary);
+    return MD3SwitchListTile(
+      value: enabled,
+      onChanged: checksEnabled ? onChange : null,
+      title: Text(name),
+    );
   }
 
-  void update(AnimationOptions newOpts) => bloc
-      .add(PrefsEvent<AnimationOptions>(newOpts, PrefsEventType.animUpdate));
+  void update(AnimationOptions newOpts) =>
+      bloc.add(AnimationOptionsUpdatedEvent(newOpts));
   return [
     SliverToBoxAdapter(child: buildSectionTitle("Animações:", context)),
     SliverList(
@@ -132,7 +178,7 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
         padding: const EdgeInsets.all(8.0),
         child: Text('Velocidade: ' + speedToString(speed)),
       ),
-      Slider(
+      MD3Slider(
         value: AnimationSpeed.values.indexOf(opts.speed).toDouble(),
         onChanged: sliderEnabled
             ? (d) =>
@@ -159,10 +205,18 @@ List<Widget> buildAnimations(AnimationOptions opts, BuildContext context) {
 }
 
 void openPrefs(BuildContext context) {
-  showModalBottomSheet<void>(
-      context: context,
-      builder: (context) {
-        return BlocBuilder<PreferencesBloc, PrefsState>(
+  final nav = Navigator.of(context);
+  nav.push<void>(
+    MaterialPageRoute(
+      builder: (context) => MD3FullScreenDialog(
+        action: Center(
+          child: TextButton(
+            child: Text('Salvar'),
+            onPressed: () => nav.pop(),
+          ),
+        ),
+        title: Text('Configurações'),
+        body: BlocBuilder<PreferencesBloc, PrefsState>(
           builder: (BuildContext context, PrefsState _state) {
             if (_state is LoadingPrefsState) {
               return const Center(child: CircularProgressIndicator());
@@ -174,11 +228,16 @@ void openPrefs(BuildContext context) {
               ...buildAnimations(opts, context)
             ];
             const widthConstraints = BoxConstraints(maxWidth: 900);
-            return Center(
-                child: ConstrainedBox(
-                    constraints: widthConstraints,
-                    child: CustomScrollView(slivers: slivers)));
+            return ConstrainedBox(
+              constraints: widthConstraints,
+              child: CustomScrollView(
+                slivers: slivers,
+                shrinkWrap: true,
+              ),
+            );
           },
-        );
-      });
+        ),
+      ),
+    ),
+  );
 }
