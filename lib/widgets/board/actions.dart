@@ -79,7 +79,9 @@ class SudokuActions extends StatelessWidget {
                     disabledColor: scheme.onSurface,
                     stateLayerOpacityTheme: context.stateOverlayOpacity,
                   )
-                : const ButtonStyle(),
+                : ButtonStyle(
+                    foregroundColor: MD3DisablableColor(scheme.onSurface),
+                  ),
           ),
           child: Icon(icon),
         );

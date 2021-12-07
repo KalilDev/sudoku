@@ -57,7 +57,9 @@ class SudokuNumbers extends StatelessWidget {
                   disabledColor: scheme.onSurface,
                   stateLayerOpacityTheme: context.stateOverlayOpacity,
                 )
-              : const ButtonStyle(),
+              : ButtonStyle(
+                  foregroundColor: MD3DisablableColor(scheme.onSurface),
+                ),
         );
     final child = AspectRatio(aspectRatio: 1, child: Center(child: textOrIcon));
     return Padding(
