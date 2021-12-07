@@ -14,6 +14,7 @@ class BoardButton extends StatelessWidget {
     this.isSelected,
     this.text,
     this.isBottomText,
+    this.isInvalid,
     this.animationOptions,
     this.isInitial,
   }) : super(key: key);
@@ -23,6 +24,7 @@ class BoardButton extends StatelessWidget {
   final bool isSelected;
   final bool isInitial;
   final bool isBottomText;
+  final bool isInvalid;
   final String text;
   final AnimationOptions animationOptions;
 
@@ -48,6 +50,7 @@ class BoardButton extends StatelessWidget {
         isEnabled: !isInitial,
         isForegroundEnabled: !isLoading,
         isSelected: isSelected,
+        isInvalid: isInvalid,
         onFocusChanged: _onFocusChange,
         animationOptions: animationOptions,
         child: ConstrainedBox(

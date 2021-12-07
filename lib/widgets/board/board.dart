@@ -47,6 +47,7 @@ class SudokuAnimatedSquare extends StatelessWidget {
       isInitial: info.isInitial,
       isSelected: info.isSelected,
       isBottomText: info.number == 0,
+      isInvalid: info.validation == Validation.incorrect,
       animationOptions: animationOptions,
       text: info.number == 0
           ? info?.possibleNumbers?.join(' ') ?? ''

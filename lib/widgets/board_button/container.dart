@@ -10,6 +10,7 @@ class BoardButtonContainer extends StatefulWidget {
     this.isEnabled,
     this.isForegroundEnabled,
     this.isSelected,
+    this.isInvalid,
     this.onFocusChanged,
     this.animationOptions,
     this.child,
@@ -17,6 +18,7 @@ class BoardButtonContainer extends StatefulWidget {
   final bool isEnabled;
   final bool isForegroundEnabled;
   final bool isSelected;
+  final bool isInvalid;
   final ValueChanged<bool> onFocusChanged;
   final AnimationOptions animationOptions;
   final Widget child;
@@ -39,7 +41,7 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
       if (states.contains(MaterialState.selected)) {
         return scheme.tertiaryContainer;
       }
-      return Colors.transparent;
+      return widget.isInvalid ? scheme.error : Colors.transparent;
     });
     foregroundColor = MaterialStateProperty.resolveWith((states) {
       if (states.contains(MaterialState.disabled)) {
@@ -48,7 +50,7 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
       if (states.contains(MaterialState.selected)) {
         return scheme.onTertiaryContainer;
       }
-      return scheme.onSurface;
+      return widget.isInvalid ? scheme.onError : scheme.onSurface;
     });
   }
 
@@ -74,7 +76,9 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
         animateForeground: widget.animationOptions.textColor,
         duration: durationForSpeed(widget.animationOptions.speed),
         backgroundPosition:
-            (widget.isSelected || !widget.isEnabled) ? 1.0 : 0.0,
+            (widget.isSelected || !widget.isEnabled || widget.isInvalid)
+                ? 1.0
+                : 0.0,
         animateBackgroundPosition: widget.animationOptions.selectSize,
         child: widget.child,
       ),
