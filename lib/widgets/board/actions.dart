@@ -52,7 +52,15 @@ class SudokuActions extends StatelessWidget {
     ).merge(isPortrait ? portraitButtonSize : landscapeButtonSize);
 
     void resetBoard() => bloc.add(ActionReset());
-    void validate() => bloc.add(ActionValidate());
+    void validate() {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sudoku Validado!'),
+        ),
+      );
+      bloc.add(ActionValidate());
+    }
+
     void changeMarkType() => bloc.add(ActionSetMark(
         markType == MarkType.concrete ? MarkType.possible : MarkType.concrete));
     void undo() => bloc.add(ActionUndo());
