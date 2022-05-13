@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:app/base/sudoku_data.dart';
 import 'package:app/generation/generation.dart';
-import 'package:app/generation/impl/default.dart';
+import 'package:app/generation/impl/isolate/no_isolate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:value_notifier/value_notifier.dart';
 
@@ -54,7 +54,12 @@ class GenerationController extends ControllerBase<GenerationController> {
         : null,
   );
 
+  late final ValueListenable<List<SudokuGenerationEvent>> events =
+      generationEvents.fold([], (e, acc) => e == null ? acc : [...acc, e]);
+
   late final ValueListenable<SudokuBoard?> _currentChallengeBoard;
+  ValueListenable<SudokuBoard> get challengeBoard =>
+      _currentChallengeBoard.map((b) => b ?? emptySudokuBoard(side));
 
   ValueListenable<double?> get generationProgress =>
       _currentChallengeBoard.view().bind<double?>(
@@ -74,4 +79,10 @@ class GenerationController extends ControllerBase<GenerationController> {
             filled ??
             0 + ((e is SudokuGenerationFoundSquare && e.number != 0) ? 1 : 0),
       );
+
+  void init() {
+    super.init();
+    // ensure that events is initialized and starts listening
+    events.connect((_) {});
+  }
 }
