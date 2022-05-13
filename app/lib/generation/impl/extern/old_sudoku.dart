@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import '../../base/sudoku_data.dart';
+import '../../../base/sudoku_data.dart';
 import 'package:sudoku_core/sudoku_core.dart' as old;
 import 'package:sudoku_core/src/sudoku_utils.dart' as old;
 
@@ -86,6 +86,10 @@ bool externSudokuHasOneSolBlocking(ExternSudokuBoard board) {
   final hasManySol =
       _oldCountSoln(board.initialState, board.sideSqrt, guessNums) > 1;
   return !hasManySol;
+}
+
+void externSudokuFree(ExternSudokuBoard board) {
+  // nothing
 }
 
 // Count the amount of solutions for an given sudoku

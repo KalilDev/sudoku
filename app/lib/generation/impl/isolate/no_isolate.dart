@@ -1,5 +1,5 @@
-import 'data.dart';
-import 'isolate_local.dart';
+import '../data.dart';
+import '../extern/exposed_base.dart';
 
 Stream<SudokuGenerationEvent> generateSudokuStreaming(
   int sideSqrt,

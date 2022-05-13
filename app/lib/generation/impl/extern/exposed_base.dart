@@ -1,9 +1,9 @@
 // An streaming sudoku generation function that can block the current isolate.
 import 'dart:math';
 
-import '../../base/sudoku_data.dart';
-import 'data.dart';
-import 'extern.dart';
+import '../../../base/sudoku_data.dart';
+import '../data.dart';
+import 'exposed_extern_api.dart';
 
 Stream<SudokuGenerationEvent> generateSudokuStreamingIsolateLocal(
   int sideSqrt,
@@ -74,10 +74,13 @@ Stream<SudokuGenerationEvent> rawGenerateSudokuStreamingIsolateLocal(
       yield SudokuGenerationFoundSquare(index, solvedValue);
     }
   }
-  // We either could not zero out any more cells, or we reached the zeroed out
-  // cell target.
-  yield SudokuGenerationFinished(
+  final result = SudokuGenerationFinished(
     sudokuBoardFromExtern(solvedBoard),
     sudokuBoardFromExtern(workingBoard),
   );
+  externSudokuFree(solvedBoard);
+  externSudokuFree(workingBoard);
+  // We either could not zero out any more cells, or we reached the zeroed out
+  // cell target.
+  yield result;
 }
