@@ -37,16 +37,17 @@ class GenerationView extends ControllerWidget<GenerationController> {
     }
 
     context.useEventHandler(controller.generationEvents, _onGenerationEvent);
+    final progress = context.use(controller.generationProgress);
     return generatedBoard
         .map(
           (maybeGeneratedBoard) => maybeGeneratedBoard == null
-              ? _LoadingGenerationView()
-              : Memo<SudokuViewController>(
-                  factory: () =>
+              ? progress.map((p) => _LoadingGenerationView(progress: p)).build()
+              : ControllerInjectorBuilder<SudokuViewController>(
+                  factory: (context) =>
                       createBoardControllerFromGenerated(maybeGeneratedBoard),
                   builder: (context, controller) =>
-                      SudokuView(controller: controller.handle),
-                  valueKey: ValueKey(maybeGeneratedBoard),
+                      SudokuView(controller: controller),
+                  key: ValueKey(maybeGeneratedBoard),
                 ),
         )
         .build();
@@ -54,10 +55,17 @@ class GenerationView extends ControllerWidget<GenerationController> {
 }
 
 class _LoadingGenerationView extends StatelessWidget {
-  const _LoadingGenerationView({Key? key}) : super(key: key);
+  const _LoadingGenerationView({Key? key, required this.progress})
+      : super(key: key);
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
-    return Placeholder();
+    return Column(
+      children: [
+        LinearProgressIndicator(value: progress),
+        Expanded(child: Placeholder()),
+      ],
+    );
   }
 }
