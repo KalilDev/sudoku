@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:app/old/board_button/board_button.dart';
 import 'package:app/old/models/animation_options.dart';
 import 'package:app/view/controller.dart';
@@ -7,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import '../../base/sudoku_data.dart';
+import '../../widgets/decoration.dart';
 import '../view.dart';
 import 'layout.dart';
 
@@ -136,9 +139,13 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
           );
         }
 
-        return _BoardGrid(
-          side: controller.side,
-          buildChild: buildChild,
+        return SudokuBoardHeroDecoration(
+          sideSqrt: sqrt(controller.side).toInt(),
+          isHome: false,
+          child: _BoardGrid(
+            side: controller.side,
+            buildChild: buildChild,
+          ),
         );
       }).build(),
     );
