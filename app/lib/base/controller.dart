@@ -7,7 +7,18 @@ import 'sudoku_data.dart';
 import 'package:hive/hive.dart';
 import 'package:synchronized/synchronized.dart';
 
-typedef Db = Box<dynamic>;
+typedef SudokuDb = Box<dynamic>;
+Future<SudokuDb> sudokuDbOpen(String name) => Hive.openBox(name);
+
+const Codec<SudokuAppBoardModel, Map<String, dynamic>> codec =
+    DoublyLinkedEventSourcedModelCodec();
+
+Future<void> sudokuDbStore(
+  SudokuDb db,
+  Map<String, dynamic> encodedSudoku,
+) =>
+    db.putAll(encodedSudoku);
+Map<String, dynamic> sudokuDbToMap(SudokuDb db) => db.toMap().cast();
 
 typedef LoadingModel = Maybe<ModelOrError>;
 typedef ModelOrError = Either<Object, SudokuAppBoardModel>;
@@ -16,7 +27,7 @@ class _SudokuDBController
     extends SubcontrollerBase<SudokuController, _SudokuDBController> {
   ValueNotifier<SudokuAppBoardModel?> _savedState = ValueNotifier(null);
   EventNotifier<SudokuAppBoardModel> _didRequestSave = EventNotifier();
-  final Db db;
+  final SudokuDb db;
   final SudokuAppBoardState? _initialState;
 
   _SudokuDBController.fromStorage(this.db) : _initialState = null;
@@ -42,23 +53,20 @@ class _SudokuDBController
 
   ValueListenable<LoadingModel> get initialModel => _initialModel.view();
 
-  static Future<void> _rawSaveToDb(Db db, Map<String, dynamic> encoded) =>
-      db.putAll(encoded);
+  static Future<void> _rawSaveToDb(SudokuDb db, Map<String, dynamic> encoded) =>
+      sudokuDbStore(db, encoded);
 
-  static Future<Map<String, dynamic>> _rawReadFromDb(Db db) async =>
-      db.toMap().cast<String, dynamic>();
+  static Future<Map<String, dynamic>> _rawReadFromDb(SudokuDb db) async =>
+      sudokuDbToMap(db);
 
-  static const Codec<SudokuAppBoardModel, Map<String, dynamic>> codec =
-      DoublyLinkedEventSourcedModelCodec();
-
-  static Future<SudokuAppBoardModel> _readFromDb(Db db) =>
+  static Future<SudokuAppBoardModel> _readFromDb(SudokuDb db) =>
       _rawReadFromDb(db).then(codec.decode);
 
-  static Future<void> _saveToDb(Db db, SudokuAppBoardModel model) =>
+  static Future<void> _saveToDb(SudokuDb db, SudokuAppBoardModel model) =>
       _rawSaveToDb(db, codec.encode(model));
 
   static Future<SudokuAppBoardModel> _createFromInitialAndSaveToDb(
-      Db db, SudokuAppBoardState initialState) async {
+      SudokuDb db, SudokuAppBoardState initialState) async {
     final model = SudokuAppBoardModel(initialState);
     await _saveToDb(db, model);
     return model;
@@ -109,10 +117,11 @@ class SudokuController extends ControllerBase<SudokuController> {
   final _SudokuDBController _db;
   final ActionNotifier _didModifyModel = ActionNotifier();
 
-  SudokuController.fromStorage(Db db)
+  SudokuController.fromStorage(SudokuDb db)
       : _db = ControllerBase.create(() => _SudokuDBController.fromStorage(db));
 
-  SudokuController.fromInitialState(Db db, SudokuAppBoardState initialState)
+  SudokuController.fromInitialState(
+      SudokuDb db, SudokuAppBoardState initialState)
       : _db = ControllerBase.create(
             () => _SudokuDBController.fromInitialState(db, initialState));
 
