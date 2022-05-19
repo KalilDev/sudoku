@@ -16,6 +16,7 @@ import 'ui/view.dart';
 import 'view/data.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Hive.registerAdapter(SudokuAppBoardStateAdapter());
   Hive.registerAdapter(ChangeNumberAdapter());
   Hive.registerAdapter(AddPossibilityAdapter());
