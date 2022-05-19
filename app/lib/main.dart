@@ -22,8 +22,10 @@ void main() async {
   Hive.registerAdapter(RemovePossibilityAdapter());
   Hive.registerAdapter(CommitNumberAdapter());
   Hive.registerAdapter(ClearTileAdapter());
-  Hive.registerAdapter(SudokuBoardIndexAdapter());
-  Hive.init(await pp.getTemporaryDirectory().then((d)=>d.path));
+  Hive.registerAdapter(SudokuHomeInfoAdapter());
+  Hive.registerAdapter(SudokuHomeItemAdapter());
+  Hive.registerAdapter(SudokuDifficultyAdapter());
+  Hive.init(await pp.getTemporaryDirectory().then((d) => d.path));
   final fooBox = await Hive.openBox('foo');
   final bdr = SudokuAppBoardStateBuilder(9);
   bdr.solvedBoard = [

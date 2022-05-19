@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:app/home_view/data.dart';
 import 'package:hive/hive.dart';
+import 'package:utils/utils.dart';
 
+import '../generation/impl/data.dart';
 import 'sudoku_data.dart';
 
 class SudokuAppBoardStateAdapter extends TypeAdapter<SudokuAppBoardState> {
@@ -54,11 +57,28 @@ class SudokuAppBoardStateAdapter extends TypeAdapter<SudokuAppBoardState> {
 }
 
 extension on BinaryWriter {
-  void writeIndex(SudokuBoardIndex index) => write(index);
+  void writeIndex(SudokuBoardIndex index) => writeTuple<int, int>(
+        this,
+        index,
+        (w, i) => w.writeInt(i),
+        (w, j) => w.writeInt(j),
+      );
+  void writeOtherInfo(OtherInfo otherInfo) => writeTuple<int, SudokuDifficulty>(
+        this,
+        otherInfo,
+        (w, l) => w.writeInt(l),
+        (w, r) => w.write(r),
+      );
 }
 
 extension on BinaryReader {
-  SudokuBoardIndex readIndex() => read() as SudokuBoardIndex;
+  SudokuBoardIndex readIndex() =>
+      readTuple<int, int>(this, (l) => l.readInt(), (r) => r.readInt());
+  OtherInfo readOtherInfo() => readTuple<int, SudokuDifficulty>(
+        this,
+        (r) => r.readInt(),
+        (r) => r.read() as SudokuDifficulty,
+      );
 }
 
 class ChangeNumberAdapter extends TypeAdapter<ChangeNumber> {
@@ -177,20 +197,123 @@ class ClearTileAdapter extends TypeAdapter<ClearTile> {
   }
 }
 
-class SudokuBoardIndexAdapter extends TypeAdapter<SudokuBoardIndex> {
+void writeTuple<L, R>(
+  BinaryWriter writer,
+  Tuple<L, R> tuple,
+  void Function(BinaryWriter, L) writeLeft,
+  void Function(BinaryWriter, R) writeRight,
+) {
+  writer.writeInt(0);
+  writeLeft(writer, tuple.left);
+  writeRight(writer, tuple.right);
+}
+
+Tuple<L, R> readTuple<L, R>(
+  BinaryReader reader,
+  L Function(BinaryReader) readLeft,
+  R Function(BinaryReader) readRight,
+) {
+  final version = reader.readInt();
+  final l = readLeft(reader);
+  final r = readRight(reader);
+  return Tuple(l, r);
+}
+
+void writeEither<L, R>(
+  BinaryWriter writer,
+  Either<L, R> either,
+  void Function(BinaryWriter, L) writeLeft,
+  void Function(BinaryWriter, R) writeRight,
+) {
+  writer.writeInt(0);
+  either.visit(a: (l) {
+    writer.writeBool(true);
+    writeLeft(writer, l);
+  }, b: (r) {
+    writer.writeBool(false);
+    writeRight(writer, r);
+  });
+}
+
+Either<L, R> readEither<L, R>(
+  BinaryReader reader,
+  L Function(BinaryReader) readLeft,
+  R Function(BinaryReader) readRight,
+) {
+  final version = reader.readInt();
+  final isLeft = reader.readBool();
+  if (isLeft) {
+    return Left(readLeft(reader));
+  }
+  return Right(readRight(reader));
+}
+
+class SudokuHomeInfoAdapter extends TypeAdapter<SudokuHomeInfo> {
   @override
-  int get typeId => 6;
+  int get typeId => 7;
 
   @override
-  void write(BinaryWriter writer, SudokuBoardIndex obj) {
+  void write(BinaryWriter writer, SudokuHomeInfo obj) {
     writer.writeInt(0);
-    writer.write(obj.left);
-    writer.write(obj.right);
+    writeEither<SudokuHomeSideInfo, OtherInfo>(
+      writer,
+      obj,
+      (w, sideInfo) => w.write(sideInfo),
+      (w, otherInfo) => w.writeOtherInfo(otherInfo),
+    );
   }
 
   @override
-  SudokuBoardIndex read(BinaryReader reader) {
+  SudokuHomeInfo read(BinaryReader reader) {
     final version = reader.readInt();
-    return SudokuBoardIndex(reader.readInt(), reader.readInt());
+    return readEither<SudokuHomeSideInfo, OtherInfo>(
+      reader,
+      (r) => (r.read() as Map<dynamic, dynamic>).cast(),
+      (r) => r.readOtherInfo(),
+    );
+  }
+}
+
+class SudokuHomeItemAdapter extends TypeAdapter<SudokuHomeItem> {
+  @override
+  int get typeId => 8;
+
+  @override
+  void write(BinaryWriter writer, SudokuHomeItem obj) {
+    writer.writeInt(0);
+    writeTuple<int, SudokuHomeItemInfo>(
+      writer,
+      obj,
+      (w, sideSqrt) => w.writeInt(sideSqrt),
+      (w, itemInfo) => w.write(itemInfo),
+    );
+  }
+
+  @override
+  SudokuHomeItem read(BinaryReader reader) {
+    final version = reader.readInt();
+    return readTuple<int, SudokuHomeItemInfo>(
+      reader,
+      (r) => r.readInt(),
+      (r) => (r.read() as Map<dynamic, dynamic>).cast(),
+    );
+  }
+}
+
+class SudokuDifficultyAdapter extends TypeAdapter<SudokuDifficulty> {
+  @override
+  int get typeId => 9;
+
+  @override
+  void write(BinaryWriter writer, SudokuDifficulty obj) {
+    writer.writeInt(0);
+    writer.writeString(obj.name);
+  }
+
+  @override
+  SudokuDifficulty read(BinaryReader reader) {
+    final version = reader.readInt();
+    final name = reader.readString();
+    return SudokuDifficulty.values.singleWhere((e) => name == e.name);
   }
 }
