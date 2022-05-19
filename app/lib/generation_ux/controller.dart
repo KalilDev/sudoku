@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:app/base/sudoku_data.dart';
 import 'package:app/generation/generation.dart';
-import 'package:app/generation/impl/isolate/no_isolate.dart';
+import 'package:app/generation/impl/isolate/exposed.dart';
 import 'package:flutter/foundation.dart';
 import 'package:value_notifier/value_notifier.dart';
 
