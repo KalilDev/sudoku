@@ -1,10 +1,11 @@
 // ignore_for_file: non_constant_identifier_names, camel_case_types
 
+import 'dart:io';
 import 'dart:math';
 import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart';
-
+import 'package:path/path.dart' as p;
 import '../../../base/sudoku_data.dart';
 
 class S_Board extends ffi.Struct {
@@ -16,7 +17,25 @@ class S_Board extends ffi.Struct {
 
 typedef ExternSudokuBoard = ffi.Pointer<S_Board>;
 
-final libsudoku = ffi.DynamicLibrary.open('libsudoku.so');
+ffi.DynamicLibrary _openLib(String name) {
+  final String suffix;
+  if (Platform.isMacOS || Platform.isIOS) {
+    suffix = '.dylib';
+  } else if (Platform.isWindows) {
+    suffix = '.dll';
+  } else {
+    assert(Platform.isAndroid || Platform.isFuchsia || Platform.isLinux);
+    suffix = '.so';
+  }
+  final soname = '$name$suffix';
+  if (Platform.isLinux || Platform.isWindows || Platform.isIOS) {
+    final dir = Directory.current.path;
+    return ffi.DynamicLibrary.open(p.join(dir, soname));
+  }
+  return ffi.DynamicLibrary.open(soname);
+}
+
+final libsudoku = _openLib('libsudoku');
 typedef s_board_initialize_to_zero_signature_native = ffi.Void Function(
     ffi.Pointer<S_Board> board);
 typedef s_board_initialize_to_zero_signature_dart = void Function(
