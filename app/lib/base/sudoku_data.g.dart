@@ -6,6 +6,31 @@ part of 'sudoku_data.dart';
 // AdtGenerator
 // **************************************************************************
 
+class MatrixIndex
+    with _MatrixIndexUtils
+    implements ProductType, TupleN2<int, int> {
+  final int e0;
+  final int e1;
+
+  const MatrixIndex(this.e0, this.e1) : super();
+
+  @override
+  ProductRuntimeType get runtimeType => ProductRuntimeType([int, int]);
+
+  @override
+  int get hashCode => Object.hash((MatrixIndex), e0, e1);
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is MatrixIndex &&
+          true &&
+          this.e0 == other.e0 &&
+          this.e1 == other.e1);
+
+  @override
+  String toString() => "MatrixIndex ($e0, $e1)";
+}
+
 R visitSudokuAppBoardChange<R extends Object?>(
         SudokuAppBoardChange union,
         R Function(ChangeNumber) changeNumber,

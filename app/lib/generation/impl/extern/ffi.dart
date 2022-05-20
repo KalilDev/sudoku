@@ -131,14 +131,14 @@ ExternSudokuBoard cloneExternSudokuBoard(ExternSudokuBoard other) {
 }
 
 int externSudokuBoardGetAt(ExternSudokuBoard board, SudokuBoardIndex index) =>
-    s_board_get_at(board.ref, index.right, index.left);
+    s_board_get_at(board.ref, index.y, index.x);
 
 void externSudokuBoardSetAt(
   ExternSudokuBoard board,
   SudokuBoardIndex index,
   int value,
 ) =>
-    s_board_set_at(board.ref, index.right, index.left, value);
+    s_board_set_at(board.ref, index.y, index.x, value);
 
 int externSudokuSide(ExternSudokuBoard board) =>
     board.ref.sideSqrt * board.ref.sideSqrt;

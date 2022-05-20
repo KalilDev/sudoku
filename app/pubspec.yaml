@@ -46,7 +46,7 @@ dependencies:
   adt_annotation: ^1.1.1
 
 dev_dependencies:
-  adt_generator: ^1.1.0
+  adt_generator: ^1.2.0
   build_runner:
   flutter_test:
     sdk: flutter

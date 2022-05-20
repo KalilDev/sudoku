@@ -71,8 +71,12 @@ extension on BinaryWriter {
 }
 
 extension on BinaryReader {
-  SudokuBoardIndex readIndex() =>
-      readTuple<int, int>(this, (l) => l.readInt(), (r) => r.readInt());
+  SudokuBoardIndex readIndex() {
+    final tuple =
+        readTuple<int, int>(this, (l) => l.readInt(), (r) => r.readInt());
+    return SudokuBoardIndex(tuple.e0, tuple.e1);
+  }
+
   OtherInfo readOtherInfo() {
     final version = readInt();
     final difficulty = read() as SudokuDifficulty;
@@ -199,16 +203,16 @@ class ClearTileAdapter extends TypeAdapter<ClearTile> {
 
 void writeTuple<L, R>(
   BinaryWriter writer,
-  Tuple<L, R> tuple,
+  TupleN2<L, R> tuple,
   void Function(BinaryWriter, L) writeLeft,
   void Function(BinaryWriter, R) writeRight,
 ) {
   writer.writeInt(0);
-  writeLeft(writer, tuple.left);
-  writeRight(writer, tuple.right);
+  writeLeft(writer, tuple.e0);
+  writeRight(writer, tuple.e1);
 }
 
-Tuple<L, R> readTuple<L, R>(
+TupleN2<L, R> readTuple<L, R>(
   BinaryReader reader,
   L Function(BinaryReader) readLeft,
   R Function(BinaryReader) readRight,
@@ -216,7 +220,7 @@ Tuple<L, R> readTuple<L, R>(
   final version = reader.readInt();
   final l = readLeft(reader);
   final r = readRight(reader);
-  return Tuple(l, r);
+  return Tuple2(l, r);
 }
 
 void writeEither<L, R>(
@@ -295,11 +299,12 @@ class SudokuHomeItemAdapter extends TypeAdapter<SudokuHomeItem> {
   @override
   SudokuHomeItem read(BinaryReader reader) {
     final version = reader.readInt();
-    return readTuple<int, SudokuHomeItemInfo>(
+    final tuple = readTuple<int, SudokuHomeItemInfo>(
       reader,
       (r) => r.readInt(),
       (r) => (r.read() as Map<dynamic, dynamic>).cast(),
     );
+    return SudokuHomeItem(tuple.e0, tuple.e1);
   }
 }
 

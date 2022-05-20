@@ -11,12 +11,25 @@ part 'sudoku_data.g.dart';
 typedef SudokuBoard = List<Uint8List>;
 
 // left is the x coordinate and right is the y coordinate
-typedef SudokuBoardIndex = Tuple<int, int>;
+@data(
+  #MatrixIndex,
+  [],
+  adt.Tuple([T(#int), T(#int)]),
+  mixin: [T(#_MatrixIndexUtils)],
+)
+const Type _matrixIndex = MatrixIndex;
+mixin _MatrixIndexUtils {
+  TupleN2<int, int> get _self => this as TupleN2<int, int>;
+  int get x => _self.e0;
+  int get y => _self.e1;
+}
+
+typedef SudokuBoardIndex = MatrixIndex;
 
 int sudokuBoardGetAt(SudokuBoard board, SudokuBoardIndex index) =>
-    board[index.right][index.left];
+    board[index.y][index.x];
 void sudokuBoardSetAt(SudokuBoard board, SudokuBoardIndex index, int value) =>
-    board[index.right][index.left] = value;
+    board[index.y][index.x] = value;
 
 SudokuBoard emptySudokuBoard(int side) =>
     List.generate(side, (_) => Uint8List(side), growable: false);
@@ -26,12 +39,9 @@ SudokuBoard cloneSudokuBoard(SudokuBoard board) =>
 // An list of rows
 typedef Matrix<T> = List<List<T>>;
 
-// left is the x coordinate and right is the y coordinate
-typedef MatrixIndex = Tuple<int, int>;
-
-T matrixGetAt<T>(Matrix<T> m, MatrixIndex index) => m[index.right][index.left];
+T matrixGetAt<T>(Matrix<T> m, MatrixIndex index) => m[index.y][index.x];
 void matrixSetAt<T>(Matrix<T> m, MatrixIndex index, T value) =>
-    m[index.right][index.left] = value;
+    m[index.y][index.x] = value;
 
 typedef PossibilitiesMatrix = Matrix<List<int>>;
 

@@ -34,10 +34,10 @@ ExternSudokuBoard cloneExternSudokuBoard(ExternSudokuBoard other) {
 }
 
 int externSudokuBoardGetAt(ExternSudokuBoard board, SudokuBoardIndex index) =>
-    board.initialState.getValue(index.left, index.right);
+    board.initialState.getValue(index.x, index.y);
 void externSudokuBoardSetAt(
         ExternSudokuBoard board, SudokuBoardIndex index, int value) =>
-    board.initialState.setValue(index.left, index.right, value);
+    board.initialState.setValue(index.x, index.y, value);
 int externSudokuSide(ExternSudokuBoard board) => board.side;
 SudokuBoard sudokuBoardFromExtern(ExternSudokuBoard extern) {
   final result = emptySudokuBoard(extern.side);
