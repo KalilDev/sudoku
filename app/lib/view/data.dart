@@ -1,7 +1,10 @@
+import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
+import 'package:adt_annotation/adt_annotation.dart' as adt;
 import 'package:collection/collection.dart';
 import 'package:utils/utils.dart';
 
 import '../base/sudoku_data.dart';
+part 'data.g.dart';
 
 typedef TileMatrix = Matrix<SudokuTile>;
 TileMatrix emptyTileMatrix(int side) => List.generate(
@@ -76,88 +79,24 @@ enum Validation {
 // data SudokuTile = Permanent Int
 //                 | Number Int Validation
 //                 | Possibilities List<Int>
-abstract class SudokuTile implements SumType {
-  const SudokuTile._();
-
-  R visit<R>({
-    required R Function(int) permanent,
-    required R Function(int, Validation) number,
-    required R Function(List<int>) possibilities,
-  });
-
-  SumRuntimeType get runtimeType =>
-      const SumRuntimeType([Permanent, Number, Possibilities]);
-
-  int get hashCode =>
-      throw UnimplementedError('Every case has an hashCode override');
-  bool operator ==(other) =>
-      throw UnimplementedError('Every case has an equality override');
-  String toString() =>
-      throw UnimplementedError('Every case has an toString override');
-}
-
-class Permanent extends SudokuTile {
-  final int number;
-
-  const Permanent(this.number)
-      : assert(number != 0),
-        super._();
-
-  R visit<R>({
-    required R Function(int) permanent,
-    required R Function(int, Validation) number,
-    required R Function(List<int>) possibilities,
-  }) =>
-      permanent(this.number);
-
-  int get hashCode => number.hashCode;
-  bool operator ==(other) => other is Permanent && other.number == number;
-
-  @override
-  String toString() => "Permanent $number";
-}
-
-class Number extends SudokuTile {
-  final int number;
-  final Validation validation;
-
-  const Number(this.number, this.validation) : super._();
-
-  R visit<R>({
-    required R Function(int) permanent,
-    required R Function(int, Validation) number,
-    required R Function(List<int>) possibilities,
-  }) =>
-      number(this.number, validation);
-
-  int get hashCode => Object.hash(number, validation);
-  bool operator ==(other) =>
-      other is Number &&
-      other.number == number &&
-      other.validation == validation;
-
-  @override
-  String toString() => "Number $number $validation";
-}
-
-class Possibilities extends SudokuTile {
-  final List<int> possibilities;
-
-  const Possibilities(this.possibilities) : super._();
-
-  R visit<R>({
-    required R Function(int) permanent,
-    required R Function(int, Validation) number,
-    required R Function(List<int>) possibilities,
-  }) =>
-      possibilities(this.possibilities);
-
-  static const _possibilitiesEq = ListEquality<int>();
-  int get hashCode => _possibilitiesEq.hash(possibilities);
-  bool operator ==(other) =>
-      other is Possibilities &&
-      _possibilitiesEq.equals(other.possibilities, possibilities);
-
-  @override
-  String toString() => "Possibilities $possibilities";
-}
+@data(
+  #SudokuTile,
+  [],
+  adt.Union(
+    {
+      #Permanent: {
+        #number: T(#int),
+      },
+      #Number: {
+        #number: T(#int),
+        #validation: T(#Validation),
+      },
+      #Possibilities: {
+        #possibilities: T(#List, [T(#int)]),
+      }
+    },
+    deriveMode: adt.UnionVisitDeriveMode.cata,
+    topLevel: false,
+  ),
+)
+const Type _sudokuTile = SudokuTile;

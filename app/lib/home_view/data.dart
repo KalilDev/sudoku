@@ -1,6 +1,9 @@
 import 'package:app/generation/impl/data.dart';
 import 'package:hive/hive.dart';
 import 'package:utils/utils.dart';
+import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
+import 'package:adt_annotation/adt_annotation.dart' as adt;
+part 'data.g.dart';
 
 // type SudokuHomeItemInfo = Map<SudokuDifficulty, Bool>
 typedef SudokuHomeItemInfo = Map<SudokuDifficulty, bool>;
@@ -18,8 +21,24 @@ typedef SudokuHomeSideInfo = Map<int, SudokuHomeItem>;
 
 // data SudokuHomeDbInfo = SideInfo SudokuHomeSideInfo
 //                       | OtherInfo SudokuDifficulty Int
-typedef OtherInfo = Tuple<int, SudokuDifficulty>;
-typedef SudokuHomeInfo = Either<SudokuHomeSideInfo, OtherInfo>;
+@data(
+  #SudokuHomeInfo,
+  [],
+  adt.Union(
+    {
+      #SideInfo: {
+        #info: T(#SudokuHomeSideInfo),
+      },
+      #OtherInfo: {
+        #difficulty: T(#SudokuDifficulty),
+        #activeSideSqrt: T(#int),
+      }
+    },
+    deriveMode: adt.UnionVisitDeriveMode.data,
+  ),
+)
+const Type _sudokuDbHomeInfo = SudokuHomeInfo;
+
 typedef SudokuHomeDb = Box<SudokuHomeInfo>;
 
 typedef SudokuHomeViewData = Tuple<SudokuHomeSideInfo, OtherInfo>;

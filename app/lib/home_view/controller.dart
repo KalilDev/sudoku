@@ -10,25 +10,25 @@ import '../generation/impl/data.dart';
 Future<SudokuHomeDb> sudokuHomeDbOpen() => Hive.openBox('sudoku-home');
 SudokuDifficulty sudokuDbGetActiveDifficutyOr(
         SudokuHomeDb db, SudokuDifficulty difficulty) =>
-    sudokuDbGetOtherInfo(db)?.right ?? difficulty;
+    sudokuDbGetOtherInfo(db)?.difficulty ?? difficulty;
 
 int sudokuDbGetActiveSideSqrtOr(SudokuHomeDb db, int sideSqrt) =>
-    sudokuDbGetOtherInfo(db)?.left ?? sideSqrt;
+    sudokuDbGetOtherInfo(db)?.activeSideSqrt ?? sideSqrt;
 
 SudokuHomeSideInfo sudokuDbGetSudokuHomeSideInfoOr(
         SudokuHomeDb db, SudokuHomeSideInfo info) =>
     sudokuDbGetSudokuHomeSideInfo(db) ?? info;
 
 OtherInfo? sudokuDbGetOtherInfo(SudokuHomeDb db) => db.get('other-info')?.visit(
-      a: (_) => throw StateError(
+      sideInfo: (_) => throw StateError(
           "Expected it to be OtherInfo, but it is SudokuHomeSideInfo"),
-      b: (otherInfo) => otherInfo,
+      otherInfo: (otherInfo) => otherInfo,
     );
 
 SudokuHomeSideInfo? sudokuDbGetSudokuHomeSideInfo(SudokuHomeDb db) =>
     db.get('home-side-info')?.visit(
-          a: (sideInfo) => sideInfo,
-          b: (_) => throw StateError(
+          sideInfo: (sideInfo) => sideInfo.info,
+          otherInfo: (_) => throw StateError(
               "Expected it to be SudokuHomeSideInfo, but it is OtherInfo"),
         );
 
@@ -84,8 +84,8 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   ValueListenable<bool> get isLocked => db.map((db) => db == null);
 
   ValueListenable<bool> get canContinue => viewData.map((view) {
-        final activeSideSqrt = view.right.left;
-        final activeDifficulty = view.right.right;
+        final activeSideSqrt = view.right.activeSideSqrt;
+        final activeDifficulty = view.right.difficulty;
         final canContinueMap = view.left;
         return canContinueMap[activeSideSqrt]!.right[activeDifficulty]!;
       });
@@ -113,7 +113,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   ValueListenable<SudokuDifficulty> get difficulty => _difficulty.view();
 
   ValueListenable<OtherInfo> get otherInfo =>
-      OtherInfo.new.curry.asValueListenable >> sideSqrt >> difficulty;
+      OtherInfo.new.curry.asValueListenable >> difficulty >> sideSqrt;
 
   late final ValueListenable<SudokuHomeSideInfo> _sideInfo = db
       .bind((db) => didChangeSideInfo.map((change) => db == null
@@ -160,17 +160,17 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   }
 
   Future<void> _onChangeSideSqrt(int? sideSqrt) {
-    final newInfo = OtherInfo(sideSqrt!, difficulty.value);
-    return db.value!.put('other-info', Right(newInfo));
+    final newInfo = OtherInfo(difficulty.value, sideSqrt!);
+    return db.value!.put('other-info', newInfo);
   }
 
   Future<void> _onChangeDifficulty(SudokuDifficulty? difficulty) {
-    final newInfo = OtherInfo(sideSqrt.value, difficulty!);
-    return db.value!.put('other-info', Right(newInfo));
+    final newInfo = OtherInfo(difficulty!, sideSqrt.value);
+    return db.value!.put('other-info', newInfo);
   }
 
   Future<void> _onChangeHomeSideInfo(SudokuHomeSideInfo? info) =>
-      db.value!.put('home-side-info', Left(info!));
+      db.value!.put('home-side-info', SudokuHomeInfo.sideInfo(info!));
 
   void _onPopTarget(SudokuNavigationPopInfo popInfo) async {
     final target = popInfo.left;

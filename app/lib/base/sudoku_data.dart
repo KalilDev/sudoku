@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
+import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
+import 'package:adt_annotation/adt_annotation.dart' as adt;
 import 'package:collection/collection.dart';
 import 'package:utils/event_sourcing.dart';
 import 'package:utils/utils.dart';
+part 'sudoku_data.g.dart';
 
 // An list of rows
 typedef SudokuBoard = List<Uint8List>;
@@ -168,257 +170,132 @@ class SudokuAppBoardStateBuilder
 //                           | AddPossibility SudokuBoardIndex Int
 //                           | RemovePossibility SudokuBoardIndex Int
 //                           | CommitNumber SudokuBoardIndex List<Int> Int
-//                           | ClearTile Int List<Int>
-abstract class SudokuAppBoardChange
+//                           | ClearTile SudokuBoardIndex Int List<Int>
+@data(
+  #SudokuAppBoardChange,
+  [],
+  adt.Union(
+    {
+      #ChangeNumber: {
+        #index: T(#SudokuBoardIndex),
+        #from: T(#int),
+        #to: T(#int),
+      },
+      #AddPossibility: {
+        #index: T(#SudokuBoardIndex),
+        #number: T(#int),
+      },
+      #RemovePossibility: {
+        #index: T(#SudokuBoardIndex),
+        #number: T(#int),
+      },
+      #CommitNumber: {
+        #index: T(#SudokuBoardIndex),
+        #oldPossibilities: T(#List, [T(#int)]),
+        #number: T(#int),
+      },
+      #ClearTile: {
+        #index: T(#SudokuBoardIndex),
+        #oldPossibilities: T(#List, [T(#int)]),
+        #oldNumber: T(#int),
+      }
+    },
+    deriveMode: adt.UnionVisitDeriveMode.data,
+    topLevel: true,
+  ),
+  mixin: [T(#SudokuAppBoardChangeUndoable)],
+)
+const Type _sudokuAppBoardChange = SudokuAppBoardChange;
+
+const _possibilitiesEquality = ListEquality<int>();
+
+mixin SudokuAppBoardChangeUndoable
     implements
-        SumType,
         UndoableEventSourcedEvent<SudokuAppBoardState,
             SudokuAppBoardStateBuilder, SudokuAppBoardChange> {
-  const SudokuAppBoardChange._();
-
-  R visit<R>({
-    required R Function(ChangeNumber) changeNumber,
-    required R Function(AddPossibility) addPossibility,
-    required R Function(RemovePossibility) removePossibility,
-    required R Function(CommitNumber) commitNumber,
-    required R Function(ClearTile) clearTile,
-  });
-
-  SumRuntimeType get runtimeType => const SumRuntimeType([
-        ChangeNumber,
-        AddPossibility,
-        RemovePossibility,
-        CommitNumber,
-        ClearTile,
-      ]);
-
-  int get hashCode =>
-      throw UnimplementedError('Every case has an hashCode override');
-  bool operator ==(other) =>
-      throw UnimplementedError('Every case has an equality override');
-  String toString() =>
-      throw UnimplementedError('Every case has an toString override');
-}
-
-class ChangeNumber extends SudokuAppBoardChange {
-  final SudokuBoardIndex index;
-  final int from;
-  final int to;
-
-  const ChangeNumber(this.index, this.from, this.to)
-      :
-        // todo: can [to] be 0? i guess only if possibilities are empty
-        // (assert), but this would be unexpected behavior or ensured by the
-        // logic of the program, which is the exact usecase of an assert?
-        // i guess i feel weird about this data type having this sorta control.
-        assert(from != 0),
-        super._();
-
-  R visit<R>({
-    required R Function(ChangeNumber) changeNumber,
-    required R Function(AddPossibility) addPossibility,
-    required R Function(RemovePossibility) removePossibility,
-    required R Function(CommitNumber) commitNumber,
-    required R Function(ClearTile) clearTile,
-  }) =>
-      changeNumber(this);
-
-  int get hashCode => Object.hash(index, from, to);
-  bool operator ==(other) =>
-      other is ChangeNumber &&
-      other.index == index &&
-      other.from == from &&
-      other.to == to;
+  @override
+  void applyTo(SudokuAppBoardStateBuilder bdr) => visitSudokuAppBoardChange(
+        this as SudokuAppBoardChange,
+        (changeNumber) {
+          assert(sudokuBoardGetAt(bdr.currentNumbers, changeNumber.index) ==
+              changeNumber.from);
+          if (changeNumber.to == 0) {
+            assert(matrixGetAt(bdr.currentPossibilities, changeNumber.index)
+                .isEmpty);
+          }
+          sudokuBoardSetAt(
+              bdr.currentNumbers, changeNumber.index, changeNumber.to);
+        },
+        (addPossibility) {
+          final ps =
+              matrixGetAt(bdr.currentPossibilities, addPossibility.index);
+          assert(!ps.contains(addPossibility.number));
+          ps.add(addPossibility.number);
+        },
+        (removePossibility) {
+          final ps =
+              matrixGetAt(bdr.currentPossibilities, removePossibility.index);
+          assert(ps.contains(removePossibility.number));
+          ps.remove(removePossibility.number);
+        },
+        (commitNumber) {
+          final ps = matrixGetAt(bdr.currentPossibilities, commitNumber.index);
+          assert(
+              _possibilitiesEquality.equals(ps, commitNumber.oldPossibilities));
+          ps.clear();
+          sudokuBoardSetAt(
+              bdr.currentNumbers, commitNumber.index, commitNumber.number);
+        },
+        (clearTile) {
+          final ps = matrixGetAt(bdr.currentPossibilities, clearTile.index);
+          assert(_possibilitiesEquality.equals(ps, clearTile.oldPossibilities));
+          assert(sudokuBoardGetAt(bdr.currentNumbers, clearTile.index) ==
+              clearTile.oldNumber);
+          ps.clear();
+          sudokuBoardSetAt(bdr.currentNumbers, clearTile.index, 0);
+        },
+      );
 
   @override
-  String toString() => "ChangeNumber $index $from $to";
-
-  @override
-  void applyTo(SudokuAppBoardStateBuilder bdr) {
-    assert(sudokuBoardGetAt(bdr.currentNumbers, index) == from);
-    if (to == 0) {
-      assert(matrixGetAt(bdr.currentPossibilities, index).isEmpty);
-    }
-    sudokuBoardSetAt(bdr.currentNumbers, index, to);
-  }
-
-  @override
-  void undoTo(SudokuAppBoardStateBuilder bdr) {
-    assert(sudokuBoardGetAt(bdr.currentNumbers, index) == to);
-    if (to == 0) {
-      assert(matrixGetAt(bdr.currentPossibilities, index).isEmpty);
-    }
-    sudokuBoardSetAt(bdr.currentNumbers, index, from);
-  }
-}
-
-class AddPossibility extends SudokuAppBoardChange {
-  final SudokuBoardIndex index;
-  final int number;
-
-  const AddPossibility(this.index, this.number) : super._();
-
-  R visit<R>({
-    required R Function(ChangeNumber) changeNumber,
-    required R Function(AddPossibility) addPossibility,
-    required R Function(RemovePossibility) removePossibility,
-    required R Function(CommitNumber) commitNumber,
-    required R Function(ClearTile) clearTile,
-  }) =>
-      addPossibility(this);
-
-  int get hashCode => Object.hash(index, number);
-  bool operator ==(other) =>
-      other is AddPossibility && other.index == index && other.number == number;
-  @override
-  String toString() => "AddPossibility $index $number";
-
-  @override
-  void applyTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(!ps.contains(number));
-    ps.add(number);
-  }
-
-  @override
-  void undoTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(ps.contains(number));
-    ps.remove(number);
-  }
-}
-
-class RemovePossibility extends SudokuAppBoardChange {
-  final SudokuBoardIndex index;
-  final int number;
-
-  const RemovePossibility(this.index, this.number) : super._();
-
-  R visit<R>({
-    required R Function(ChangeNumber) changeNumber,
-    required R Function(AddPossibility) addPossibility,
-    required R Function(RemovePossibility) removePossibility,
-    required R Function(CommitNumber) commitNumber,
-    required R Function(ClearTile) clearTile,
-  }) =>
-      removePossibility(this);
-
-  int get hashCode => Object.hash(index, number);
-  bool operator ==(other) =>
-      other is RemovePossibility &&
-      other.index == index &&
-      other.number == number;
-  @override
-  String toString() => "RemovePossibility $index $number";
-
-  @override
-  void applyTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(ps.contains(number));
-    ps.remove(number);
-  }
-
-  @override
-  void undoTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(!ps.contains(number));
-    ps.add(number);
-  }
-}
-
-class CommitNumber extends SudokuAppBoardChange {
-  final SudokuBoardIndex index;
-  final List<int> oldPossibilities;
-  final int number;
-
-  const CommitNumber(this.index, this.oldPossibilities, this.number)
-      : super._();
-
-  R visit<R>({
-    required R Function(ChangeNumber) changeNumber,
-    required R Function(AddPossibility) addPossibility,
-    required R Function(RemovePossibility) removePossibility,
-    required R Function(CommitNumber) commitNumber,
-    required R Function(ClearTile) clearTile,
-  }) =>
-      commitNumber(this);
-
-  static const _possibilitiesEquality = ListEquality<int>();
-
-  int get hashCode =>
-      Object.hash(index, _possibilitiesEquality.hash(oldPossibilities), number);
-
-  bool operator ==(other) =>
-      other is CommitNumber &&
-      other.index == index &&
-      _possibilitiesEquality.equals(other.oldPossibilities, oldPossibilities) &&
-      other.number == number;
-
-  @override
-  String toString() => "CommitNumber $index $oldPossibilities $number";
-
-  @override
-  void applyTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(_possibilitiesEquality.equals(ps, oldPossibilities));
-    ps.clear();
-    sudokuBoardSetAt(bdr.currentNumbers, index, number);
-  }
-
-  @override
-  void undoTo(SudokuAppBoardStateBuilder bdr) {
-    assert(sudokuBoardGetAt(bdr.currentNumbers, index) == number);
-    matrixSetAt(bdr.currentPossibilities, index, oldPossibilities);
-    sudokuBoardSetAt(bdr.currentNumbers, index, 0);
-  }
-}
-
-class ClearTile extends SudokuAppBoardChange {
-  final SudokuBoardIndex index;
-  final List<int> oldPossibilities;
-  final int oldNumber;
-
-  const ClearTile(this.index, this.oldPossibilities, this.oldNumber)
-      : super._();
-
-  R visit<R>({
-    required R Function(ChangeNumber) changeNumber,
-    required R Function(AddPossibility) addPossibility,
-    required R Function(RemovePossibility) removePossibility,
-    required R Function(CommitNumber) commitNumber,
-    required R Function(ClearTile) clearTile,
-  }) =>
-      clearTile(this);
-
-  static const _possibilitiesEquality = ListEquality<int>();
-
-  int get hashCode => Object.hash(
-      index, _possibilitiesEquality.hash(oldPossibilities), oldNumber);
-
-  bool operator ==(other) =>
-      other is ClearTile &&
-      other.index == index &&
-      _possibilitiesEquality.equals(other.oldPossibilities, oldPossibilities) &&
-      other.oldNumber == oldNumber;
-
-  @override
-  String toString() => "CommitNumber $index $oldPossibilities $oldNumber";
-
-  @override
-  void applyTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(_possibilitiesEquality.equals(ps, oldPossibilities));
-    assert(sudokuBoardGetAt(bdr.currentNumbers, index) == oldNumber);
-    ps.clear();
-    sudokuBoardSetAt(bdr.currentNumbers, index, 0);
-  }
-
-  @override
-  void undoTo(SudokuAppBoardStateBuilder bdr) {
-    final ps = matrixGetAt(bdr.currentPossibilities, index);
-    assert(ps.isEmpty);
-    assert(sudokuBoardGetAt(bdr.currentNumbers, index) == 0);
-    matrixSetAt(bdr.currentPossibilities, index, oldPossibilities);
-    sudokuBoardSetAt(bdr.currentNumbers, index, oldNumber);
-  }
+  void undoTo(SudokuAppBoardStateBuilder bdr) => visitSudokuAppBoardChange(
+        this as SudokuAppBoardChange,
+        (changeNumber) {
+          assert(sudokuBoardGetAt(bdr.currentNumbers, changeNumber.index) ==
+              changeNumber.to);
+          if (changeNumber.to == 0) {
+            assert(matrixGetAt(bdr.currentPossibilities, changeNumber.index)
+                .isEmpty);
+          }
+          sudokuBoardSetAt(
+              bdr.currentNumbers, changeNumber.index, changeNumber.from);
+        },
+        (addPossibility) {
+          final ps =
+              matrixGetAt(bdr.currentPossibilities, addPossibility.index);
+          assert(ps.contains(addPossibility.number));
+          ps.remove(addPossibility.number);
+        },
+        (removePossibility) {
+          final ps =
+              matrixGetAt(bdr.currentPossibilities, removePossibility.index);
+          assert(!ps.contains(removePossibility.number));
+          ps.add(removePossibility.number);
+        },
+        (commitNumber) {
+          assert(sudokuBoardGetAt(bdr.currentNumbers, commitNumber.index) ==
+              commitNumber.number);
+          matrixSetAt(bdr.currentPossibilities, commitNumber.index,
+              commitNumber.oldPossibilities);
+          sudokuBoardSetAt(bdr.currentNumbers, commitNumber.index, 0);
+        },
+        (clearTile) {
+          final ps = matrixGetAt(bdr.currentPossibilities, clearTile.index);
+          assert(ps.isEmpty);
+          assert(sudokuBoardGetAt(bdr.currentNumbers, clearTile.index) == 0);
+          matrixSetAt(bdr.currentPossibilities, clearTile.index,
+              clearTile.oldPossibilities);
+          sudokuBoardSetAt(
+              bdr.currentNumbers, clearTile.index, clearTile.oldNumber);
+        },
+      );
 }

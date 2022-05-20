@@ -10,6 +10,10 @@ import 'src/actions.dart';
 import 'src/board.dart';
 import 'src/keypad.dart';
 import 'src/layout.dart';
+import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
+import 'package:adt_annotation/adt_annotation.dart' as adt;
+import 'package:flutter/foundation.dart';
+part 'view.g.dart';
 
 class NumberPressedAction extends Action<PressNumberIntent> {
   final SudokuViewController controller;
@@ -37,29 +41,30 @@ class NumberPressedAction extends Action<PressNumberIntent> {
 // data PressNumberIntent = PressNumberOnBoardIntent SudokuBoardIndex int
 //                        | PressNumberOnBoardAltIntent SudokuBoardIndex int
 //                        | PressFreeNumber int
-abstract class PressNumberIntent extends Intent {
-  const PressNumberIntent._();
-}
-
-class PressNumberOnBoardIntent extends PressNumberIntent {
-  final SudokuBoardIndex index;
-  final int number;
-
-  const PressNumberOnBoardIntent(this.index, this.number) : super._();
-}
-
-class PressNumberOnBoardAltIntent extends PressNumberIntent {
-  final SudokuBoardIndex index;
-  final int number;
-
-  const PressNumberOnBoardAltIntent(this.index, this.number) : super._();
-}
-
-class PressFreeNumber extends PressNumberIntent {
-  final int number;
-
-  const PressFreeNumber(this.number) : super._();
-}
+@data(
+  #PressNumberIntent,
+  [],
+  adt.Union({
+    #PressNumberOnBoardIntent: {
+      #index: T(#SudokuBoardIndex),
+      #number: T(#int),
+    },
+    #PressNumberOnBoardAltIntent: {
+      #index: T(#SudokuBoardIndex),
+      #number: T(#int),
+    },
+    #PressFreeNumber: {
+      #number: T(#int),
+    },
+  }),
+  mixin: [
+    T(#IntentMixin),
+    T(#Diagnosticable),
+  ],
+  deriveToString: false,
+)
+const Type _pressNumberIntent = PressNumberIntent;
+mixin IntentMixin implements Intent {}
 
 class BoardValidateAction extends Action<ValidateBoardIntent> {
   final SudokuViewController controller;

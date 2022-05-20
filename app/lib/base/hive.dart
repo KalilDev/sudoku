@@ -63,22 +63,22 @@ extension on BinaryWriter {
         (w, i) => w.writeInt(i),
         (w, j) => w.writeInt(j),
       );
-  void writeOtherInfo(OtherInfo otherInfo) => writeTuple<int, SudokuDifficulty>(
-        this,
-        otherInfo,
-        (w, l) => w.writeInt(l),
-        (w, r) => w.write(r),
-      );
+  void writeOtherInfo(OtherInfo otherInfo) {
+    writeInt(0);
+    write(otherInfo.difficulty);
+    writeInt(otherInfo.activeSideSqrt);
+  }
 }
 
 extension on BinaryReader {
   SudokuBoardIndex readIndex() =>
       readTuple<int, int>(this, (l) => l.readInt(), (r) => r.readInt());
-  OtherInfo readOtherInfo() => readTuple<int, SudokuDifficulty>(
-        this,
-        (r) => r.readInt(),
-        (r) => r.read() as SudokuDifficulty,
-      );
+  OtherInfo readOtherInfo() {
+    final version = readInt();
+    final difficulty = read() as SudokuDifficulty;
+    final activeSideSqrt = readInt();
+    return OtherInfo(difficulty, activeSideSqrt);
+  }
 }
 
 class ChangeNumberAdapter extends TypeAdapter<ChangeNumber> {
@@ -255,22 +255,25 @@ class SudokuHomeInfoAdapter extends TypeAdapter<SudokuHomeInfo> {
   @override
   void write(BinaryWriter writer, SudokuHomeInfo obj) {
     writer.writeInt(0);
-    writeEither<SudokuHomeSideInfo, OtherInfo>(
-      writer,
-      obj,
-      (w, sideInfo) => w.write(sideInfo),
-      (w, otherInfo) => w.writeOtherInfo(otherInfo),
+    writer.writeInt(0);
+    final isSideInfo = obj is SideInfo;
+    writer.write(isSideInfo);
+    obj.visit(
+      sideInfo: (sideInfo) => writer.write(sideInfo.info),
+      otherInfo: (otherInfo) => writer.writeOtherInfo(otherInfo),
     );
   }
 
   @override
   SudokuHomeInfo read(BinaryReader reader) {
     final version = reader.readInt();
-    return readEither<SudokuHomeSideInfo, OtherInfo>(
-      reader,
-      (r) => (r.read() as Map<dynamic, dynamic>).cast(),
-      (r) => r.readOtherInfo(),
-    );
+    final union_version = reader.readInt();
+    final isSideInfo = reader.readBool();
+    if (isSideInfo) {
+      return SudokuHomeInfo.sideInfo(
+          (reader.read() as Map<dynamic, dynamic>).cast());
+    }
+    return reader.readOtherInfo();
   }
 }
 

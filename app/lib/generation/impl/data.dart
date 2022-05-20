@@ -2,6 +2,10 @@ import 'package:utils/utils.dart';
 
 import '../../base/sudoku_data.dart';
 
+import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
+import 'package:adt_annotation/adt_annotation.dart' as adt;
+part 'data.g.dart';
+
 enum SudokuDifficulty {
   begginer,
   easy,
@@ -34,32 +38,27 @@ int filledSudokuCellCountFromDifficulty(SudokuDifficulty difficulty, int side) {
 // data SudokuGenerationEvent = SudokuGenerationFoundSolution SudokuBoard
 //                            | SudokuGenerationFoundSquare SudokuBoardIndex Int
 //                            | SudokuGenerationFinished SudokuBoard SudokuBoard
-abstract class SudokuGenerationEvent {
-  const SudokuGenerationEvent();
-}
-
-class SudokuGenerationFoundSolution extends SudokuGenerationEvent {
-  final SudokuBoard solvedState;
-  const SudokuGenerationFoundSolution(
-    this.solvedState,
-  );
-}
-
-class SudokuGenerationFoundSquare extends SudokuGenerationEvent {
-  final SudokuBoardIndex index;
-  final int number;
-  const SudokuGenerationFoundSquare(this.index, this.number)
-      : assert(number != 0);
-}
-
-class SudokuGenerationFinished extends SudokuGenerationEvent {
-  final SudokuBoard solvedState;
-  final SudokuBoard challengeState;
-  const SudokuGenerationFinished(
-    this.solvedState,
-    this.challengeState,
-  );
-}
+@data(
+  #SudokuGenerationEvent,
+  [],
+  adt.Union(
+    {
+      #SudokuGenerationFoundSolution: {
+        #solvedState: T(#SudokuBoard),
+      },
+      #SudokuGenerationFoundSquare: {
+        #index: T(#SudokuBoardIndex),
+        #number: T(#int),
+      },
+      #SudokuGenerationFinished: {
+        #solvedState: T(#SudokuBoard),
+        #challengeState: T(#SudokuBoard),
+      },
+    },
+    deriveMode: adt.UnionVisitDeriveMode.data,
+  ),
+)
+const Type _sudokuGenerationEvent = SudokuGenerationEvent;
 
 // the left one is the solved state and the right one is the challenge state
 typedef SolvedAndChallengeBoard = Tuple<SudokuBoard, SudokuBoard>;

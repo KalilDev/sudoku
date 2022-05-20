@@ -43,8 +43,11 @@ dependencies:
   path_provider:
   sudoku_core:
     path: ../../sudoku/sudoku_core
+  adt_annotation: ^1.1.1
 
 dev_dependencies:
+  adt_generator: ^1.1.0
+  build_runner:
   flutter_test:
     sdk: flutter
 
