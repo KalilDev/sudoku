@@ -226,10 +226,10 @@ void writeEither<L, R>(
   void Function(BinaryWriter, R) writeRight,
 ) {
   writer.writeInt(0);
-  either.visit(a: (l) {
+  either.visit(left: (l) {
     writer.writeBool(true);
     writeLeft(writer, l);
-  }, b: (r) {
+  }, right: (r) {
     writer.writeBool(false);
     writeRight(writer, r);
   });

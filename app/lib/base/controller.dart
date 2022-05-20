@@ -86,8 +86,8 @@ class _SudokuDBController
   void _onInitialModel(LoadingModel model) {
     _savedState.value = model.visit(
       just: (v) => v.visit(
-        a: (err) => null,
-        b: (v) => v,
+        left: (err) => null,
+        right: (v) => v,
       ),
       none: () => null,
     );
@@ -133,8 +133,8 @@ class SudokuController extends ControllerBase<SudokuController> {
 
   ValueListenable<SudokuAppBoardModel?> get modelOrNull =>
       model.map((modelOrError) => modelOrError?.visit(
-            a: (err) => null,
-            b: (model) => model,
+            left: (err) => null,
+            right: (model) => model,
           ));
 
   ValueListenable<SudokuAppBoardState?> get snapshot =>

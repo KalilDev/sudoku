@@ -67,7 +67,7 @@ class HomeView extends ControllerWidget<HomeViewController> {
       //showSnackbar(SnackBar(content: Text(target.toString())))(context);
       SudokuController? sudokuController;
       final route = target.visit<Route>(
-        a: (create) => MaterialPageRoute(builder: (context) {
+        left: (create) => MaterialPageRoute(builder: (context) {
           print('create controller');
           return MD3AdaptativeScaffold(
             appBar: MD3SmallAppBar(title: Text("Sudoku")),
@@ -92,7 +92,7 @@ class HomeView extends ControllerWidget<HomeViewController> {
             ),
           );
         }),
-        b: (resume) => MaterialPageRoute(
+        right: (resume) => MaterialPageRoute(
           builder: (context) => MD3AdaptativeScaffold(
             appBar: MD3SmallAppBar(title: Text("Sudoku")),
             body: MD3ScaffoldBody.noMargin(

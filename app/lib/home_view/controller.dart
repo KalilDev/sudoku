@@ -176,16 +176,16 @@ class HomeViewController extends ControllerBase<HomeViewController> {
     final target = popInfo.left;
     final sudokuController = popInfo.right;
     final db = target.visit(
-      a: (create) => create.db,
-      b: (resume) => resume.db,
+      left: (create) => create.db,
+      right: (resume) => resume.db,
     );
     final sideSqrt = target.visit(
-      a: (create) => create.sideSqrt,
-      b: (resume) => resume.sideSqrt,
+      left: (create) => create.sideSqrt,
+      right: (resume) => resume.sideSqrt,
     );
     final difficulty = target.visit(
-      a: (create) => create.difficulty,
-      b: (resume) => resume.difficulty,
+      left: (create) => create.difficulty,
+      right: (resume) => resume.difficulty,
     );
     final canContinue = !sudokuController.isFinished.value;
     _didChangeSideInfo.add(

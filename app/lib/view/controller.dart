@@ -118,8 +118,8 @@ class SudokuViewController extends ControllerBase<SudokuViewController> {
       _sudokuController.modelOrNull.map((model) => model == null);
   ValueListenable<Object?> get errorEvents =>
       _sudokuController.model.map((model) => model?.visit(
-            a: (err) => err,
-            b: (v) => null,
+            left: (err) => err,
+            right: (v) => null,
           ));
 
   void _pressOnBoard(
