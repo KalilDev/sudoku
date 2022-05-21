@@ -22,19 +22,15 @@ class NumberPressedAction extends Action<PressNumberIntent> {
 
   @override
   Object? invoke(PressNumberIntent intent) {
-    if (intent is PressNumberOnBoardIntent) {
-      controller.pressNumberOnBoard(intent.index, intent.number, isAlt: false);
-    } else if (intent is PressNumberOnBoardAltIntent) {
-      controller.pressNumberOnBoard(intent.index, intent.number, isAlt: true);
-    } else if (intent is PressFreeNumber) {
-      if (intent.number == 0) {
-        controller.keypad.pressClear();
-      } else {
-        controller.keypad.pressNumber(intent.number);
-      }
-    } else {
-      throw TypeError();
-    }
+    intent.visit(
+      pressNumberOnBoardIntent: (index, number) =>
+          controller.pressNumberOnBoard(index, number, isAlt: false),
+      pressNumberOnBoardAltIntent: (index, number) =>
+          controller.pressNumberOnBoard(index, number, isAlt: true),
+      pressFreeNumber: (number) => number == 0
+          ? controller.keypad.pressClear()
+          : controller.keypad.pressNumber(number),
+    );
   }
 }
 
