@@ -101,16 +101,34 @@ class _SudokuDBController
 }
 
 extension AAAA on SudokuController {
-  SudokuAppBoardModel changeNumber(SudokuBoardIndex index, int to) =>
-      addE(snapshot.value!.changeNumberE(index, to));
-  SudokuAppBoardModel addPossibility(SudokuBoardIndex index, int number) =>
-      addE(snapshot.value!.addPossibilityE(index, number));
-  SudokuAppBoardModel removePossibility(SudokuBoardIndex index, int number) =>
-      addE(snapshot.value!.removePossibilityE(index, number));
-  SudokuAppBoardModel commitNumber(SudokuBoardIndex index, int number) =>
-      addE(snapshot.value!.commitNumberE(index, number));
-  SudokuAppBoardModel clearTile(SudokuBoardIndex index) =>
-      addE(snapshot.value!.clearTileE(index));
+  Maybe<SudokuAppBoardModel> changeNumber(
+    SudokuBoardIndex index,
+    int to,
+  ) =>
+      maybeAddE(snapshot.value!.changeNumberE(index, to));
+
+  Maybe<SudokuAppBoardModel> addPossibility(
+    SudokuBoardIndex index,
+    int number,
+  ) =>
+      maybeAddE(snapshot.value!.addPossibilityE(index, number));
+
+  Maybe<SudokuAppBoardModel> removePossibility(
+    SudokuBoardIndex index,
+    int number,
+  ) =>
+      maybeAddE(snapshot.value!.removePossibilityE(index, number));
+
+  Maybe<SudokuAppBoardModel> commitNumber(
+    SudokuBoardIndex index,
+    int number,
+  ) =>
+      maybeAddE(snapshot.value!.commitNumberE(index, number));
+
+  Maybe<SudokuAppBoardModel> clearTile(
+    SudokuBoardIndex index,
+  ) =>
+      maybeAddE(snapshot.value!.clearTileE(index));
 }
 
 class SudokuController extends ControllerBase<SudokuController> {

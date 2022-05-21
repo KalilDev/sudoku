@@ -70,32 +70,81 @@ typedef SudokuAppBoardModel = DoublyLinkedEventSourcedModel<SudokuAppBoardState,
 
 extension AA on SudokuAppBoardModel {
   // todo: return SudokuAppBoardModel or SudokuAppBoardState
-  SudokuAppBoardModel addE(SudokuAppBoardChange e) => this..add(e);
-  SudokuAppBoardModel changeNumber(SudokuBoardIndex index, int to) =>
-      addE(snapshot.changeNumberE(index, to));
-  SudokuAppBoardModel addPossibility(SudokuBoardIndex index, int number) =>
-      addE(snapshot.addPossibilityE(index, number));
-  SudokuAppBoardModel removePossibility(SudokuBoardIndex index, int number) =>
-      addE(snapshot.removePossibilityE(index, number));
-  SudokuAppBoardModel commitNumber(SudokuBoardIndex index, int number) =>
-      addE(snapshot.commitNumberE(index, number));
-  SudokuAppBoardModel clearTile(SudokuBoardIndex index) =>
-      addE(snapshot.clearTileE(index));
+  Maybe<SudokuAppBoardModel> maybeAddE(Maybe<SudokuAppBoardChange> e) =>
+      e.fmap((e) => this..add(e));
 }
 
 extension AAA on SudokuAppBoardState {
-  ChangeNumber changeNumberE(SudokuBoardIndex index, int to) =>
-      ChangeNumber(index, sudokuBoardGetAt(currentNumbers, index), to);
-  AddPossibility addPossibilityE(SudokuBoardIndex index, int number) =>
-      AddPossibility(index, number);
-  RemovePossibility removePossibilityE(SudokuBoardIndex index, int number) =>
-      RemovePossibility(index, number);
-  CommitNumber commitNumberE(SudokuBoardIndex index, int number) =>
-      CommitNumber(index, matrixGetAt(currentPossibilities, index), number);
-  ClearTile clearTileE(SudokuBoardIndex index) => ClearTile(
-        index,
-        matrixGetAt(currentPossibilities, index),
-        sudokuBoardGetAt(currentNumbers, index),
+// number -> ChangeNumber -> number
+  Maybe<ChangeNumber> changeNumberE(
+    SudokuBoardIndex index,
+    int to,
+  ) =>
+      tileStateAt(index).visit(
+        constTileState: (_) => const None(),
+        possibilitiesTileState: (_) => const None(),
+        numberTileState: (n) => n == to
+            ? const None()
+            : Just(
+                ChangeNumber(index, n, to),
+              ),
+      );
+// possibilities -> AddPossibility -> possibilities
+  Maybe<AddPossibility> addPossibilityE(
+    SudokuBoardIndex index,
+    int number,
+  ) =>
+      tileStateAt(index).visit(
+        constTileState: (_) => const None(),
+        possibilitiesTileState: (ps) => ps.contains(number)
+            ? const None()
+            : Just(AddPossibility(index, number)),
+        numberTileState: (_) => const None(),
+      );
+
+// possibilities -> RemovePossibility -> possibilities
+  Maybe<RemovePossibility> removePossibilityE(
+    SudokuBoardIndex index,
+    int number,
+  ) =>
+      tileStateAt(index).visit(
+        constTileState: (_) => const None(),
+        possibilitiesTileState: (ps) => !ps.contains(number)
+            ? const None()
+            : Just(RemovePossibility(index, number)),
+        numberTileState: (_) => const None(),
+      );
+
+// possibilities -> CommitNumber -> number
+  Maybe<CommitNumber> commitNumberE(
+    SudokuBoardIndex index,
+    int number,
+  ) =>
+      tileStateAt(index).visit(
+        constTileState: (_) => const None(),
+        possibilitiesTileState: (ps) => Just(CommitNumber(
+          index,
+          ps,
+          number,
+        )),
+        numberTileState: (_) => const None(),
+      );
+
+// possibilities -> ClearTile -> possiblities
+// number -> ClearTile -> possibilities
+  Maybe<ClearTile> clearTileE(SudokuBoardIndex index) =>
+      tileStateAt(index).visit(
+        constTileState: (_) => const None(),
+        possibilitiesTileState: (ps) => Just(ClearTile(
+          index,
+          ps,
+          0,
+        )),
+        numberTileState: (n) => Just(ClearTile(
+          index,
+          const [],
+          n,
+        )),
       );
 }
 
