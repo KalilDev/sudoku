@@ -13,8 +13,9 @@ SudokuHomeItemInfo sudokuHomeItemFillRemaining(SudokuHomeItemInfo withHoles) =>
         difficulty: withHoles[difficulty] ?? false,
     };
 
-// type SudokuHomeItem = Int SudokuHomeItemInfo
-typedef SudokuHomeItem = Tuple<int, SudokuHomeItemInfo>;
+// data SudokuHomeItem = Int SudokuHomeItemInfo
+@data(#SudokuHomeItem, [], adt.Tuple([T(#int), T(#SudokuHomeItemInfo)]))
+const Type _sudokuHomeItem = SudokuHomeItem;
 
 // type SudokuHomeSideInfo = Map<Int, SudokuHomeItem>
 typedef SudokuHomeSideInfo = Map<int, SudokuHomeItem>;

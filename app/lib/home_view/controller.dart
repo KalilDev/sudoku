@@ -87,15 +87,15 @@ class HomeViewController extends ControllerBase<HomeViewController> {
         final activeSideSqrt = view.right.activeSideSqrt;
         final activeDifficulty = view.right.difficulty;
         final canContinueMap = view.left;
-        return canContinueMap[activeSideSqrt]!.right[activeDifficulty]!;
+        return canContinueMap[activeSideSqrt]!.e1[activeDifficulty]!;
       });
 
   static const int _defaultSideSqrt = 3;
   static const SudokuDifficulty _defaultDifficulty = SudokuDifficulty.medium;
   static const SudokuHomeSideInfo _defaultHomeSideInfoWithHoles = {
-    2: Tuple(2, {}),
-    3: Tuple(3, {}),
-    4: Tuple(4, {})
+    2: SudokuHomeItem(2, {}),
+    3: SudokuHomeItem(3, {}),
+    4: SudokuHomeItem(4, {})
   };
 
   late final ValueListenable<int> _sideSqrt =
@@ -121,8 +121,10 @@ class HomeViewController extends ControllerBase<HomeViewController> {
           : change ??
               sudokuDbGetSudokuHomeSideInfoOr(
                   db, _defaultHomeSideInfoWithHoles)))
-      .map((sideInfoWithHoles) => sideInfoWithHoles
-          .map((k, v) => MapEntry(k, v.second(sudokuHomeItemFillRemaining))));
+      .map((sideInfoWithHoles) => sideInfoWithHoles.map((k, v) => MapEntry(
+            k,
+            SudokuHomeItem(v.e0, sudokuHomeItemFillRemaining(v.e1)),
+          )));
 
   ValueListenable<SudokuHomeSideInfo> get sideInfo => _sideInfo.view();
 
@@ -188,12 +190,13 @@ class HomeViewController extends ControllerBase<HomeViewController> {
       right: (resume) => resume.difficulty,
     );
     final canContinue = !sudokuController.isFinished.value;
+    final oldAtSideSqrt = sideInfo.value[sideSqrt]!;
+    final newAtSideSqrt = SudokuHomeItem(
+      oldAtSideSqrt.e0,
+      Map.of(oldAtSideSqrt.e1)..[difficulty] = canContinue,
+    );
     _didChangeSideInfo.add(
-      Map.of(sideInfo.value)
-        ..[sideSqrt] = sideInfo.value[sideSqrt]!.second(
-          (diffAndCanContinue) =>
-              Map.of(diffAndCanContinue)..[difficulty] = canContinue,
-        ),
+      Map.of(sideInfo.value)..[sideSqrt] = newAtSideSqrt,
     );
     // Ensure we flush the db to disk
     if (canContinue) {

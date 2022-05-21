@@ -57,7 +57,7 @@ class SudokuAppBoardStateAdapter extends TypeAdapter<SudokuAppBoardState> {
 }
 
 extension on BinaryWriter {
-  void writeIndex(SudokuBoardIndex index) => writeTuple<int, int>(
+  void writeIndex(SudokuBoardIndex index) => writeTupleN2<int, int>(
         this,
         index,
         (w, i) => w.writeInt(i),
@@ -72,9 +72,12 @@ extension on BinaryWriter {
 
 extension on BinaryReader {
   SudokuBoardIndex readIndex() {
-    final tuple =
-        readTuple<int, int>(this, (l) => l.readInt(), (r) => r.readInt());
-    return SudokuBoardIndex(tuple.e0, tuple.e1);
+    final tuple = readTuple2<int, int>(
+      this,
+      (l) => l.readInt(),
+      (r) => r.readInt(),
+    );
+    return SudokuBoardIndex.fromTupleN(tuple);
   }
 
   OtherInfo readOtherInfo() {
@@ -201,7 +204,7 @@ class ClearTileAdapter extends TypeAdapter<ClearTile> {
   }
 }
 
-void writeTuple<L, R>(
+void writeTupleN2<L, R>(
   BinaryWriter writer,
   TupleN2<L, R> tuple,
   void Function(BinaryWriter, L) writeLeft,
@@ -212,7 +215,7 @@ void writeTuple<L, R>(
   writeRight(writer, tuple.e1);
 }
 
-TupleN2<L, R> readTuple<L, R>(
+Tuple2<L, R> readTuple2<L, R>(
   BinaryReader reader,
   L Function(BinaryReader) readLeft,
   R Function(BinaryReader) readRight,
@@ -288,7 +291,7 @@ class SudokuHomeItemAdapter extends TypeAdapter<SudokuHomeItem> {
   @override
   void write(BinaryWriter writer, SudokuHomeItem obj) {
     writer.writeInt(0);
-    writeTuple<int, SudokuHomeItemInfo>(
+    writeTupleN2<int, SudokuHomeItemInfo>(
       writer,
       obj,
       (w, sideSqrt) => w.writeInt(sideSqrt),
@@ -299,12 +302,12 @@ class SudokuHomeItemAdapter extends TypeAdapter<SudokuHomeItem> {
   @override
   SudokuHomeItem read(BinaryReader reader) {
     final version = reader.readInt();
-    final tuple = readTuple<int, SudokuHomeItemInfo>(
+    final tuple = readTuple2<int, SudokuHomeItemInfo>(
       reader,
       (r) => r.readInt(),
       (r) => (r.read() as Map<dynamic, dynamic>).cast(),
     );
-    return SudokuHomeItem(tuple.e0, tuple.e1);
+    return SudokuHomeItem.fromTupleN(tuple);
   }
 }
 
