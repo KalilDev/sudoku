@@ -14,6 +14,9 @@ class MatrixIndex
 
   const MatrixIndex(this.e0, this.e1) : super();
 
+  factory MatrixIndex.fromTupleN(TupleN2<int, int> tpl) =>
+      MatrixIndex(tpl.e0, tpl.e1);
+
   @override
   ProductRuntimeType get runtimeType => ProductRuntimeType([int, int]);
 
