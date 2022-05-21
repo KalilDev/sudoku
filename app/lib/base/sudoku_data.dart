@@ -38,7 +38,20 @@ SudokuBoard cloneSudokuBoard(SudokuBoard board) =>
 
 // An list of rows
 typedef Matrix<T> = List<List<T>>;
-
+Matrix<T> matrixGenerate<T>(int side, T Function(MatrixIndex) fn) =>
+    UnmodifiableListView(
+      List.generate(
+        side,
+        (j) => UnmodifiableListView(
+          List.generate(
+            side,
+            (i) => fn(
+              MatrixIndex(i, j),
+            ),
+          ),
+        ),
+      ),
+    );
 T matrixGetAt<T>(Matrix<T> m, MatrixIndex index) => m[index.y][index.x];
 void matrixSetAt<T>(Matrix<T> m, MatrixIndex index, T value) =>
     m[index.y][index.x] = value;
@@ -86,6 +99,33 @@ extension AAA on SudokuAppBoardState {
       );
 }
 
+TileState tileStateAtWith(
+  SudokuBoard fixedNumbers,
+  SudokuBoard currentNumbers,
+  PossibilitiesMatrix currentPossibilities,
+  MatrixIndex index,
+) {
+  final constNumber = matrixGetAt(fixedNumbers, index);
+  if (constNumber != 0) {
+    return constTileState(constNumber);
+  }
+  final number = matrixGetAt(currentNumbers, index);
+  if (number == 0) {
+    return PossibilitiesTileState(matrixGetAt(currentPossibilities, index));
+  }
+  return NumberTileState(number);
+}
+
+TileStateMatrix tileStatesWith(
+  SudokuBoard fixedNumbers,
+  SudokuBoard currentNumbers,
+  PossibilitiesMatrix currentPossibilities,
+) =>
+    matrixGenerate(
+      fixedNumbers.length,
+      tileStateAtWith.curry(fixedNumbers)(currentNumbers)(currentPossibilities),
+    );
+
 class SudokuAppBoardState
     implements
         EventSourcedSnapshot<SudokuAppBoardState, SudokuAppBoardStateBuilder,
@@ -95,6 +135,19 @@ class SudokuAppBoardState
   final int side;
   final SudokuBoard currentNumbers;
   final PossibilitiesMatrix currentPossibilities;
+
+  TileState tileStateAt(MatrixIndex index) => tileStateAtWith(
+        fixedNumbers,
+        currentNumbers,
+        currentPossibilities,
+        index,
+      );
+
+  TileStateMatrix get tileStates => tileStatesWith(
+        fixedNumbers,
+        currentNumbers,
+        currentPossibilities,
+      );
 
   const SudokuAppBoardState(
     this.solvedBoard,
@@ -161,6 +214,19 @@ class SudokuAppBoardStateBuilder
         possibilitiesMatrixCopyLocked(currentPossibilities),
       );
 
+  TileState tileStateAt(MatrixIndex index) => tileStateAtWith(
+        fixedNumbers,
+        currentNumbers,
+        currentPossibilities,
+        index,
+      );
+
+  TileStateMatrix get tileStates => tileStatesWith(
+        fixedNumbers,
+        currentNumbers,
+        currentPossibilities,
+      );
+
   @override
   void replace(SudokuAppBoardState other) {
     assert(other.side == side);
@@ -175,6 +241,31 @@ class SudokuAppBoardStateBuilder
   void update(void Function(SudokuAppBoardStateBuilder) updates) =>
       updates(this);
 }
+
+// States:
+// const -> * -> const
+// possibilities -> AddPossibility|RemovePossibility -> possibilities
+// possibilities -> CommitNumber -> number
+// possibilities -> ClearTile -> possiblities
+// number -> ChangeNumber -> number
+// number -> ClearTile -> possibilities
+@data(
+  #TileState,
+  [],
+  adt.Union({
+    #ConstTileState: {#number: T(#int)},
+    #PossibilitiesTileState: {
+      #possibilities: T(#List, [T(#int)])
+    },
+    #NumberTileState: {#number: T(#int)},
+  }),
+)
+const Type _tileState = TileState;
+
+TileState constTileState(int number) => ConstTileState(number);
+TileState initialTileState() => const PossibilitiesTileState([]);
+
+typedef TileStateMatrix = Matrix<TileState>;
 
 // data SudokuAppBoardChange = ChangeNumber SudokuBoardIndex Int Int
 //                           | AddPossibility SudokuBoardIndex Int

@@ -34,6 +34,103 @@ class MatrixIndex
   String toString() => "MatrixIndex ($e0, $e1)";
 }
 
+abstract class TileState implements SumType {
+  const TileState._();
+  const factory TileState.constTileState(int number) = ConstTileState;
+  const factory TileState.possibilitiesTileState(List<int> possibilities) =
+      PossibilitiesTileState;
+  const factory TileState.numberTileState(int number) = NumberTileState;
+
+  @override
+  SumRuntimeType get runtimeType =>
+      SumRuntimeType([ConstTileState, PossibilitiesTileState, NumberTileState]);
+
+  R visit<R extends Object?>(
+      {required R Function(int number) constTileState,
+      required R Function(List<int> possibilities) possibilitiesTileState,
+      required R Function(int number) numberTileState});
+
+  @override
+  int get hashCode => throw UnimplementedError(
+      'Each case has its own implementation of hashCode');
+  bool operator ==(other) =>
+      throw UnimplementedError('Each case has its own implementation of ==');
+
+  String toString() => throw UnimplementedError(
+      'Each case has its own implementation of toString');
+}
+
+class ConstTileState extends TileState {
+  final int number;
+
+  const ConstTileState(this.number) : super._();
+
+  @override
+  int get hashCode => Object.hash((ConstTileState), number);
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is ConstTileState && true && this.number == other.number);
+
+  @override
+  String toString() => "ConstTileState { $number }";
+
+  @override
+  R visit<R extends Object?>(
+          {required R Function(int number) constTileState,
+          required R Function(List<int> possibilities) possibilitiesTileState,
+          required R Function(int number) numberTileState}) =>
+      constTileState(this.number);
+}
+
+class PossibilitiesTileState extends TileState {
+  final List<int> possibilities;
+
+  const PossibilitiesTileState(this.possibilities) : super._();
+
+  @override
+  int get hashCode => Object.hash((PossibilitiesTileState), possibilities);
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is PossibilitiesTileState &&
+          true &&
+          this.possibilities == other.possibilities);
+
+  @override
+  String toString() => "PossibilitiesTileState { $possibilities }";
+
+  @override
+  R visit<R extends Object?>(
+          {required R Function(int number) constTileState,
+          required R Function(List<int> possibilities) possibilitiesTileState,
+          required R Function(int number) numberTileState}) =>
+      possibilitiesTileState(this.possibilities);
+}
+
+class NumberTileState extends TileState {
+  final int number;
+
+  const NumberTileState(this.number) : super._();
+
+  @override
+  int get hashCode => Object.hash((NumberTileState), number);
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is NumberTileState && true && this.number == other.number);
+
+  @override
+  String toString() => "NumberTileState { $number }";
+
+  @override
+  R visit<R extends Object?>(
+          {required R Function(int number) constTileState,
+          required R Function(List<int> possibilities) possibilitiesTileState,
+          required R Function(int number) numberTileState}) =>
+      numberTileState(this.number);
+}
+
 R visitSudokuAppBoardChange<R extends Object?>(
         SudokuAppBoardChange union,
         R Function(ChangeNumber) changeNumber,
