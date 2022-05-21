@@ -193,7 +193,12 @@ class ChangeNumber extends SudokuAppBoardChange {
   final int from;
   final int to;
 
-  const ChangeNumber(this.index, this.from, this.to) : super._();
+  const ChangeNumber(this.index, this.from, this.to)
+      : assert(from != to),
+        assert(from != 0),
+        assert(to != from),
+        assert(to != 0),
+        super._();
 
   @override
   int get hashCode => Object.hash((ChangeNumber), index, from, to);
@@ -316,7 +321,9 @@ class ClearTile extends SudokuAppBoardChange {
   final int oldNumber;
 
   const ClearTile(this.index, this.oldPossibilities, this.oldNumber)
-      : super._();
+      : assert(oldPossibilities.length != 0 || oldNumber != 0),
+        assert(oldNumber != 0 || oldPossibilities.length != 0),
+        super._();
 
   @override
   int get hashCode =>

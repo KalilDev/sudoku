@@ -214,6 +214,27 @@ class SudokuAppBoardStateBuilder
         possibilitiesMatrixCopyLocked(currentPossibilities),
       );
 
+  void changeTileStateAt(MatrixIndex index, TileState newState) {
+    newState.visit(
+      constTileState: (number) {
+        assert(sudokuBoardGetAt(solvedBoard, index) == number);
+        fixedNumbers[index.y][index.x] = number;
+        currentNumbers[index.y][index.x] = 0;
+        currentPossibilities[index.y][index.x] = const [];
+      },
+      possibilitiesTileState: (possibilities) {
+        fixedNumbers[index.y][index.x] = 0;
+        currentNumbers[index.y][index.x] = 0;
+        currentPossibilities[index.y][index.x] = possibilities;
+      },
+      numberTileState: (number) {
+        fixedNumbers[index.y][index.x] = 0;
+        currentNumbers[index.y][index.x] = number;
+        currentPossibilities[index.y][index.x] = const [];
+      },
+    );
+  }
+
   TileState tileStateAt(MatrixIndex index) => tileStateAtWith(
         fixedNumbers,
         currentNumbers,
@@ -243,7 +264,7 @@ class SudokuAppBoardStateBuilder
 }
 
 // States:
-// const -> * -> const
+// const
 // possibilities -> AddPossibility|RemovePossibility -> possibilities
 // possibilities -> CommitNumber -> number
 // possibilities -> ClearTile -> possiblities
@@ -279,8 +300,8 @@ typedef TileStateMatrix = Matrix<TileState>;
     {
       #ChangeNumber: {
         #index: T(#SudokuBoardIndex),
-        #from: T(#int),
-        #to: T(#int),
+        #from: T(#int, [], ['{} != to', '{} != 0']),
+        #to: T(#int, [], ['{} != from', '{} != 0']),
       },
       #AddPossibility: {
         #index: T(#SudokuBoardIndex),
@@ -297,8 +318,9 @@ typedef TileStateMatrix = Matrix<TileState>;
       },
       #ClearTile: {
         #index: T(#SudokuBoardIndex),
-        #oldPossibilities: T(#List, [T(#int)]),
-        #oldNumber: T(#int),
+        #oldPossibilities:
+            T(#List, [T(#int)], ['{}.length != 0 || oldNumber != 0']),
+        #oldNumber: T(#int, [], ['{} != 0 || oldPossibilities.length != 0']),
       }
     },
     deriveMode: adt.UnionVisitDeriveMode.data,
@@ -317,86 +339,127 @@ mixin SudokuAppBoardChangeUndoable
   @override
   void applyTo(SudokuAppBoardStateBuilder bdr) => visitSudokuAppBoardChange(
         this as SudokuAppBoardChange,
+// number -> ChangeNumber -> number
         (changeNumber) {
-          assert(sudokuBoardGetAt(bdr.currentNumbers, changeNumber.index) ==
-              changeNumber.from);
-          if (changeNumber.to == 0) {
-            assert(matrixGetAt(bdr.currentPossibilities, changeNumber.index)
-                .isEmpty);
-          }
-          sudokuBoardSetAt(
-              bdr.currentNumbers, changeNumber.index, changeNumber.to);
+          final currentState = bdr.tileStateAt(changeNumber.index);
+          assert(currentState is NumberTileState);
+          assert((currentState as NumberTileState).number == changeNumber.from);
+          final newTileState = NumberTileState(changeNumber.to);
+          bdr.changeTileStateAt(changeNumber.index, newTileState);
         },
+// possibilities -> AddPossibility -> possibilities
         (addPossibility) {
-          final ps =
-              matrixGetAt(bdr.currentPossibilities, addPossibility.index);
-          assert(!ps.contains(addPossibility.number));
-          ps.add(addPossibility.number);
+          final currentState = bdr.tileStateAt(addPossibility.index);
+          assert(currentState is PossibilitiesTileState);
+          assert(!(currentState as PossibilitiesTileState)
+              .possibilities
+              .contains(addPossibility.number));
+          final newTileState = PossibilitiesTileState(
+              (currentState as PossibilitiesTileState).possibilities.toList()
+                ..add(addPossibility.number));
+          bdr.changeTileStateAt(addPossibility.index, newTileState);
         },
+// possibilities -> RemovePossibility -> possibilities
         (removePossibility) {
-          final ps =
-              matrixGetAt(bdr.currentPossibilities, removePossibility.index);
-          assert(ps.contains(removePossibility.number));
-          ps.remove(removePossibility.number);
+          final currentState = bdr.tileStateAt(removePossibility.index);
+          assert(currentState is PossibilitiesTileState);
+          assert((currentState as PossibilitiesTileState)
+              .possibilities
+              .contains(removePossibility.number));
+          final newTileState = PossibilitiesTileState(
+              (currentState as PossibilitiesTileState).possibilities.toList()
+                ..remove(removePossibility.number));
+          bdr.changeTileStateAt(removePossibility.index, newTileState);
         },
+// possibilities -> CommitNumber -> number
         (commitNumber) {
-          final ps = matrixGetAt(bdr.currentPossibilities, commitNumber.index);
-          assert(
-              _possibilitiesEquality.equals(ps, commitNumber.oldPossibilities));
-          ps.clear();
-          sudokuBoardSetAt(
-              bdr.currentNumbers, commitNumber.index, commitNumber.number);
+          final currentState = bdr.tileStateAt(commitNumber.index);
+          assert(currentState is PossibilitiesTileState);
+          assert(_possibilitiesEquality.equals(commitNumber.oldPossibilities,
+              (currentState as PossibilitiesTileState).possibilities));
+          final newTileState = NumberTileState(commitNumber.number);
+          bdr.changeTileStateAt(commitNumber.index, newTileState);
         },
+// possibilities -> ClearTile -> possiblities
+// number -> ClearTile -> possibilities
         (clearTile) {
-          final ps = matrixGetAt(bdr.currentPossibilities, clearTile.index);
-          assert(_possibilitiesEquality.equals(ps, clearTile.oldPossibilities));
-          assert(sudokuBoardGetAt(bdr.currentNumbers, clearTile.index) ==
-              clearTile.oldNumber);
-          ps.clear();
-          sudokuBoardSetAt(bdr.currentNumbers, clearTile.index, 0);
+          final currentState = bdr.tileStateAt(clearTile.index);
+          assert(currentState is PossibilitiesTileState ||
+              currentState is NumberTileState);
+          if (currentState is PossibilitiesTileState) {
+            assert(clearTile.oldNumber == 0);
+            assert(_possibilitiesEquality.equals(
+                clearTile.oldPossibilities, currentState.possibilities));
+          } else if (currentState is NumberTileState) {
+            assert(clearTile.oldNumber == currentState.number);
+            assert(clearTile.oldPossibilities.isEmpty);
+          } else {
+            throw TypeError();
+          }
+          const newTileState = PossibilitiesTileState([]);
+          bdr.changeTileStateAt(clearTile.index, newTileState);
+          ;
         },
       );
 
   @override
   void undoTo(SudokuAppBoardStateBuilder bdr) => visitSudokuAppBoardChange(
         this as SudokuAppBoardChange,
+// number <- ChangeNumber <- number
         (changeNumber) {
-          assert(sudokuBoardGetAt(bdr.currentNumbers, changeNumber.index) ==
-              changeNumber.to);
-          if (changeNumber.to == 0) {
-            assert(matrixGetAt(bdr.currentPossibilities, changeNumber.index)
-                .isEmpty);
-          }
-          sudokuBoardSetAt(
-              bdr.currentNumbers, changeNumber.index, changeNumber.from);
+          final currentState = bdr.tileStateAt(changeNumber.index);
+          assert(currentState is NumberTileState);
+          assert((currentState as NumberTileState).number == changeNumber.to);
+          final newTileState = NumberTileState(changeNumber.from);
+          bdr.changeTileStateAt(changeNumber.index, newTileState);
         },
+// possibilities <- AddPossibility <- possibilities
         (addPossibility) {
-          final ps =
-              matrixGetAt(bdr.currentPossibilities, addPossibility.index);
-          assert(ps.contains(addPossibility.number));
-          ps.remove(addPossibility.number);
+          final currentState = bdr.tileStateAt(addPossibility.index);
+          assert(currentState is PossibilitiesTileState);
+          assert((currentState as PossibilitiesTileState)
+              .possibilities
+              .contains(addPossibility.number));
+          final newTileState = PossibilitiesTileState(
+              (currentState as PossibilitiesTileState).possibilities.toList()
+                ..remove(addPossibility.number));
+          bdr.changeTileStateAt(addPossibility.index, newTileState);
         },
+// possibilities <- RemovePossibility <- possibilities
         (removePossibility) {
-          final ps =
-              matrixGetAt(bdr.currentPossibilities, removePossibility.index);
-          assert(!ps.contains(removePossibility.number));
-          ps.add(removePossibility.number);
+          final currentState = bdr.tileStateAt(removePossibility.index);
+          assert(currentState is PossibilitiesTileState);
+          assert(!(currentState as PossibilitiesTileState)
+              .possibilities
+              .contains(removePossibility.number));
+          final newTileState = PossibilitiesTileState(
+              (currentState as PossibilitiesTileState).possibilities.toList()
+                ..add(removePossibility.number));
+          bdr.changeTileStateAt(removePossibility.index, newTileState);
         },
+// possibilities <- CommitNumber <- number
         (commitNumber) {
-          assert(sudokuBoardGetAt(bdr.currentNumbers, commitNumber.index) ==
-              commitNumber.number);
-          matrixSetAt(bdr.currentPossibilities, commitNumber.index,
-              commitNumber.oldPossibilities);
-          sudokuBoardSetAt(bdr.currentNumbers, commitNumber.index, 0);
+          final currentState = bdr.tileStateAt(commitNumber.index);
+          assert(currentState is NumberTileState);
+          assert(
+              (currentState as NumberTileState).number == commitNumber.number);
+          final newTileState =
+              PossibilitiesTileState(commitNumber.oldPossibilities);
+          bdr.changeTileStateAt(commitNumber.index, newTileState);
         },
+// possibilities <- ClearTile <- possiblities
+// number <- ClearTile <- possibilities
         (clearTile) {
-          final ps = matrixGetAt(bdr.currentPossibilities, clearTile.index);
-          assert(ps.isEmpty);
-          assert(sudokuBoardGetAt(bdr.currentNumbers, clearTile.index) == 0);
-          matrixSetAt(bdr.currentPossibilities, clearTile.index,
-              clearTile.oldPossibilities);
-          sudokuBoardSetAt(
-              bdr.currentNumbers, clearTile.index, clearTile.oldNumber);
+          final currentState = bdr.tileStateAt(clearTile.index);
+          assert(currentState is PossibilitiesTileState);
+          final TileState newTileState;
+          if (clearTile.oldNumber == 0) {
+            newTileState = PossibilitiesTileState(clearTile.oldPossibilities);
+          } else {
+            newTileState = NumberTileState(clearTile.oldNumber);
+          }
+          bdr.changeTileStateAt(clearTile.index, newTileState);
+          ;
         },
       );
 }
