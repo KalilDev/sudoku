@@ -57,6 +57,8 @@ class NumberPressedAction extends Action<PressNumberIntent> {
     T(#IntentMixin),
     T(#Diagnosticable),
   ],
+  // Cant be used because Diagnosticable has an different signature for
+  // toString(). Kinda sucks tbh.
   deriveToString: false,
 )
 const Type _pressNumberIntent = PressNumberIntent;
