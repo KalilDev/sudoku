@@ -33,7 +33,7 @@ class GenerationView extends ControllerWidget<GenerationController> {
       if (event == null) {
         return;
       }
-      showSnackbar(SnackBar(content: Text(event.toString())))(context);
+      //showSnackbar(SnackBar(content: Text(event.toString())))(context);
     }
 
     context.useEventHandler(controller.generationEvents, _onGenerationEvent);
