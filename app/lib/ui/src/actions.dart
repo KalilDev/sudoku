@@ -113,10 +113,12 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
 class _ActionButton extends StatelessWidget {
   const _ActionButton({
     Key? key,
+    required this.tooltip,
     required this.child,
     this.style,
     required this.onPressed,
   }) : super(key: key);
+  final String tooltip;
   final Widget child;
   final ButtonStyle? style;
   final VoidCallback? onPressed;
@@ -124,10 +126,14 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = this.style ?? outlineStyle(context);
-    return OutlinedButton(
-      onPressed: isLocked(context) ? null : onPressed,
-      style: style,
-      child: child,
+    final isLocked_ = isLocked(context);
+    return Tooltip(
+      message: (isLocked_ || onPressed == null) ? '' : tooltip,
+      child: OutlinedButton(
+        onPressed: isLocked_ ? null : onPressed,
+        style: style,
+        child: child,
+      ),
     );
   }
 }
