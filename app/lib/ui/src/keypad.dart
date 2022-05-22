@@ -11,13 +11,13 @@ import 'layout.dart';
 const minKeypadDimension = 64.0;
 const minKeypadSquare = Size.square(minKeypadDimension);
 final ContextfulAction<ButtonStyle> unselectedkeypadStyle = outlineStyle.map(
-  (style) => ButtonStyle(
+  (style) => style.copyWith(
     fixedSize: MaterialStateProperty.all(minKeypadSquare),
     padding: MaterialStateProperty.all(EdgeInsets.all(2)),
   ),
 );
-final ContextfulAction<ButtonStyle> selectedkeypadStyle = filledTonalStyle.map(
-  (style) => ButtonStyle(
+final ContextfulAction<ButtonStyle> selectedkeypadStyle = filledStyle.map(
+  (style) => style.copyWith(
     fixedSize: MaterialStateProperty.all(minKeypadSquare),
     padding: MaterialStateProperty.all(EdgeInsets.all(2)),
   ),
@@ -62,8 +62,8 @@ class KeypadButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: isLocked(context) ? null : onPressed,
           style: (isSelected
-              ? unselectedkeypadStyle
-              : selectedkeypadStyle)(context),
+              ? selectedkeypadStyle
+              : unselectedkeypadStyle)(context),
           child: _KeypadButtonChildWrapper(
             child: child,
           ),
