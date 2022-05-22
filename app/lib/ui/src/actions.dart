@@ -2,6 +2,7 @@ import 'package:app/monadic.dart';
 import 'package:app/view/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
+import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import '../../view/data.dart';
@@ -50,10 +51,11 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
 
   @override
   Widget build(ControllerContext<SudokuViewActionsController> context) {
+    final placementMode = context.use(controller.placementMode);
     final placementModeStyle = context.use(controller.placementMode.map((mode) {
       switch (mode) {
         case SudokuPlacementMode.possibility:
-          return filledTonalStyle;
+          return filledStyle;
         case SudokuPlacementMode.number:
           return outlineStyle;
       }
@@ -66,22 +68,31 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
     final children = [
       paddingSquare,
       _ActionButton(
+        tooltip: 'Resetar sudoku',
         child: const Icon(Icons.refresh),
         onPressed: controller.reset,
       ),
       _ActionButton(
+        tooltip: 'Validar Sudoku',
         child: const Icon(Icons.check),
         onPressed: controller.validate,
       ),
-      placementModeStyle
-          .map((style) => _ActionButton(
-                child: const Icon(Icons.edit),
-                style: style(context),
-                onPressed: controller.toggleMode,
-              ))
+      (((ContextfulAction<ButtonStyle> style,
+                      SudokuPlacementMode placementMode) =>
+                  _ActionButton(
+                    tooltip: placementMode == SudokuPlacementMode.number
+                        ? 'Editar possibilidades'
+                        : 'Editar numeros',
+                    child: const Icon(Icons.edit),
+                    style: style(context),
+                    onPressed: controller.toggleMode,
+                  )).curry.asValueListenable >>
+              placementModeStyle >>
+              placementMode)
           .build(),
       canUndo
           .map((canUndo) => _ActionButton(
+                tooltip: 'Desfazer',
                 child: const Icon(Icons.undo),
                 onPressed: canUndo ? controller.undo : null,
               ))

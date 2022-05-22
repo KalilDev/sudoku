@@ -162,12 +162,15 @@ class SudokuController extends ControllerBase<SudokuController> {
       modelOrNull.map((model) => model?.undoState);
 
   // todo: return SudokuAppBoardModel or SudokuAppBoardState
-  SudokuAppBoardModel addE(SudokuAppBoardChange e) {
+  Maybe<SudokuAppBoardModel> maybeAddE(Maybe<SudokuAppBoardChange> e) {
     final model = modelOrNull.value!;
-    final r = model.addE(e);
-    _didModifyModel.notify();
-    _db.requestSave(model);
-    return r;
+    return model.maybeAddE(e).fmap(
+      (model) {
+        _didModifyModel.notify();
+        _db.requestSave(model);
+        return model;
+      },
+    );
   }
 
   void undo() {
