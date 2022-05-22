@@ -126,7 +126,9 @@ class SudokuViewController extends ControllerBase<SudokuViewController> {
     SudokuBoardIndex index,
     int number,
     SudokuPlacementMode placementMode,
-  ) {}
+  ) {
+    _onBoardAndNumberCombination(index, number, placementMode);
+  }
 
   void pressNumberOnBoard(
     SudokuBoardIndex index,
@@ -145,27 +147,54 @@ class SudokuViewController extends ControllerBase<SudokuViewController> {
 
   void _undo(_) => _sudokuController.undo();
 
-  // TODO: Other placement modes. This is SudokuPlacementMode.number
-  void _onKeypad(int n) {
-    print('KEUPAD $n');
-    _navigationInformation.value.visit(
-      unfocused: () => _navigationInformation.value = FocusedOnKeypad(n),
-      focusedOnKeypad: (number) => _navigationInformation.value =
-          number == n ? Unfocused() : FocusedOnKeypad(n),
-      focusedOnBoard: (index) => n == 0
-          ? _sudokuController.clearTile(index)
-          : _sudokuController.commitNumber(index, n),
-    );
+  void _onBoardAndNumberCombination(
+      SudokuBoardIndex index, int number, SudokuPlacementMode placementMode) {
+    if (number == 0) {
+      _sudokuController.clearTile(index);
+      return;
+    }
+
+    switch (placementMode) {
+      case SudokuPlacementMode.possibility:
+        _sudokuController.snapshot.value!.tileStateAt(index).visit(
+              constTileState: (_) {},
+              possibilitiesTileState: (ps) => ps.contains(number)
+                  ? _sudokuController.removePossibility(index, number)
+                  : _sudokuController.addPossibility(index, number),
+              numberTileState: (_) {
+                // TODO: Single event for this
+                _sudokuController.clearTile(index);
+                _sudokuController.addPossibility(index, number);
+              },
+            );
+        break;
+      case SudokuPlacementMode.number:
+        _sudokuController.snapshot.value!.tileStateAt(index).visit(
+              constTileState: (_) {},
+              possibilitiesTileState: (_) =>
+                  _sudokuController.commitNumber(index, number),
+              numberTileState: (n) => n == number
+                  ? _sudokuController.clearTile(index)
+                  : _sudokuController.changeNumber(index, number),
+            );
+        break;
+    }
   }
 
-  // TODO: Other placement modes. This is SudokuPlacementMode.number
+  void _onKeypad(int number) => _navigationInformation.value.visit(
+        unfocused: () => _navigationInformation.value = FocusedOnKeypad(number),
+        focusedOnKeypad: (n) => _navigationInformation.value =
+            number == n ? const Unfocused() : FocusedOnKeypad(number),
+        focusedOnBoard: (index) =>
+            _onBoardAndNumberCombination(index, number, _placementMode.value),
+      );
+
   void _onBoard(SudokuBoardIndex index) => _navigationInformation.value.visit(
         unfocused: () => _navigationInformation.value = FocusedOnBoard(index),
-        focusedOnKeypad: (number) => number == 0
-            ? _sudokuController.clearTile(index)
-            : _sudokuController.commitNumber(index, number),
+        focusedOnKeypad: (number) =>
+            _onBoardAndNumberCombination(index, number, _placementMode.value),
         focusedOnBoard: (i) => _navigationInformation.value =
-            i == index ? Unfocused() : FocusedOnBoard(index),
+            i == index ? const Unfocused() : FocusedOnBoard(index),
       );
 
   void _resetBoard(_) => _sudokuController.reset();
