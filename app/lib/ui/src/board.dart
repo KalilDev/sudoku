@@ -59,14 +59,16 @@ class _TileWidget extends StatelessWidget {
   }
 }
 
-class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
-  const SudokuViewBoard({
+class SudokuViewBoardWidget extends StatelessWidget {
+  const SudokuViewBoardWidget({
     Key? key,
-    required ControllerHandle<SudokuViewBoardController> controller,
-  }) : super(
-          key: key,
-          controller: controller,
-        );
+    required this.board,
+    required this.selectedIndex,
+    required this.side,
+  }) : super(key: key);
+  final ValueListenable<TileMatrix> board;
+  final ValueListenable<MatrixIndex?> selectedIndex;
+  final int side;
 
   static final _indexedShortcutCache =
       <SudokuBoardIndex, Map<ShortcutActivator, Intent>>{};
@@ -119,15 +121,14 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
 
   Widget _buildChild(
     TileMatrix board,
-    ValueListenable<MatrixIndex?> selected,
+    ValueGetter<ValueListenable<MatrixIndex?>> selected,
     BuildContext context,
     SudokuBoardIndex index,
   ) {
     final tile = matrixGetAt(board, index);
     return Shortcuts(
       shortcuts: shortcutsForIndex(index),
-      child: selected
-          .view()
+      child: selected()
           // Ensure we are not doing useless rebuilds by only querying the
           // current index
           .map((selected) => selected == null ? null : selected == index)
@@ -142,21 +143,43 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
   }
 
   @override
+  Widget build(BuildContext context) {
+    return ValueListenableOwnerBuilder<MatrixIndex?>(
+      valueListenable: selectedIndex,
+      builder: (context, selectedIndex) => _GridLayout(
+        child: board
+            .map(
+              (board) => SudokuBoardHeroDecoration(
+                  sideSqrt: sqrt(side).toInt(),
+                  isHome: false,
+                  child: _BoardGrid(
+                    side: side,
+                    buildChild: _buildChild.apL(board).apL(selectedIndex),
+                  )),
+            )
+            .build(),
+      ),
+    );
+  }
+}
+
+class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
+  const SudokuViewBoard({
+    Key? key,
+    required ControllerHandle<SudokuViewBoardController> controller,
+  }) : super(
+          key: key,
+          controller: controller,
+        );
+
+  @override
   Widget build(ControllerContext<SudokuViewBoardController> context) {
     final board = context.useLazy((c) => c.board);
     final selected = context.use(controller.selectedIndex);
-    return _GridLayout(
-      child: board
-          .map(
-            (board) => SudokuBoardHeroDecoration(
-                sideSqrt: sqrt(controller.side).toInt(),
-                isHome: false,
-                child: _BoardGrid(
-                  side: controller.side,
-                  buildChild: _buildChild.apL(board).apL(selected),
-                )),
-          )
-          .build(),
+    return SudokuViewBoardWidget(
+      board: board,
+      selectedIndex: selected,
+      side: controller.side,
     );
   }
 }
