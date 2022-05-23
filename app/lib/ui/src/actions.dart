@@ -67,15 +67,15 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
     );
     final children = [
       paddingSquare,
-      _ActionButton(
+      const _ActionButton(
         tooltip: 'Resetar sudoku',
-        child: const Icon(Icons.refresh),
-        onPressed: controller.reset,
+        child: Icon(Icons.refresh),
+        onPressed: ResetBoardIntent(),
       ),
-      _ActionButton(
+      const _ActionButton(
         tooltip: 'Validar Sudoku',
-        child: const Icon(Icons.check),
-        onPressed: controller.validate,
+        child: Icon(Icons.check),
+        onPressed: ValidateBoardIntent(),
       ),
       (((ContextfulAction<ButtonStyle> style,
                       SudokuPlacementMode placementMode) =>
@@ -85,7 +85,7 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
                         : 'Editar numeros',
                     child: const Icon(Icons.edit),
                     style: style(context),
-                    onPressed: controller.toggleMode,
+                    onPressed: ChangePlacementModeIntent(),
                   )).curry.asValueListenable >>
               placementModeStyle >>
               placementMode)
@@ -94,7 +94,7 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
           .map((canUndo) => _ActionButton(
                 tooltip: 'Desfazer',
                 child: const Icon(Icons.undo),
-                onPressed: canUndo ? controller.undo : null,
+                onPressed: canUndo ? const UndoIntent() : null,
               ))
           .build(),
       paddingSquare,
@@ -121,7 +121,7 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class _ActionButton<T extends Intent> extends StatelessWidget {
   const _ActionButton({
     Key? key,
     required this.tooltip,
@@ -132,16 +132,17 @@ class _ActionButton extends StatelessWidget {
   final String tooltip;
   final Widget child;
   final ButtonStyle? style;
-  final VoidCallback? onPressed;
+  final T? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final style = this.style ?? outlineStyle(context);
     final isLocked_ = isLocked(context);
+    void invokeIntent() => Actions.invoke<T>(context, onPressed!);
     return Tooltip(
       message: (isLocked_ || onPressed == null) ? '' : tooltip,
       child: OutlinedButton(
-        onPressed: isLocked_ ? null : onPressed,
+        onPressed: isLocked_ || onPressed == null ? null : invokeIntent,
         style: style,
         child: child,
       ),

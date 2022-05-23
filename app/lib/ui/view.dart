@@ -112,6 +112,23 @@ class UndoAction extends Action<UndoIntent> {
   }
 }
 
+class ResetBoardIntent extends Intent {
+  const ResetBoardIntent();
+}
+
+class BoardResetAction extends Action<ResetBoardIntent> {
+  final SudokuViewController controller;
+
+  BoardResetAction(this.controller);
+
+  @override
+  Object? invoke(ResetBoardIntent intent) {
+    print('invoking board reset');
+    // TODO: implement invoke
+    throw UnimplementedError();
+  }
+}
+
 class UndoIntent extends Intent {
   const UndoIntent();
 }
@@ -164,6 +181,7 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
     ValidateBoardIntent: DoNothingAction(),
     ChangePlacementModeIntent: DoNothingAction(),
     UndoIntent: DoNothingAction(),
+    ResetBoardIntent: DoNothingAction(),
   };
 
   static const shortcuts = <ShortcutActivator, Intent>{
@@ -198,6 +216,7 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
       ValidateBoardIntent: BoardValidateAction(controller),
       ChangePlacementModeIntent: PlacementModeChangeAction(controller),
       UndoIntent: UndoAction(controller),
+      ResetBoardIntent: BoardResetAction(controller),
     };
     return isLocked
         .map(
