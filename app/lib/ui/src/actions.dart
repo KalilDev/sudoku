@@ -50,16 +50,32 @@ class SudokuBoardActionsWidget extends StatelessWidget {
   final ValueListenable<SudokuPlacementMode> placementMode;
   final ValueListenable<bool> canUndo;
 
+  static ContextfulAction<ButtonStyle> _styleForPlacementMode(
+      SudokuPlacementMode mode) {
+    switch (mode) {
+      case SudokuPlacementMode.possibility:
+        return filledStyle;
+      case SudokuPlacementMode.number:
+        return outlineStyle;
+    }
+  }
+
+  Widget _buildPlacementModeButton(
+    BuildContext context,
+    ContextfulAction<ButtonStyle> style,
+    SudokuPlacementMode placementMode,
+  ) =>
+      _ActionButton(
+        tooltip: placementMode == SudokuPlacementMode.number
+            ? 'Editar possibilidades'
+            : 'Editar numeros',
+        child: const Icon(Icons.edit),
+        style: style(context),
+        onPressed: const ChangePlacementModeIntent(),
+      );
+
   @override
   Widget build(BuildContext context) {
-    final placementModeStyle = placementMode.map((mode) {
-      switch (mode) {
-        case SudokuPlacementMode.possibility:
-          return filledStyle;
-        case SudokuPlacementMode.number:
-          return outlineStyle;
-      }
-    });
     final padding = context.sizeClass.minimumMargins;
     final paddingSquare = SizedBox.square(
       dimension: padding,
@@ -76,19 +92,14 @@ class SudokuBoardActionsWidget extends StatelessWidget {
         child: Icon(Icons.check),
         onPressed: ValidateBoardIntent(),
       ),
-      (((ContextfulAction<ButtonStyle> style,
-                      SudokuPlacementMode placementMode) =>
-                  _ActionButton(
-                    tooltip: placementMode == SudokuPlacementMode.number
-                        ? 'Editar possibilidades'
-                        : 'Editar numeros',
-                    child: const Icon(Icons.edit),
-                    style: style(context),
-                    onPressed: ChangePlacementModeIntent(),
-                  )).curry.asValueListenable >>
-              placementModeStyle >>
-              placementMode)
-          .build(),
+      ValueListenableOwnerBuilder<SudokuPlacementMode>(
+        valueListenable: placementMode,
+        builder: (context, placementMode) =>
+            (_buildPlacementModeButton.curry(context).asValueListenable >>
+                    placementMode().map(_styleForPlacementMode) >>
+                    placementMode())
+                .build(),
+      ),
       canUndo
           .map((canUndo) => _ActionButton(
                 tooltip: 'Desfazer',
