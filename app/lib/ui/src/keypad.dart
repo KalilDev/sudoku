@@ -49,26 +49,31 @@ class KeypadButton extends StatelessWidget {
   const KeypadButton({
     Key? key,
     required this.isSelected,
-    required this.onPressed,
+    required this.number,
     required this.child,
   }) : super(key: key);
   final bool isSelected;
-  final VoidCallback onPressed;
+  final int number;
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => SizedBox.fromSize(
-        size: minKeypadSquare,
-        child: OutlinedButton(
-          onPressed: isLocked(context) ? null : onPressed,
-          style: (isSelected
-              ? selectedkeypadStyle
-              : unselectedkeypadStyle)(context),
-          child: _KeypadButtonChildWrapper(
-            child: child,
-          ),
+  Widget build(BuildContext context) {
+    void invokeAction() {
+      Actions.invoke<PressFreeNumber>(context, PressFreeNumber(number));
+    }
+
+    return SizedBox.fromSize(
+      size: minKeypadSquare,
+      child: OutlinedButton(
+        onPressed: isLocked(context) ? null : invokeAction,
+        style:
+            (isSelected ? selectedkeypadStyle : unselectedkeypadStyle)(context),
+        child: _KeypadButtonChildWrapper(
+          child: child,
         ),
-      );
+      ),
+    );
+  }
 }
 
 class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
@@ -87,7 +92,7 @@ class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
             .unique()
             .map((isSelected) => KeypadButton(
                   isSelected: isSelected,
-                  onPressed: () => controller.pressNumber(n),
+                  number: n,
                   child: Text(n.toString()),
                 ))
             .build(),
@@ -100,7 +105,7 @@ class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
             .unique()
             .map((isSelected) => KeypadButton(
                   isSelected: isSelected,
-                  onPressed: () => controller.pressClear(),
+                  number: 0,
                   child: const Icon(
                     Icons.close,
                     size: 20,
