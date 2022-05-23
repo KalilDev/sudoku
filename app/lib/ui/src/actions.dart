@@ -1,5 +1,6 @@
 import 'package:app/monadic.dart';
 import 'package:app/view/controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';
@@ -40,27 +41,25 @@ final ContextfulAction<ButtonStyle> filledTonalStyle = (BuildContext context) {
   );
 };
 
-class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
-  const SudokuBoardActions({
+class SudokuBoardActionsWidget extends StatelessWidget {
+  const SudokuBoardActionsWidget({
     Key? key,
-    required ControllerHandle<SudokuViewActionsController> controller,
-  }) : super(
-          key: key,
-          controller: controller,
-        );
+    required this.placementMode,
+    required this.canUndo,
+  }) : super(key: key);
+  final ValueListenable<SudokuPlacementMode> placementMode;
+  final ValueListenable<bool> canUndo;
 
   @override
-  Widget build(ControllerContext<SudokuViewActionsController> context) {
-    final placementMode = context.use(controller.placementMode);
-    final placementModeStyle = context.use(controller.placementMode.map((mode) {
+  Widget build(BuildContext context) {
+    final placementModeStyle = placementMode.map((mode) {
       switch (mode) {
         case SudokuPlacementMode.possibility:
           return filledStyle;
         case SudokuPlacementMode.number:
           return outlineStyle;
       }
-    }));
-    final canUndo = context.use(controller.canUndo);
+    });
     final padding = context.sizeClass.minimumMargins;
     final paddingSquare = SizedBox.square(
       dimension: padding,
@@ -118,6 +117,27 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
           ),
         );
     }
+  }
+}
+
+class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
+  const SudokuBoardActions({
+    Key? key,
+    required ControllerHandle<SudokuViewActionsController> controller,
+  }) : super(
+          key: key,
+          controller: controller,
+        );
+
+  @override
+  Widget build(ControllerContext<SudokuViewActionsController> context) {
+    final placementMode = context.use(controller.placementMode);
+    final canUndo = context.use(controller.canUndo);
+
+    return SudokuBoardActionsWidget(
+      placementMode: placementMode,
+      canUndo: canUndo,
+    );
   }
 }
 
