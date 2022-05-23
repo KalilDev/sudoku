@@ -4,8 +4,10 @@ import 'package:app/old/board_button/board_button.dart';
 import 'package:app/old/models/animation_options.dart';
 import 'package:app/view/controller.dart';
 import 'package:app/view/data.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import '../../base/sudoku_data.dart';
@@ -115,42 +117,46 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
                     PressNumberOnBoardAltIntent(index, 9),
               });
 
+  Widget _buildChild(
+    TileMatrix board,
+    ValueListenable<MatrixIndex?> selected,
+    BuildContext context,
+    SudokuBoardIndex index,
+  ) {
+    final tile = matrixGetAt(board, index);
+    return Shortcuts(
+      shortcuts: shortcutsForIndex(index),
+      child: selected
+          .view()
+          // Ensure we are not doing useless rebuilds by only querying the
+          // current index
+          .map((selected) => selected == null ? null : selected == index)
+          .unique()
+          .map((isSelected) => _TileWidget(
+                tile: tile,
+                isSelected: isSelected,
+                onPressed: PressTileIntent(index),
+              ))
+          .build(),
+    );
+  }
+
   @override
   Widget build(ControllerContext<SudokuViewBoardController> context) {
     final board = context.useLazy((c) => c.board);
     final selected = context.use(controller.selectedIndex);
     return _GridLayout(
-      child: board.map((board) {
-        Widget buildChild(BuildContext context, SudokuBoardIndex index) {
-          final tile = matrixGetAt(board, index);
-          return Shortcuts(
-            shortcuts: shortcutsForIndex(index),
-            child: selected
-                .view()
-                // Ensure we are not doing useless rebuilds by only querying the
-                // current index
-                .map((selected) => selected == null ? null : selected == index)
-                .unique()
-                .map(
-                  (isSelected) => _TileWidget(
-                    tile: tile,
-                    isSelected: isSelected,
-                    onPressed: PressTileIntent(index),
-                  ),
-                )
-                .build(),
-          );
-        }
-
-        return SudokuBoardHeroDecoration(
-          sideSqrt: sqrt(controller.side).toInt(),
-          isHome: false,
-          child: _BoardGrid(
-            side: controller.side,
-            buildChild: buildChild,
-          ),
-        );
-      }).build(),
+      child: board
+          .map(
+            (board) => SudokuBoardHeroDecoration(
+                sideSqrt: sqrt(controller.side).toInt(),
+                isHome: false,
+                child: _BoardGrid(
+                  side: controller.side,
+                  buildChild: _buildChild.apL(board).apL(selected),
+                )),
+          )
+          .build(),
     );
   }
 }
