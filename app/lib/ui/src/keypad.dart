@@ -1,4 +1,5 @@
 import 'package:app/monadic.dart';
+import 'package:flutter/foundation.dart';
 import '../view.dart';
 import 'actions.dart';
 import 'package:app/view/controller.dart';
@@ -76,18 +77,18 @@ class KeypadButton extends StatelessWidget {
   }
 }
 
-class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
-  const SudokuBoardKeypad({
+class SudokuBoardKeypadWidget extends StatelessWidget {
+  const SudokuBoardKeypadWidget({
     Key? key,
-    required ControllerHandle<SudokuViewKeypadController> controller,
-  }) : super(
-          key: key,
-          controller: controller,
-        );
+    required this.side,
+    required this.selectedNumber,
+  }) : super(key: key);
+  final int side;
+  final ValueListenable<int?> selectedNumber;
 
   Widget _buildNumber(BuildContext context, int n) => SizedBox.fromSize(
         size: minKeypadSquare,
-        child: controller.selectedNumber
+        child: selectedNumber
             .map((s) => s == n)
             .unique()
             .map((isSelected) => KeypadButton(
@@ -100,7 +101,7 @@ class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
 
   Widget _buildClear(BuildContext context) => SizedBox.fromSize(
         size: minKeypadSquare,
-        child: controller.selectedNumber
+        child: selectedNumber
             .map((s) => s == 0)
             .unique()
             .map((isSelected) => KeypadButton(
@@ -115,7 +116,7 @@ class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
       );
 
   @override
-  Widget build(ControllerContext<SudokuViewKeypadController> context) {
+  Widget build(BuildContext context) {
     final padding = context.sizeClass.minimumMargins;
     final gutter = padding / 2;
     return Padding(
@@ -126,11 +127,29 @@ class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
         alignment: WrapAlignment.spaceEvenly,
         runAlignment: WrapAlignment.spaceEvenly,
         children: [
-          for (int i = 0; i < controller.side; i++)
-            _buildNumber(context, i + 1),
+          for (int i = 0; i < side; i++) _buildNumber(context, i + 1),
           _buildClear(context),
         ],
       ),
+    );
+  }
+}
+
+class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
+  const SudokuBoardKeypad({
+    Key? key,
+    required ControllerHandle<SudokuViewKeypadController> controller,
+  }) : super(
+          key: key,
+          controller: controller,
+        );
+
+  @override
+  Widget build(ControllerContext<SudokuViewKeypadController> context) {
+    final selectedNumber = context.use(controller.selectedNumber);
+    return SudokuBoardKeypadWidget(
+      selectedNumber: selectedNumber,
+      side: controller.side,
     );
   }
 }
