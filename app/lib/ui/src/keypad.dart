@@ -86,7 +86,9 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
   final int side;
   final ValueListenable<int?> selectedNumber;
 
-  Widget _buildNumber(BuildContext context, int n) => SizedBox.fromSize(
+  Widget _buildNumber(
+          BuildContext context, int n, ValueListenable<int?> selectedNumber) =>
+      SizedBox.fromSize(
         size: minKeypadSquare,
         child: selectedNumber
             .map((s) => s == n)
@@ -99,7 +101,9 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
             .build(),
       );
 
-  Widget _buildClear(BuildContext context) => SizedBox.fromSize(
+  Widget _buildClear(
+          BuildContext context, ValueListenable<int?> selectedNumber) =>
+      SizedBox.fromSize(
         size: minKeypadSquare,
         child: selectedNumber
             .map((s) => s == 0)
@@ -121,15 +125,19 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
     final gutter = padding / 2;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),
-      child: Wrap(
-        spacing: gutter,
-        runSpacing: gutter,
-        alignment: WrapAlignment.spaceEvenly,
-        runAlignment: WrapAlignment.spaceEvenly,
-        children: [
-          for (int i = 0; i < side; i++) _buildNumber(context, i + 1),
-          _buildClear(context),
-        ],
+      child: ValueListenableOwnerBuilder<int?>(
+        valueListenable: selectedNumber,
+        builder: (context, selectedNumber) => Wrap(
+          spacing: gutter,
+          runSpacing: gutter,
+          alignment: WrapAlignment.spaceEvenly,
+          runAlignment: WrapAlignment.spaceEvenly,
+          children: [
+            for (int i = 0; i < side; i++)
+              _buildNumber(context, i + 1, selectedNumber()),
+            _buildClear(context, selectedNumber()),
+          ],
+        ),
       ),
     );
   }
