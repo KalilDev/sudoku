@@ -34,24 +34,27 @@ class _TileWidget extends StatelessWidget {
 
   final SudokuTile tile;
   final bool? isSelected;
-  final VoidCallback onPressed;
+  final PressTileIntent onPressed;
 
   @override
-  Widget build(BuildContext context) => BoardButton(
-        onTap: tile is Permanent ? null : onPressed,
-        isLoading: isLocked(context),
-        isSelected: isSelected ?? false,
-        text: tile.visit(
-          permanent: (n) => n.toString(),
-          number: (n, _) => n.toString(),
-          possibilities: (ps) => (ps.toList()..sort()).join(' '),
-        ),
-        isBottomText: tile is Possibilities,
-        isInvalid:
-            tile is Number && (tile as Number).validation == Validation.invalid,
-        animationOptions: defaultAnimationOptions,
-        isInitial: tile is Permanent,
-      );
+  Widget build(BuildContext context) {
+    void invokeIntent() => Actions.invoke<PressTileIntent>(context, onPressed);
+    return BoardButton(
+      onTap: tile is Permanent ? null : invokeIntent,
+      isLoading: isLocked(context),
+      isSelected: isSelected ?? false,
+      text: tile.visit(
+        permanent: (n) => n.toString(),
+        number: (n, _) => n.toString(),
+        possibilities: (ps) => (ps.toList()..sort()).join(' '),
+      ),
+      isBottomText: tile is Possibilities,
+      isInvalid:
+          tile is Number && (tile as Number).validation == Validation.invalid,
+      animationOptions: defaultAnimationOptions,
+      isInitial: tile is Permanent,
+    );
+  }
 }
 
 class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
@@ -132,7 +135,7 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
                   (isSelected) => _TileWidget(
                     tile: tile,
                     isSelected: isSelected,
-                    onPressed: () => controller.pressTile(index),
+                    onPressed: PressTileIntent(index),
                   ),
                 )
                 .build(),

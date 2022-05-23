@@ -15,6 +15,23 @@ import 'package:adt_annotation/adt_annotation.dart' as adt;
 import 'package:flutter/foundation.dart';
 part 'view.g.dart';
 
+class TilePressedAction extends Action<PressTileIntent> {
+  final SudokuViewController controller;
+
+  TilePressedAction(this.controller);
+
+  @override
+  Object? invoke(PressTileIntent intent) {
+    print('invoking tile pressed');
+    controller.board.pressTile(intent.index);
+  }
+}
+
+class PressTileIntent extends Intent {
+  final SudokuBoardIndex index;
+  const PressTileIntent(this.index);
+}
+
 class NumberPressedAction extends Action<PressNumberIntent> {
   final SudokuViewController controller;
 
@@ -174,6 +191,7 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
   }
 
   static final emptyActions = <Type, Action<Intent>>{
+    PressTileIntent: DoNothingAction(),
     //PressNumberIntent: DoNothingAction(),
     PressNumberOnBoardIntent: DoNothingAction(),
     PressNumberOnBoardAltIntent: DoNothingAction(),
@@ -209,6 +227,7 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
     final isLocked = context.use(controller.isLocked);
     final numberPressedAction = NumberPressedAction(controller);
     final enabledActions = <Type, Action<Intent>>{
+      PressTileIntent: TilePressedAction(controller),
       // PressNumberIntent: NumberPressedAction(controller),
       PressNumberOnBoardIntent: numberPressedAction,
       PressNumberOnBoardAltIntent: numberPressedAction,
