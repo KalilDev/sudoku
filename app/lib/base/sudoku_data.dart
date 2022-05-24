@@ -325,7 +325,7 @@ class SudokuAppBoardStateBuilder
   adt.Union({
     #ConstTileState: {#number: T(#int)},
     #PossibilitiesTileState: {
-      #possibilities: T(#List, [T(#int)])
+      #possibilities: T(#List, args: [T(#int)])
     },
     #NumberTileState: {#number: T(#int)},
   }),
@@ -349,8 +349,8 @@ typedef TileStateMatrix = Matrix<TileState>;
     {
       #ChangeNumber: {
         #index: T(#SudokuBoardIndex),
-        #from: T(#int, [], ['{} != to', '{} != 0']),
-        #to: T(#int, [], ['{} != from', '{} != 0']),
+        #from: T(#int, asserts: ['{} != to', '{} != 0']),
+        #to: T(#int, asserts: ['{} != from', '{} != 0']),
       },
       #AddPossibility: {
         #index: T(#SudokuBoardIndex),
@@ -362,14 +362,15 @@ typedef TileStateMatrix = Matrix<TileState>;
       },
       #CommitNumber: {
         #index: T(#SudokuBoardIndex),
-        #oldPossibilities: T(#List, [T(#int)]),
+        #oldPossibilities: T(#List, args: [T(#int)]),
         #number: T(#int),
       },
       #ClearTile: {
         #index: T(#SudokuBoardIndex),
-        #oldPossibilities:
-            T(#List, [T(#int)], ['{}.length != 0 || oldNumber != 0']),
-        #oldNumber: T(#int, [], ['{} != 0 || oldPossibilities.length != 0']),
+        #oldPossibilities: T(#List,
+            args: [T(#int)], asserts: ['{}.length != 0 || oldNumber != 0']),
+        #oldNumber:
+            T(#int, asserts: ['{} != 0 || oldPossibilities.length != 0']),
       }
     },
     deriveMode: adt.UnionVisitDeriveMode.data,

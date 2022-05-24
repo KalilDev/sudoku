@@ -92,7 +92,7 @@ enum Validation {
         #validation: T(#Validation),
       },
       #Possibilities: {
-        #possibilities: T(#List, [T(#int)]),
+        #possibilities: T(#List, args: [T(#int)]),
       }
     },
     deriveMode: adt.UnionVisitDeriveMode.cata,
