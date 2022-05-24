@@ -6,19 +6,13 @@ part of 'view.dart';
 // AdtGenerator
 // **************************************************************************
 
-abstract class PressNumberIntent
-    with IntentMixin, Diagnosticable
-    implements SumType {
+abstract class PressNumberIntent with IntentMixin, Diagnosticable {
   const PressNumberIntent._();
   const factory PressNumberIntent.pressNumberOnBoardIntent(
       SudokuBoardIndex index, int number) = PressNumberOnBoardIntent;
   const factory PressNumberIntent.pressNumberOnBoardAltIntent(
       SudokuBoardIndex index, int number) = PressNumberOnBoardAltIntent;
   const factory PressNumberIntent.pressFreeNumber(int number) = PressFreeNumber;
-
-  @override
-  SumRuntimeType get runtimeType => SumRuntimeType(
-      [PressNumberOnBoardIntent, PressNumberOnBoardAltIntent, PressFreeNumber]);
 
   R visit<R extends Object?>(
       {required R Function(SudokuBoardIndex index, int number)
