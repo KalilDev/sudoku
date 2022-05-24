@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:app/monadic.dart';
+import 'package:app/old/board_button/board_button.dart';
 import 'package:flutter/material.dart';
 
 class SudokuBoardDecoration extends StatelessWidget {
@@ -92,10 +93,11 @@ class _SudokuBoardDecorationPainter extends BoxPainter {
     final sideOfSquare = side / sideSqrt;
     final sideOfCell = sideOfSquare / sideSqrt;
     final sideInCells = sideSqrt * sideSqrt;
-    final cellSmallGridPadding = min(
+    final cellSmallGridDecorationSize = min(
       sideOfCell * 0.8,
-      80,
+      BoardButtonBase.maxButtonSize * 0.8,
     );
+    final cellSmallGridPadding = (sideOfCell - cellSmallGridDecorationSize) / 2;
     for (var i = 1; i < sideSqrt; i++) {
       // rows
       canvas.drawLine(
