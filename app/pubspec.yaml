@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   utils: 2.1.0
   collection:
-  value_notifier: 0.0.2-prerelease.16
+  value_notifier: 0.0.2-prerelease.17
   hive:
   synchronized:
   material_widgets: 0.4.0-preview.6
