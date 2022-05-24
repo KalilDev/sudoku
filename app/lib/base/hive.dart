@@ -264,7 +264,7 @@ class SudokuHomeInfoAdapter extends TypeAdapter<SudokuHomeInfo> {
     writer.writeInt(0);
     writer.writeInt(0);
     final isSideInfo = obj is SideInfo;
-    writer.write(isSideInfo);
+    writer.writeBool(isSideInfo);
     obj.visit(
       sideInfo: (sideInfo) => writer.write(sideInfo.info),
       otherInfo: (otherInfo) => writer.writeOtherInfo(otherInfo),
