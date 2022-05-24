@@ -54,12 +54,17 @@ class GenerationController extends ControllerBase<GenerationController> {
         : null,
   );
 
-  late final ValueListenable<List<SudokuGenerationEvent>> events =
+  late final ValueListenable<List<SudokuGenerationEvent>> _events =
       generationEvents.fold([], (e, acc) => e == null ? acc : [...acc, e]);
 
   late final ValueListenable<SudokuBoard?> _currentChallengeBoard;
+
+  ValueListenable<SolvedAndChallengeBoard?> get generatedBoard =>
+      _generatedBoard.view();
+  ValueListenable<List<SudokuGenerationEvent>> get events => _events.view();
   ValueListenable<SudokuBoard?> get currentChallengeBoard =>
       _currentChallengeBoard.view();
+
   ValueListenable<SudokuBoard> get challengeBoard =>
       currentChallengeBoard.map((b) => b ?? emptySudokuBoard(side));
 
@@ -67,15 +72,13 @@ class GenerationController extends ControllerBase<GenerationController> {
       currentChallengeBoard.view().bind<double?>(
             (currentBoard) => currentBoard != null
                 ? 1.0.asValueListenable.cast()
-                : _filledTiles.map((filledTiles) => filledTiles == null
+                : filledTiles.map((filledTiles) => filledTiles == null
                     ? null
                     : filledTiles / targetFilledTiles),
           );
   ValueListenable<SudokuGenerationEvent?> get generationEvents =>
       _generationEvents.view();
-  ValueListenable<SolvedAndChallengeBoard?> get generatedBoard =>
-      _generatedBoard.view();
-  ValueListenable<int?> get _filledTiles => generationEvents.fold(
+  ValueListenable<int?> get filledTiles => generationEvents.fold(
         null,
         (e, filled) =>
             filled ??
