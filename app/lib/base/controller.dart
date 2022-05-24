@@ -94,9 +94,22 @@ class _SudokuDBController
   }
 
   void init() {
+    super.init();
     initialModel.connect(_onInitialModel);
     _toBeSaved.tap((e) => e == null ? null : _save(e));
-    super.init();
+  }
+
+  void dispose() {
+    IDisposable.disposeAll([
+      _savedState,
+      _didRequestSave,
+    ]);
+    db.close();
+    IDisposable.disposeAll([
+      _toBeSaved,
+      _initialModel,
+    ]);
+    super.dispose();
   }
 }
 
@@ -134,6 +147,7 @@ extension AAAA on SudokuController {
 class SudokuController extends ControllerBase<SudokuController> {
   final _SudokuDBController _db;
   final ActionNotifier _didModifyModel = ActionNotifier();
+  final EventNotifier<bool> _didFinish = EventNotifier();
 
   SudokuController.fromStorage(SudokuDb db)
       : _db = ControllerBase.create(() => _SudokuDBController.fromStorage(db));
@@ -154,6 +168,10 @@ class SudokuController extends ControllerBase<SudokuController> {
             left: (err) => null,
             right: (model) => model,
           ));
+
+  // TODO
+  ValueListenable<bool?> get didFinish => _didFinish.view();
+  ValueListenable<bool> get isFinished => didFinish.map((e) => e ?? false);
 
   ValueListenable<SudokuAppBoardState?> get snapshot =>
       modelOrNull.map((model) => model?.snapshot);
@@ -181,10 +199,6 @@ class SudokuController extends ControllerBase<SudokuController> {
     }
   }
 
-  void init() {
-    addSubcontroller(_db);
-  }
-
   // TODO: improve this
   void reset() {
     bool didUndo = false;
@@ -196,5 +210,19 @@ class SudokuController extends ControllerBase<SudokuController> {
       _didModifyModel.notify();
       _db.requestSave(model!);
     }
+  }
+
+  void init() {
+    super.init();
+    addSubcontroller(_db);
+  }
+
+  void dispose() {
+    disposeSubcontroller(_db);
+    IDisposable.disposeAll([
+      _didModifyModel,
+      _didFinish,
+    ]);
+    super.dispose();
   }
 }

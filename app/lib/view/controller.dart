@@ -37,6 +37,14 @@ class SudokuViewBoardController
       _didPressTile.viewNexts();
 
   late final pressTile = _didPressTile.add;
+
+  void dispose() {
+    IDisposable.disposeAll([
+      _didPressTile,
+      _selectedIndex,
+    ]);
+    super.dispose();
+  }
 }
 
 class SudokuViewKeypadController extends SubcontrollerBase<SudokuViewController,
@@ -54,6 +62,15 @@ class SudokuViewKeypadController extends SubcontrollerBase<SudokuViewController,
 
   late final pressNumber = _didPressNumber.add;
   late final pressClear = _didPressClear.notify;
+
+  void dispose() {
+    IDisposable.disposeAll([
+      _selectedNumber,
+      _didPressClear,
+      _didPressNumber,
+    ]);
+    super.dispose();
+  }
 }
 
 class SudokuViewActionsController extends SubcontrollerBase<
@@ -81,6 +98,18 @@ class SudokuViewActionsController extends SubcontrollerBase<
   late final validate = _didValidate.notify;
   late final toggleMode = _didToggleMode.notify;
   late final undo = _didUndo.notify;
+
+  void dispose() {
+    IDisposable.disposeAll([
+      _undoState,
+      _placementMode,
+      _didReset,
+      _didValidate,
+      _didToggleMode,
+      _didUndo,
+    ]);
+    super.dispose();
+  }
 }
 
 class SudokuViewController extends ControllerBase<SudokuViewController> {
@@ -223,5 +252,17 @@ class SudokuViewController extends ControllerBase<SudokuViewController> {
       actions.didToggleMode.tap(_toggleMode);
       actions.didUndo.tap(_undo);
     }
+  }
+
+  void dispose() {
+    IDisposable.disposeAll([
+      _navigationInformation,
+      _placementMode,
+      _didValidate,
+    ]);
+    disposeSubcontroller(board);
+    disposeSubcontroller(keypad);
+    disposeSubcontroller(actions);
+    super.dispose();
   }
 }

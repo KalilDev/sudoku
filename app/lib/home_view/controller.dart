@@ -68,6 +68,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   final EventNotifier<SudokuNavigationPopInfo> _didPopTarget = EventNotifier();
   final ActionNotifier _didContinue = ActionNotifier();
   final ActionNotifier _didStartNewGame = ActionNotifier();
+
   ValueListenable<SudokuHomeDb?> get db => _db.view();
   ValueListenable<int?> get didChangeSideSqrt => _didChangeSideSqrt.view();
   ValueListenable<SudokuHomeSideInfo?> get didChangeSideInfo =>
@@ -213,6 +214,24 @@ class HomeViewController extends ControllerBase<HomeViewController> {
     didChangeDifficulty.tap(_onChangeDifficulty);
     sideInfo.tap(_onChangeHomeSideInfo);
     didPopTarget.tap(_onPopTarget);
+  }
+
+  void dispose() {
+    db.value?.close();
+    IDisposable.disposeAll([
+      _db,
+      _didChangeSideSqrt,
+      _didChangeDifficulty,
+      _didChangeSideInfo,
+      _didRequestNavigation,
+      _didPopTarget,
+      _didContinue,
+      _didStartNewGame,
+      _sideSqrt,
+      _difficulty,
+      _sideInfo,
+    ]);
+    super.dispose();
   }
 
   Future<void> _initDb() async {

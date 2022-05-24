@@ -90,4 +90,14 @@ class GenerationController extends ControllerBase<GenerationController> {
     // ensure that events is initialized and starts listening
     events.connect((_) {});
   }
+
+  void dispose() {
+    IDisposable.disposeAll([
+      _generationEvents,
+      _generatedBoard,
+      _events,
+      _currentChallengeBoard,
+    ]);
+    super.dispose();
+  }
 }
