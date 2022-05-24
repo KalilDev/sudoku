@@ -78,6 +78,8 @@ class NumberPressedAction extends Action<PressNumberIntent> {
   // Cant be used because Diagnosticable has an different signature for
   // toString(). Kinda sucks tbh.
   deriveToString: false,
+  // Flutter uses the runtimeType of intents, so we cant override it.
+  deriveRuntimeType: false,
 )
 const Type _pressNumberIntent = PressNumberIntent;
 mixin IntentMixin implements Intent {}
