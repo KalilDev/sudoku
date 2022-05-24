@@ -58,11 +58,13 @@ class GenerationController extends ControllerBase<GenerationController> {
       generationEvents.fold([], (e, acc) => e == null ? acc : [...acc, e]);
 
   late final ValueListenable<SudokuBoard?> _currentChallengeBoard;
+  ValueListenable<SudokuBoard?> get currentChallengeBoard =>
+      _currentChallengeBoard.view();
   ValueListenable<SudokuBoard> get challengeBoard =>
-      _currentChallengeBoard.map((b) => b ?? emptySudokuBoard(side));
+      currentChallengeBoard.map((b) => b ?? emptySudokuBoard(side));
 
   ValueListenable<double?> get generationProgress =>
-      _currentChallengeBoard.view().bind<double?>(
+      currentChallengeBoard.view().bind<double?>(
             (currentBoard) => currentBoard != null
                 ? 1.0.asValueListenable.cast()
                 : _filledTiles.map((filledTiles) => filledTiles == null
