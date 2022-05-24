@@ -32,7 +32,8 @@ class PressTileIntent extends Intent {
   const PressTileIntent(this.index);
 }
 
-class NumberPressedAction extends Action<PressNumberIntent> {
+abstract class NumberPressedAction<T extends PressNumberIntent>
+    extends Action<T> {
   final SudokuViewController controller;
 
   NumberPressedAction(this.controller);
@@ -50,6 +51,22 @@ class NumberPressedAction extends Action<PressNumberIntent> {
           : controller.keypad.pressNumber(number),
     );
   }
+}
+
+class NumberOnBoardPressedAction
+    extends NumberPressedAction<PressNumberOnBoardIntent> {
+  NumberOnBoardPressedAction(SudokuViewController controller)
+      : super(controller);
+}
+
+class NumberOnBoardAltPressedAction
+    extends NumberPressedAction<PressNumberOnBoardAltIntent> {
+  NumberOnBoardAltPressedAction(SudokuViewController controller)
+      : super(controller);
+}
+
+class FreeNumberPressedAction extends NumberPressedAction<PressFreeNumber> {
+  FreeNumberPressedAction(SudokuViewController controller) : super(controller);
 }
 
 // data PressNumberIntent = PressNumberOnBoardIntent SudokuBoardIndex int
@@ -227,13 +244,11 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
       onMaybeError.apL(context),
     );
     final isLocked = context.use(controller.isLocked);
-    final numberPressedAction = NumberPressedAction(controller);
     final enabledActions = <Type, Action<Intent>>{
       PressTileIntent: TilePressedAction(controller),
-      // PressNumberIntent: NumberPressedAction(controller),
-      PressNumberOnBoardIntent: numberPressedAction,
-      PressNumberOnBoardAltIntent: numberPressedAction,
-      PressFreeNumber: numberPressedAction,
+      PressNumberOnBoardIntent: NumberOnBoardPressedAction(controller),
+      PressNumberOnBoardAltIntent: NumberOnBoardAltPressedAction(controller),
+      PressFreeNumber: FreeNumberPressedAction(controller),
       ValidateBoardIntent: BoardValidateAction(controller),
       ChangePlacementModeIntent: PlacementModeChangeAction(controller),
       UndoIntent: UndoAction(controller),
