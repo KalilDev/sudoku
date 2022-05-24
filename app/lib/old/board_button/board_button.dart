@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:material_you/material_you.dart';
-import 'container.dart';
+import 'decoration.dart';
 import 'text.dart';
 import '../models.dart';
 
@@ -9,7 +9,6 @@ class BoardButton extends StatelessWidget {
   const BoardButton({
     Key? key,
     this.onTap,
-    this.onFocused,
     required this.isLoading,
     required this.isSelected,
     required this.text,
@@ -19,7 +18,6 @@ class BoardButton extends StatelessWidget {
     required this.isInitial,
   }) : super(key: key);
   final VoidCallback? onTap;
-  final VoidCallback? onFocused;
   final bool isLoading;
   final bool isSelected;
   final bool isInitial;
@@ -27,12 +25,6 @@ class BoardButton extends StatelessWidget {
   final bool isInvalid;
   final String text;
   final AnimationOptions animationOptions;
-
-  void _onFocusChange(bool focused) {
-    if (focused) {
-      onFocused?.call();
-    }
-  }
 
   static const maxButtonSize = 156.0;
 
@@ -44,30 +36,94 @@ class BoardButton extends StatelessWidget {
       MD3WindowSizeClass.expanded: 8.0,
     };
 
-    return Padding(
-      padding: EdgeInsets.all(sizeClassPaddingMap[context.sizeClass]!),
-      child: BoardButtonContainer(
-        isEnabled: !isInitial,
-        isForegroundEnabled: !isLoading,
-        isSelected: isSelected,
-        isInvalid: isInvalid,
-        onFocusChanged: _onFocusChange,
-        animationOptions: animationOptions,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxHeight: maxButtonSize,
-            maxWidth: maxButtonSize,
-          ),
-          child: InkResponse(
-            onTap: onTap,
-            child: BoardButtonTextAnimation(
-              text: text,
-              isBottom: isBottomText,
-              animationOptions: animationOptions,
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(sizeClassPaddingMap[context.sizeClass]!),
+        child: AnimatedBoardButtonDecoration(
+          isEnabled: !isInitial,
+          isForegroundEnabled: !isLoading,
+          isSelected: isSelected,
+          isInvalid: isInvalid,
+          animationOptions: animationOptions,
+          child: Focus(
+            canRequestFocus: !isInitial,
+            descendantsAreFocusable: !isInitial,
+            skipTraversal: isInitial,
+            child: BoardButtonBase(
+              onPressed: onTap,
+              child: BoardButtonTextAnimation(
+                text: text,
+                isBottom: isBottomText,
+                animationOptions: animationOptions,
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+class BoardButtonBase extends ButtonStyleButton {
+  const BoardButtonBase({
+    Key? key,
+    VoidCallback? onPressed,
+    VoidCallback? onLongPress,
+    ValueChanged<bool>? onHover,
+    ValueChanged<bool>? onFocusChange,
+    ButtonStyle? style,
+    FocusNode? focusNode,
+    bool autofocus = false,
+    Clip clipBehavior = Clip.none,
+    required Widget? child,
+  }) : super(
+            key: key,
+            onPressed: onPressed,
+            onLongPress: onLongPress,
+            onHover: onHover,
+            onFocusChange: onFocusChange,
+            style: style,
+            focusNode: focusNode,
+            autofocus: autofocus,
+            clipBehavior: clipBehavior,
+            child: child);
+  static const maxButtonSize = 96.0;
+
+  @override
+  ButtonStyle defaultStyleOf(BuildContext context) {
+    return ButtonStyle(
+      maximumSize: MaterialStateProperty.all(Size.square(maxButtonSize)),
+      fixedSize: MaterialStateProperty.all(Size.infinite),
+      minimumSize: MaterialStateProperty.all(Size.square(0)),
+      enableFeedback: true,
+      backgroundColor: MaterialStateProperty.all(Colors.transparent),
+      foregroundColor: MaterialStateProperty.all(Colors.transparent),
+      overlayColor: MD3StateOverlayColor(
+        context.colorScheme.onSurface,
+        context.stateOverlayOpacity,
+      ),
+      shadowColor: MaterialStateProperty.all(context.theme.shadowColor),
+      padding: MaterialStateProperty.all(EdgeInsets.zero),
+      shape: MaterialStateProperty.resolveWith(
+        (states) => states.contains(MaterialState.pressed)
+            ? RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              )
+            : const CircleBorder(),
+      ),
+      mouseCursor: MD3DisablableCursor(
+        SystemMouseCursors.click,
+        SystemMouseCursors.forbidden,
+      ),
+      visualDensity: context.theme.visualDensity,
+      animationDuration: kThemeChangeDuration,
+      elevation: MaterialStateProperty.all(0),
+      alignment: Alignment.center,
+      splashFactory: context.theme.splashFactory,
+      tapTargetSize: MaterialTapTargetSize.padded,
+    );
+  }
+
+  @override
+  ButtonStyle? themeStyleOf(BuildContext context) => null;
 }

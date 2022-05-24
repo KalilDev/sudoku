@@ -4,14 +4,13 @@ import '../models.dart';
 
 import 'speed.dart';
 
-class BoardButtonContainer extends StatefulWidget {
-  const BoardButtonContainer({
+class AnimatedBoardButtonDecoration extends StatefulWidget {
+  const AnimatedBoardButtonDecoration({
     Key? key,
     required this.isEnabled,
     required this.isForegroundEnabled,
     required this.isSelected,
     required this.isInvalid,
-    required this.onFocusChanged,
     required this.animationOptions,
     required this.child,
   }) : super(key: key);
@@ -19,15 +18,16 @@ class BoardButtonContainer extends StatefulWidget {
   final bool isForegroundEnabled;
   final bool isSelected;
   final bool isInvalid;
-  final ValueChanged<bool> onFocusChanged;
   final AnimationOptions animationOptions;
   final Widget child;
 
   @override
-  _BoardButtonContainerState createState() => _BoardButtonContainerState();
+  _AnimatedBoardButtonDecorationState createState() =>
+      _AnimatedBoardButtonDecorationState();
 }
 
-class _BoardButtonContainerState extends State<BoardButtonContainer> {
+class _AnimatedBoardButtonDecorationState
+    extends State<AnimatedBoardButtonDecoration> {
   late MaterialStateProperty<Color> backgroundColor;
   late MaterialStateProperty<Color> foregroundColor;
 
@@ -64,24 +64,18 @@ class _BoardButtonContainerState extends State<BoardButtonContainer> {
       if (!widget.isForegroundEnabled) MaterialState.disabled,
       if (widget.isSelected) MaterialState.selected,
     };
-    return Focus(
-      onFocusChange: widget.onFocusChanged,
-      canRequestFocus: widget.isEnabled,
-      descendantsAreFocusable: widget.isEnabled,
-      skipTraversal: !widget.isEnabled,
-      child: _AnimatedBoardButtonContainer(
-        backgroundColor: backgroundColor.resolve(backgroundStates),
-        animateBackground: widget.animationOptions.selectColor,
-        foregroundColor: foregroundColor.resolve(foregroundStates),
-        animateForeground: widget.animationOptions.textColor,
-        duration: durationForSpeed(widget.animationOptions.speed),
-        backgroundPosition:
-            (widget.isSelected || !widget.isEnabled || widget.isInvalid)
-                ? 1.0
-                : 0.0,
-        animateBackgroundPosition: widget.animationOptions.selectSize,
-        child: widget.child,
-      ),
+    return _AnimatedBoardButtonContainer(
+      backgroundColor: backgroundColor.resolve(backgroundStates),
+      animateBackground: widget.animationOptions.selectColor,
+      foregroundColor: foregroundColor.resolve(foregroundStates),
+      animateForeground: widget.animationOptions.textColor,
+      duration: durationForSpeed(widget.animationOptions.speed),
+      backgroundPosition:
+          (widget.isSelected || !widget.isEnabled || widget.isInvalid)
+              ? 1.0
+              : 0.0,
+      animateBackgroundPosition: widget.animationOptions.selectSize,
+      child: widget.child,
     );
   }
 }
