@@ -34,7 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  utils: ^3.0.0
+  utils: ^3.0.1
   collection:
   value_notifier: 0.0.2-prerelease.19
   hive:
@@ -43,10 +43,10 @@ dependencies:
   path_provider:
   sudoku_core:
     path: ../../sudoku/sudoku_core
-  adt_annotation: ^2.0.2
+  adt_annotation: ^3.0.1
 
 dev_dependencies:
-  adt_generator: ^2.0.1
+  adt_generator: ^3.0.0
   build_runner:
   flutter_test:
     sdk: flutter
