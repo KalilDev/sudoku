@@ -7,31 +7,7 @@ import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import '../generation/impl/data.dart';
-
-Future<SudokuHomeDb> sudokuHomeDbOpen() => Hive.openBox('sudoku-home');
-SudokuDifficulty sudokuDbGetActiveDifficutyOr(
-        SudokuHomeDb db, SudokuDifficulty difficulty) =>
-    sudokuDbGetOtherInfo(db)?.difficulty ?? difficulty;
-
-int sudokuDbGetActiveSideSqrtOr(SudokuHomeDb db, int sideSqrt) =>
-    sudokuDbGetOtherInfo(db)?.activeSideSqrt ?? sideSqrt;
-
-SudokuHomeSideInfo sudokuDbGetSudokuHomeSideInfoOr(
-        SudokuHomeDb db, SudokuHomeSideInfo info) =>
-    sudokuDbGetSudokuHomeSideInfo(db) ?? info;
-
-OtherInfo? sudokuDbGetOtherInfo(SudokuHomeDb db) => db.get('other-info')?.visit(
-      sideInfo: (_) => throw StateError(
-          "Expected it to be OtherInfo, but it is SudokuHomeSideInfo"),
-      otherInfo: (otherInfo) => otherInfo,
-    );
-
-SudokuHomeSideInfo? sudokuDbGetSudokuHomeSideInfo(SudokuHomeDb db) =>
-    db.get('home-side-info')?.visit(
-          sideInfo: (sideInfo) => sideInfo.info,
-          otherInfo: (_) => throw StateError(
-              "Expected it to be SudokuHomeSideInfo, but it is OtherInfo"),
-        );
+import 'home_db.dart';
 
 class CreateSudoku {
   final int sideSqrt;
@@ -63,7 +39,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   final ValueNotifier<SudokuHomeDb?> _db = ValueNotifier(null);
   final EventNotifier<int> _didChangeSideSqrt = EventNotifier();
   final EventNotifier<SudokuDifficulty> _didChangeDifficulty = EventNotifier();
-  final EventNotifier<SudokuHomeSideInfo> _didChangeSideInfo = EventNotifier();
+  final EventNotifier<SidesInfo> _didChangeSidesInfo = EventNotifier();
   final EventNotifier<SudokuNavigationTarget> _didRequestNavigation =
       EventNotifier();
   final EventNotifier<SudokuNavigationPopInfo> _didPopTarget = EventNotifier();
@@ -72,8 +48,8 @@ class HomeViewController extends ControllerBase<HomeViewController> {
 
   ValueListenable<SudokuHomeDb?> get db => _db.view();
   ValueListenable<int?> get didChangeSideSqrt => _didChangeSideSqrt.view();
-  ValueListenable<SudokuHomeSideInfo?> get didChangeSideInfo =>
-      _didChangeSideInfo.view();
+  ValueListenable<SidesInfo?> get didChangeSidesInfo =>
+      _didChangeSidesInfo.view();
   ValueListenable<SudokuDifficulty?> get didChangeDifficulty =>
       _didChangeDifficulty.view();
   ValueListenable<SudokuNavigationTarget> get didRequestNavigation =>
@@ -86,52 +62,53 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   ValueListenable<bool> get isLocked => db.map((db) => db == null);
 
   ValueListenable<bool> get canContinue => viewData.map((view) {
-        final activeSideSqrt = view.right.activeSideSqrt;
-        final activeDifficulty = view.right.difficulty;
-        final canContinueMap = view.left;
+        final activeSideSqrt = view.e1.sideSqrt;
+        final activeDifficulty = view.e1.difficulty;
+        final canContinueMap = view.e0.info;
         return canContinueMap[activeSideSqrt]!.e1[activeDifficulty]!;
       });
 
   static const int _defaultSideSqrt = 3;
   static const SudokuDifficulty _defaultDifficulty = SudokuDifficulty.medium;
-  static const SudokuHomeSideInfo _defaultHomeSideInfoWithHoles = {
+  static const SidesInfo _defaultHomeSideInfoWithHoles = SidesInfo({
     2: SudokuHomeItem(2, {}),
     3: SudokuHomeItem(3, {}),
     4: SudokuHomeItem(4, {})
-  };
+  });
 
   late final ValueListenable<int> _sideSqrt =
       db.bind((db) => didChangeSideSqrt.map((e) => e == null
           ? db == null
               ? _defaultSideSqrt
-              : sudokuDbGetActiveSideSqrtOr(db, _defaultSideSqrt)
+              : sudokuHomeDbGetActiveSideSqrtOr(db, _defaultSideSqrt)
           : e));
   ValueListenable<int> get sideSqrt => _sideSqrt.view();
 
   late final ValueListenable<SudokuDifficulty> _difficulty = db.bind((db) =>
       didChangeDifficulty.map((change) => db == null
           ? _defaultDifficulty
-          : change ?? sudokuDbGetActiveDifficutyOr(db, _defaultDifficulty)));
+          : change ??
+              sudokuHomeDbGetActiveDifficultyOr(db, _defaultDifficulty)));
   ValueListenable<SudokuDifficulty> get difficulty => _difficulty.view();
 
-  ValueListenable<OtherInfo> get otherInfo =>
-      OtherInfo.new.curry.asValueListenable >> difficulty >> sideSqrt;
+  ValueListenable<ActiveInfo> get activeInfo =>
+      ActiveInfo.new.curry.asValueListenable >> difficulty >> sideSqrt;
 
-  late final ValueListenable<SudokuHomeSideInfo> _sideInfo = db
-      .bind((db) => didChangeSideInfo.map((change) => db == null
+  late final ValueListenable<SidesInfo> _sidesInfo = db
+      .bind((db) => didChangeSidesInfo.map((change) => db == null
           ? _defaultHomeSideInfoWithHoles
           : change ??
-              sudokuDbGetSudokuHomeSideInfoOr(
-                  db, _defaultHomeSideInfoWithHoles)))
-      .map((sideInfoWithHoles) => sideInfoWithHoles.map((k, v) => MapEntry(
+              sudokuHomeDbGetSidesInfoOr(db, _defaultHomeSideInfoWithHoles)))
+      .map((sideInfoWithHoles) => sideInfoWithHoles.info.map((k, v) => MapEntry(
             k,
             SudokuHomeItem(v.e0, sudokuHomeItemFillRemaining(v.e1)),
-          )));
+          )))
+      .map(SidesInfo.new);
 
-  ValueListenable<SudokuHomeSideInfo> get sideInfo => _sideInfo.view();
+  ValueListenable<SidesInfo> get sidesInfo => _sidesInfo.view();
 
   ValueListenable<SudokuHomeViewData> get viewData =>
-      SudokuHomeViewData.new.curry.asValueListenable >> sideInfo >> otherInfo;
+      SudokuHomeViewData.new.curry.asValueListenable >> sidesInfo >> activeInfo;
 
   late final startNewGame = _didStartNewGame.notify;
   late final continueA = _didContinue.notify;
@@ -164,17 +141,17 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   }
 
   Future<void> _onChangeSideSqrt(int? sideSqrt) {
-    final newInfo = OtherInfo(difficulty.value, sideSqrt!);
-    return db.value!.put('other-info', newInfo);
+    final newInfo = ActiveInfo(difficulty.value, sideSqrt!);
+    return sudokuHomeDbStoreActiveInfo(db.value!, newInfo);
   }
 
   Future<void> _onChangeDifficulty(SudokuDifficulty? difficulty) {
-    final newInfo = OtherInfo(difficulty!, sideSqrt.value);
-    return db.value!.put('other-info', newInfo);
+    final newInfo = ActiveInfo(difficulty!, sideSqrt.value);
+    return sudokuHomeDbStoreActiveInfo(db.value!, newInfo);
   }
 
-  Future<void> _onChangeHomeSideInfo(SudokuHomeSideInfo? info) =>
-      db.value!.put('home-side-info', SudokuHomeInfo.sideInfo(info!));
+  Future<void> _onChangeHomeSideInfo(SidesInfo? info) =>
+      sudokuHomeDbStoreSidesInfo(db.value!, info!);
 
   void _onPopTarget(SudokuNavigationPopInfo popInfo) async {
     final target = popInfo.left;
@@ -192,13 +169,13 @@ class HomeViewController extends ControllerBase<HomeViewController> {
       right: (resume) => resume.difficulty,
     );
     final canContinue = !sudokuController.isFinished.value;
-    final oldAtSideSqrt = sideInfo.value[sideSqrt]!;
+    final oldAtSideSqrt = sidesInfo.value.info[sideSqrt]!;
     final newAtSideSqrt = SudokuHomeItem(
       oldAtSideSqrt.e0,
       Map.of(oldAtSideSqrt.e1)..[difficulty] = canContinue,
     );
-    _didChangeSideInfo.add(
-      Map.of(sideInfo.value)..[sideSqrt] = newAtSideSqrt,
+    _didChangeSidesInfo.add(
+      SidesInfo(Map.of(sidesInfo.value.info)..[sideSqrt] = newAtSideSqrt),
     );
     // Ensure we flush the db to disk
     if (canContinue) {
@@ -213,24 +190,24 @@ class HomeViewController extends ControllerBase<HomeViewController> {
     didContinue.tap(_onContinue);
     didChangeSideSqrt.tap(_onChangeSideSqrt);
     didChangeDifficulty.tap(_onChangeDifficulty);
-    sideInfo.tap(_onChangeHomeSideInfo);
+    sidesInfo.tap(_onChangeHomeSideInfo);
     didPopTarget.tap(_onPopTarget);
   }
 
   void dispose() {
-    db.value?.close();
+    sudokuHomeDbClose(db.value!);
     IDisposable.disposeAll([
       _db,
       _didChangeSideSqrt,
       _didChangeDifficulty,
-      _didChangeSideInfo,
+      _didChangeSidesInfo,
       _didRequestNavigation,
       _didPopTarget,
       _didContinue,
       _didStartNewGame,
       _sideSqrt,
       _difficulty,
-      _sideInfo,
+      _sidesInfo,
     ]);
     super.dispose();
   }

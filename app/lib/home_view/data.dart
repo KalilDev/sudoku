@@ -3,6 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:utils/utils.dart';
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
+
+import 'home_db.dart';
 part 'data.g.dart';
 
 // type SudokuHomeItemInfo = Map<SudokuDifficulty, Bool>
@@ -18,28 +20,7 @@ SudokuHomeItemInfo sudokuHomeItemFillRemaining(SudokuHomeItemInfo withHoles) =>
 const Type _sudokuHomeItem = SudokuHomeItem;
 
 // type SudokuHomeSideInfo = Map<Int, SudokuHomeItem>
-typedef SudokuHomeSideInfo = Map<int, SudokuHomeItem>;
+typedef SudokuHomeSidesInfo = Map<int, SudokuHomeItem>;
 
-// data SudokuHomeDbInfo = SideInfo SudokuHomeSideInfo
-//                       | OtherInfo SudokuDifficulty Int
-@data(
-  #SudokuHomeInfo,
-  [],
-  adt.Union(
-    {
-      #SideInfo: {
-        #info: T(#SudokuHomeSideInfo),
-      },
-      #OtherInfo: {
-        #difficulty: T(#SudokuDifficulty),
-        #activeSideSqrt: T(#int),
-      }
-    },
-    deriveMode: adt.UnionVisitDeriveMode.data,
-  ),
-)
-const Type _sudokuDbHomeInfo = SudokuHomeInfo;
-
-typedef SudokuHomeDb = Box<SudokuHomeInfo>;
-
-typedef SudokuHomeViewData = Tuple<SudokuHomeSideInfo, OtherInfo>;
+@data(#SudokuHomeViewData, [], adt.Tuple([T(#SidesInfo), T(#ActiveInfo)]))
+const Type _sudokuHomeViewData = SudokuHomeViewData;

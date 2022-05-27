@@ -63,11 +63,6 @@ extension on BinaryWriter {
         (w, i) => w.writeInt(i),
         (w, j) => w.writeInt(j),
       );
-  void writeOtherInfo(OtherInfo otherInfo) {
-    writeInt(0);
-    write(otherInfo.difficulty);
-    writeInt(otherInfo.activeSideSqrt);
-  }
 }
 
 extension on BinaryReader {
@@ -78,13 +73,6 @@ extension on BinaryReader {
       (r) => r.readInt(),
     );
     return SudokuBoardIndex.fromTupleN(tuple);
-  }
-
-  OtherInfo readOtherInfo() {
-    final version = readInt();
-    final difficulty = read() as SudokuDifficulty;
-    final activeSideSqrt = readInt();
-    return OtherInfo(difficulty, activeSideSqrt);
   }
 }
 
@@ -253,78 +241,4 @@ Either<L, R> readEither<L, R>(
     return Left(readLeft(reader));
   }
   return Right(readRight(reader));
-}
-
-class SudokuHomeInfoAdapter extends TypeAdapter<SudokuHomeInfo> {
-  @override
-  int get typeId => 7;
-
-  @override
-  void write(BinaryWriter writer, SudokuHomeInfo obj) {
-    writer.writeInt(0);
-    writer.writeInt(0);
-    final isSideInfo = obj is SideInfo;
-    writer.writeBool(isSideInfo);
-    obj.visit(
-      sideInfo: (sideInfo) => writer.write(sideInfo.info),
-      otherInfo: (otherInfo) => writer.writeOtherInfo(otherInfo),
-    );
-  }
-
-  @override
-  SudokuHomeInfo read(BinaryReader reader) {
-    final version = reader.readInt();
-    final union_version = reader.readInt();
-    final isSideInfo = reader.readBool();
-    if (isSideInfo) {
-      return SudokuHomeInfo.sideInfo(
-          (reader.read() as Map<dynamic, dynamic>).cast());
-    }
-    return reader.readOtherInfo();
-  }
-}
-
-class SudokuHomeItemAdapter extends TypeAdapter<SudokuHomeItem> {
-  @override
-  int get typeId => 8;
-
-  @override
-  void write(BinaryWriter writer, SudokuHomeItem obj) {
-    writer.writeInt(0);
-    writeTupleN2<int, SudokuHomeItemInfo>(
-      writer,
-      obj,
-      (w, sideSqrt) => w.writeInt(sideSqrt),
-      (w, itemInfo) => w.write(itemInfo),
-    );
-  }
-
-  @override
-  SudokuHomeItem read(BinaryReader reader) {
-    final version = reader.readInt();
-    final tuple = readTuple2<int, SudokuHomeItemInfo>(
-      reader,
-      (r) => r.readInt(),
-      (r) => (r.read() as Map<dynamic, dynamic>).cast(),
-    );
-    return SudokuHomeItem.fromTupleN(tuple);
-  }
-}
-
-class SudokuDifficultyAdapter extends TypeAdapter<SudokuDifficulty> {
-  @override
-  int get typeId => 9;
-
-  @override
-  void write(BinaryWriter writer, SudokuDifficulty obj) {
-    writer.writeInt(0);
-    writer.writeString(obj.name);
-  }
-
-  @override
-  SudokuDifficulty read(BinaryReader reader) {
-    final version = reader.readInt();
-    final name = reader.readString();
-    return SudokuDifficulty.values.singleWhere((e) => name == e.name);
-  }
 }
