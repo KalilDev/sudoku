@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:app/base/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:utils/utils.dart';
 import 'package:hive/hive.dart';
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
 
+import '../adapter_utils.dart';
 import '../generation/generation.dart';
 import 'data.dart';
 

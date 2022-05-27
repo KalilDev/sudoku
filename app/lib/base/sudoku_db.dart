@@ -1,12 +1,14 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:utils/utils.dart';
-import 'hive.dart';
+import '../adapter_utils.dart';
 import 'sudoku_data.dart';
 import 'package:hive/hive.dart';
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
 
+part 'sudoku_db.adapters.dart';
 part 'sudoku_db.g.dart';
 
 const Codec<SudokuAppBoardModel, Map<String, dynamic>> _codec =
@@ -21,12 +23,12 @@ const Type _sudokuDb = SudokuDb;
 bool _sudokuDbWasInitialized = false;
 void sudokuDbInitialize() {
   assert(!_sudokuDbWasInitialized);
-  Hive.registerAdapter(SudokuAppBoardStateAdapter());
-  Hive.registerAdapter(ChangeNumberAdapter());
-  Hive.registerAdapter(AddPossibilityAdapter());
-  Hive.registerAdapter(RemovePossibilityAdapter());
-  Hive.registerAdapter(CommitNumberAdapter());
-  Hive.registerAdapter(ClearTileAdapter());
+  Hive.registerAdapter(_SudokuAppBoardStateAdapter());
+  Hive.registerAdapter(_ChangeNumberAdapter());
+  Hive.registerAdapter(_AddPossibilityAdapter());
+  Hive.registerAdapter(_RemovePossibilityAdapter());
+  Hive.registerAdapter(_CommitNumberAdapter());
+  Hive.registerAdapter(_ClearTileAdapter());
   _sudokuDbWasInitialized = true;
 }
 

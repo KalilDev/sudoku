@@ -1,13 +1,6 @@
-import 'dart:typed_data';
+part of 'sudoku_db.dart';
 
-import 'package:app/home_view/data.dart';
-import 'package:hive/hive.dart';
-import 'package:utils/utils.dart';
-
-import '../generation/impl/data.dart';
-import 'sudoku_data.dart';
-
-class SudokuAppBoardStateAdapter extends TypeAdapter<SudokuAppBoardState> {
+class _SudokuAppBoardStateAdapter extends TypeAdapter<SudokuAppBoardState> {
   @override
   int get typeId => 0;
 
@@ -76,7 +69,7 @@ extension on BinaryReader {
   }
 }
 
-class ChangeNumberAdapter extends TypeAdapter<ChangeNumber> {
+class _ChangeNumberAdapter extends TypeAdapter<ChangeNumber> {
   @override
   int get typeId => 1;
 
@@ -100,7 +93,7 @@ class ChangeNumberAdapter extends TypeAdapter<ChangeNumber> {
   }
 }
 
-class AddPossibilityAdapter extends TypeAdapter<AddPossibility> {
+class _AddPossibilityAdapter extends TypeAdapter<AddPossibility> {
   @override
   int get typeId => 2;
 
@@ -122,7 +115,7 @@ class AddPossibilityAdapter extends TypeAdapter<AddPossibility> {
   }
 }
 
-class RemovePossibilityAdapter extends TypeAdapter<RemovePossibility> {
+class _RemovePossibilityAdapter extends TypeAdapter<RemovePossibility> {
   @override
   int get typeId => 3;
 
@@ -144,7 +137,7 @@ class RemovePossibilityAdapter extends TypeAdapter<RemovePossibility> {
   }
 }
 
-class CommitNumberAdapter extends TypeAdapter<CommitNumber> {
+class _CommitNumberAdapter extends TypeAdapter<CommitNumber> {
   @override
   int get typeId => 4;
 
@@ -168,7 +161,7 @@ class CommitNumberAdapter extends TypeAdapter<CommitNumber> {
   }
 }
 
-class ClearTileAdapter extends TypeAdapter<ClearTile> {
+class _ClearTileAdapter extends TypeAdapter<ClearTile> {
   @override
   int get typeId => 5;
 
@@ -190,55 +183,4 @@ class ClearTileAdapter extends TypeAdapter<ClearTile> {
       reader.readInt(),
     );
   }
-}
-
-void writeTupleN2<L, R>(
-  BinaryWriter writer,
-  TupleN2<L, R> tuple,
-  void Function(BinaryWriter, L) writeLeft,
-  void Function(BinaryWriter, R) writeRight,
-) {
-  writer.writeInt(0);
-  writeLeft(writer, tuple.e0);
-  writeRight(writer, tuple.e1);
-}
-
-Tuple2<L, R> readTuple2<L, R>(
-  BinaryReader reader,
-  L Function(BinaryReader) readLeft,
-  R Function(BinaryReader) readRight,
-) {
-  final version = reader.readInt();
-  final l = readLeft(reader);
-  final r = readRight(reader);
-  return Tuple2(l, r);
-}
-
-void writeEither<L, R>(
-  BinaryWriter writer,
-  Either<L, R> either,
-  void Function(BinaryWriter, L) writeLeft,
-  void Function(BinaryWriter, R) writeRight,
-) {
-  writer.writeInt(0);
-  either.visit(left: (l) {
-    writer.writeBool(true);
-    writeLeft(writer, l);
-  }, right: (r) {
-    writer.writeBool(false);
-    writeRight(writer, r);
-  });
-}
-
-Either<L, R> readEither<L, R>(
-  BinaryReader reader,
-  L Function(BinaryReader) readLeft,
-  R Function(BinaryReader) readRight,
-) {
-  final version = reader.readInt();
-  final isLeft = reader.readBool();
-  if (isLeft) {
-    return Left(readLeft(reader));
-  }
-  return Right(readRight(reader));
 }
