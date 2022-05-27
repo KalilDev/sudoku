@@ -12,16 +12,14 @@ import 'package:material_widgets/material_widgets.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:value_notifier/value_notifier.dart';
 
-import 'base/hive.dart';
+import 'home_view/home_db.dart';
 import 'ui/view.dart';
 import 'view/data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   sudokuDbInitialize();
-  Hive.registerAdapter(SudokuHomeInfoAdapter());
-  Hive.registerAdapter(SudokuHomeItemAdapter());
-  Hive.registerAdapter(SudokuDifficultyAdapter());
+  sudokuHomeDbInitialize();
   Hive.init(await pp.getTemporaryDirectory().then((d) => d.path));
 
   runPlatformThemedApp(
