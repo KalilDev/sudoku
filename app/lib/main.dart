@@ -1,20 +1,11 @@
-import 'dart:typed_data';
-
-import 'package:app/base/controller.dart';
-import 'package:app/base/sudoku_data.dart';
-import 'package:app/base/sudoku_db.dart';
-import 'package:app/home_view/controller.dart';
-import 'package:app/home_view/view.dart';
-import 'package:app/view/controller.dart';
+import 'package:app/module/base.dart';
+import 'package:app/view/home.dart';
+import 'package:app/viewmodel/home.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:value_notifier/value_notifier.dart';
-
-import 'home_view/home_db.dart';
-import 'ui/view.dart';
-import 'view/data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
