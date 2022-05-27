@@ -1,8 +1,10 @@
 import 'dart:typed_data';
+
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
 import 'package:collection/collection.dart';
 import 'package:utils/utils.dart';
+
 part 'sudoku_data.g.dart';
 
 // An list of rows

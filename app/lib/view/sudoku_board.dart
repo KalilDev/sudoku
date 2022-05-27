@@ -8,9 +8,9 @@ import 'package:value_notifier/value_notifier.dart';
 
 import 'sudoku_board/actions.dart';
 import 'sudoku_board/board.dart';
+import 'sudoku_board/flutter_intents.dart';
 import 'sudoku_board/keypad.dart';
 import 'sudoku_board/layout.dart';
-import 'sudoku_board/flutter_intents.dart';
 import 'sudoku_board/locking.dart';
 
 class TilePressedAction extends Action<PressTileIntent> {

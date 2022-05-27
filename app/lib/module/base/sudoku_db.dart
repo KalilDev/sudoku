@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:app/util/hive_adapter.dart';
-import 'package:utils/utils.dart';
-import 'sudoku_data.dart';
-import 'package:hive/hive.dart';
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
+import 'package:app/util/hive_adapter.dart';
+import 'package:hive/hive.dart';
+import 'package:utils/utils.dart';
+
+import 'sudoku_data.dart';
 
 part 'sudoku_db.adapters.dart';
 part 'sudoku_db.g.dart';

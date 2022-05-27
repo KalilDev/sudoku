@@ -1,8 +1,8 @@
 // ignore_for_file: non_constant_identifier_names, camel_case_types
 
+import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:math';
-import 'dart:ffi' as ffi;
 
 import 'package:app/module/base.dart';
 import 'package:ffi/ffi.dart';

@@ -1,13 +1,13 @@
-import 'package:app/sudoku_generation/sudoku_generation.dart';
-import 'package:utils/utils.dart';
-import 'package:hive/hive.dart';
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
+import 'package:app/sudoku_generation/sudoku_generation.dart';
+import 'package:hive/hive.dart';
+import 'package:utils/utils.dart';
 
 import 'data.dart';
 
-part 'home_db.g.dart';
 part 'home_db.adapters.dart';
+part 'home_db.g.dart';
 
 // data _SudokuHomeDbValues = SidesInfo SudokuHomeSideInfo
 //                          | ActiveInfo SudokuDifficulty Int

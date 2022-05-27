@@ -1,8 +1,8 @@
 library app.view.home;
 
 import 'package:app/module/base.dart';
-import 'package:app/util/monadic.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
+import 'package:app/util/monadic.dart';
 import 'package:app/view/sudoku_board.dart';
 import 'package:app/view/sudoku_generation.dart';
 import 'package:app/viewmodel/home.dart';

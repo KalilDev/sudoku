@@ -1,9 +1,10 @@
-import 'package:app/sudoku_generation/sudoku_generation.dart';
-import 'package:utils/utils.dart';
 import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
 import 'package:adt_annotation/adt_annotation.dart' as adt;
+import 'package:app/sudoku_generation/sudoku_generation.dart';
+import 'package:utils/utils.dart';
 
 import 'home_db.dart';
+
 part 'data.g.dart';
 
 // type SideCanContinueMap = Map<SudokuDifficulty, Bool>

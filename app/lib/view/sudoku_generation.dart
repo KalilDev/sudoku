@@ -2,20 +2,20 @@ library app.view.sudoku_generation;
 
 import 'package:app/module/base.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
-import 'package:app/viewmodel/sudoku_board.dart';
-import 'package:app/viewmodel/sudoku_generation.dart';
 import 'package:app/util/monadic.dart';
 import 'package:app/view/sudoku_board.dart';
+import 'package:app/viewmodel/sudoku_board.dart';
+import 'package:app/viewmodel/sudoku_generation.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'sudoku_board/actions.dart';
-import 'sudoku_board/locking.dart';
 import 'sudoku_board/board.dart';
 import 'sudoku_board/keypad.dart';
 import 'sudoku_board/layout.dart';
+import 'sudoku_board/locking.dart';
 
 final ContextfulAction<ScaffoldMessengerState> scaffoldMessenger =
     readC.map(ScaffoldMessenger.of);

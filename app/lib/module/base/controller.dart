@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
-import 'sudoku_data.dart';
-import 'package:synchronized/synchronized.dart';
 
+import 'sudoku_data.dart';
 import 'sudoku_db.dart';
 
 class _SudokuDBController

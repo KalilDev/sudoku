@@ -1,9 +1,8 @@
 import 'dart:math';
 
 import 'package:app/module/base.dart';
-
-import 'package:sudoku_core/sudoku_core.dart' as old;
 import 'package:sudoku_core/src/sudoku_utils.dart' as old;
+import 'package:sudoku_core/sudoku_core.dart' as old;
 
 typedef ExternSudokuBoard = old.SudokuState;
 

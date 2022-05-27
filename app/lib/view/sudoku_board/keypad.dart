@@ -1,11 +1,11 @@
 import 'package:app/util/monadic.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
-import 'actions.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:value_notifier/value_notifier.dart';
 
+import 'actions.dart';
 import 'flutter_intents.dart';
 import 'locking.dart';
 
