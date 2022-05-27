@@ -65,16 +65,13 @@ class HomeViewController extends ControllerBase<HomeViewController> {
         final activeSideSqrt = view.e1.sideSqrt;
         final activeDifficulty = view.e1.difficulty;
         final canContinueMap = view.e0.info;
-        return canContinueMap[activeSideSqrt]!.e1[activeDifficulty]!;
+        return canContinueMap[activeSideSqrt]![activeDifficulty]!;
       });
 
   static const int _defaultSideSqrt = 3;
   static const SudokuDifficulty _defaultDifficulty = SudokuDifficulty.medium;
-  static const SidesInfo _defaultHomeSideInfoWithHoles = SidesInfo({
-    2: SudokuHomeItem(2, {}),
-    3: SudokuHomeItem(3, {}),
-    4: SudokuHomeItem(4, {})
-  });
+  static const SidesInfo _defaultHomeSideInfoWithHoles =
+      SidesInfo({2: {}, 3: {}, 4: {}});
 
   late final ValueListenable<int> _sideSqrt =
       db.bind((db) => didChangeSideSqrt.map((e) => e == null
@@ -101,7 +98,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
               sudokuHomeDbGetSidesInfoOr(db, _defaultHomeSideInfoWithHoles)))
       .map((sideInfoWithHoles) => sideInfoWithHoles.info.map((k, v) => MapEntry(
             k,
-            SudokuHomeItem(v.e0, sudokuHomeItemFillRemaining(v.e1)),
+            sudokuHomeItemFillRemaining(v),
           )))
       .map(SidesInfo.new);
 
@@ -170,10 +167,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
     );
     final canContinue = !sudokuController.isFinished.value;
     final oldAtSideSqrt = sidesInfo.value.info[sideSqrt]!;
-    final newAtSideSqrt = SudokuHomeItem(
-      oldAtSideSqrt.e0,
-      Map.of(oldAtSideSqrt.e1)..[difficulty] = canContinue,
-    );
+    final newAtSideSqrt = Map.of(oldAtSideSqrt)..[difficulty] = canContinue;
     _didChangeSidesInfo.add(
       SidesInfo(Map.of(sidesInfo.value.info)..[sideSqrt] = newAtSideSqrt),
     );

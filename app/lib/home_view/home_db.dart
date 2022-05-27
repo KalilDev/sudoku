@@ -43,9 +43,8 @@ const Type _sudokuHomeDb = SudokuHomeDb;
 bool _sudokuHomeDbWasInitialized = false;
 void sudokuHomeDbInitialize() {
   assert(!_sudokuHomeDbWasInitialized);
-  Hive.registerAdapter(_SudokuHomeDbValuesAdapter());
-  Hive.registerAdapter(_SudokuHomeItemAdapter());
   Hive.registerAdapter(_SudokuDifficultyAdapter());
+  Hive.registerAdapter(_SidesInfoAdapter());
   Hive.registerAdapter(_ActiveInfoAdapter());
   _sudokuHomeDbWasInitialized = true;
 }

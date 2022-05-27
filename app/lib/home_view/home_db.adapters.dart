@@ -1,61 +1,5 @@
 part of 'home_db.dart';
 
-class _SudokuHomeDbValuesAdapter extends TypeAdapter<_SudokuHomeDbValues> {
-  @override
-  int get typeId => 7;
-
-  @override
-  void write(BinaryWriter writer, _SudokuHomeDbValues obj) {
-    writer.writeInt(0);
-    writer.writeInt(0);
-    final isSidesInfo = obj is SidesInfo;
-    writer.writeBool(isSidesInfo);
-    obj.visit(
-      sidesInfo: (sidesInfo) => writer.write(sidesInfo.info),
-      activeInfo: (activeInfo) => writer.write(activeInfo),
-    );
-  }
-
-  @override
-  _SudokuHomeDbValues read(BinaryReader reader) {
-    final version = reader.readInt();
-    final union_version = reader.readInt();
-    final isSideInfo = reader.readBool();
-    if (isSideInfo) {
-      return _SudokuHomeDbValues.sidesInfo(
-          (reader.read() as Map<dynamic, dynamic>).cast());
-    }
-    return reader.read() as ActiveInfo;
-  }
-}
-
-class _SudokuHomeItemAdapter extends TypeAdapter<SudokuHomeItem> {
-  @override
-  int get typeId => 8;
-
-  @override
-  void write(BinaryWriter writer, SudokuHomeItem obj) {
-    writer.writeInt(0);
-    writeTupleN2<int, SudokuHomeItemInfo>(
-      writer,
-      obj,
-      (w, sideSqrt) => w.writeInt(sideSqrt),
-      (w, itemInfo) => w.write(itemInfo),
-    );
-  }
-
-  @override
-  SudokuHomeItem read(BinaryReader reader) {
-    final version = reader.readInt();
-    final tuple = readTuple2<int, SudokuHomeItemInfo>(
-      reader,
-      (r) => r.readInt(),
-      (r) => (r.read() as Map<dynamic, dynamic>).cast(),
-    );
-    return SudokuHomeItem.fromTupleN(tuple);
-  }
-}
-
 class _SudokuDifficultyAdapter extends TypeAdapter<SudokuDifficulty> {
   @override
   int get typeId => 9;
@@ -88,6 +32,28 @@ class _ActiveInfoAdapter extends TypeAdapter<ActiveInfo> {
     return ActiveInfo(
       reader.read() as SudokuDifficulty,
       reader.readInt(),
+    );
+  }
+}
+
+class _SidesInfoAdapter extends TypeAdapter<SidesInfo> {
+  @override
+  int get typeId => 11;
+  static Map<K, V> _mapFromDyn<K, V>(dynamic v) =>
+      (v as Map<dynamic, dynamic>).cast();
+
+  void write(BinaryWriter writer, SidesInfo obj) {
+    writer.writeInt(0);
+    writer.write(obj.info);
+  }
+
+  SidesInfo read(BinaryReader reader) {
+    final version = reader.readInt();
+    return SidesInfo(
+      _mapFromDyn<int, dynamic>(reader.read()).map((sideSqrt, v) => MapEntry(
+            sideSqrt,
+            _mapFromDyn<SudokuDifficulty, bool>(v),
+          )),
     );
   }
 }
