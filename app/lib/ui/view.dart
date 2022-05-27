@@ -108,9 +108,7 @@ class BoardValidateAction extends Action<ValidateBoardIntent> {
 
   @override
   Object? invoke(ValidateBoardIntent intent) {
-    print('invoking board validate');
-    // TODO: implement invoke
-    throw UnimplementedError();
+    controller.actions.validate();
   }
 }
 
@@ -125,9 +123,7 @@ class PlacementModeChangeAction extends Action<ChangePlacementModeIntent> {
 
   @override
   Object? invoke(ChangePlacementModeIntent intent) {
-    print('invoking placement mode change');
-    // TODO: implement invoke
-    throw UnimplementedError();
+    controller.actions.toggleMode();
   }
 }
 
@@ -142,9 +138,7 @@ class UndoAction extends Action<UndoIntent> {
 
   @override
   Object? invoke(UndoIntent intent) {
-    print('invoking undo');
-    // TODO: implement invoke
-    throw UnimplementedError();
+    controller.actions.undo();
   }
 }
 
@@ -159,9 +153,7 @@ class BoardResetAction extends Action<ResetBoardIntent> {
 
   @override
   Object? invoke(ResetBoardIntent intent) {
-    print('invoking board reset');
-    // TODO: implement invoke
-    throw UnimplementedError();
+    controller.actions.reset();
   }
 }
 
