@@ -1,4 +1,5 @@
 import 'package:app/module/base.dart';
+import 'package:app/module/theme.dart';
 import 'package:app/view/home.dart';
 import 'package:app/viewmodel/home.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   sudokuDbInitialize();
   sudokuHomeDbInitialize();
+  sudokuUserThemesDbInitialize();
   Hive.init(await pp.getTemporaryDirectory().then((d) => d.path));
 
   runPlatformThemedApp(
