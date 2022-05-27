@@ -10,6 +10,9 @@ part 'sudoku_data.g.dart';
 // An list of rows
 typedef SudokuBoard = List<Uint8List>;
 
+typedef LoadingModel = Maybe<ModelOrError>;
+typedef ModelOrError = Either<Object, SudokuAppBoardModel>;
+
 // left is the x coordinate and right is the y coordinate
 @data(
   #MatrixIndex,

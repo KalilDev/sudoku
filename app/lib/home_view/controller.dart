@@ -1,4 +1,5 @@
 import 'package:app/base/controller.dart';
+import 'package:app/base/sudoku_db.dart';
 import 'package:app/home_view/data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
@@ -147,7 +148,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   void _onStartNewGame(_) async {
     final sideSqrt = this.sideSqrt.value;
     final difficulty = this.difficulty.value;
-    final db = await Hive.openBox(
+    final db = await sudokuDbOpen(
         boxNameFromSideSqrtAndDifficulty(sideSqrt, difficulty));
     _didRequestNavigation.add(
         SudokuNavigationTarget.left(CreateSudoku(sideSqrt, difficulty, db)));
@@ -156,7 +157,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
   void _onContinue(_) async {
     final sideSqrt = this.sideSqrt.value;
     final difficulty = this.difficulty.value;
-    final db = await Hive.openBox(
+    final db = await sudokuDbOpen(
         boxNameFromSideSqrtAndDifficulty(sideSqrt, difficulty));
     _didRequestNavigation.add(
         SudokuNavigationTarget.right(ResumeSudoku(sideSqrt, difficulty, db)));
@@ -201,7 +202,7 @@ class HomeViewController extends ControllerBase<HomeViewController> {
     );
     // Ensure we flush the db to disk
     if (canContinue) {
-      await db.flush();
+      await sudokuDbFlush(db);
     }
   }
 

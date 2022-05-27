@@ -1,27 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'sudoku_data.dart';
-import 'package:hive/hive.dart';
 import 'package:synchronized/synchronized.dart';
 
-typedef SudokuDb = Box<dynamic>;
-Future<SudokuDb> sudokuDbOpen(String name) => Hive.openBox(name);
-
-const Codec<SudokuAppBoardModel, Map<String, dynamic>> codec =
-    DoublyLinkedEventSourcedModelCodec();
-
-Future<void> sudokuDbStore(
-  SudokuDb db,
-  Map<String, dynamic> encodedSudoku,
-) =>
-    db.putAll(encodedSudoku);
-Map<String, dynamic> sudokuDbToMap(SudokuDb db) => db.toMap().cast();
-
-typedef LoadingModel = Maybe<ModelOrError>;
-typedef ModelOrError = Either<Object, SudokuAppBoardModel>;
+import 'sudoku_db.dart';
 
 class _SudokuDBController
     extends SubcontrollerBase<SudokuController, _SudokuDBController> {
@@ -38,7 +21,7 @@ class _SudokuDBController
 
   late final ValueListenable<LoadingModel> _initialModel = dbLock
       .synchronized(() => _initialState == null
-          ? _readFromDb(db)
+          ? sudokuDbGet(db)
           : _createFromInitialAndSaveToDb(db, _initialState!))
       .toValueListenable(eager: true)
       .map((snap) => snap.hasData
@@ -53,22 +36,10 @@ class _SudokuDBController
 
   ValueListenable<LoadingModel> get initialModel => _initialModel.view();
 
-  static Future<void> _rawSaveToDb(SudokuDb db, Map<String, dynamic> encoded) =>
-      sudokuDbStore(db, encoded);
-
-  static Future<Map<String, dynamic>> _rawReadFromDb(SudokuDb db) async =>
-      sudokuDbToMap(db);
-
-  static Future<SudokuAppBoardModel> _readFromDb(SudokuDb db) =>
-      _rawReadFromDb(db).then(codec.decode);
-
-  static Future<void> _saveToDb(SudokuDb db, SudokuAppBoardModel model) =>
-      _rawSaveToDb(db, codec.encode(model));
-
   static Future<SudokuAppBoardModel> _createFromInitialAndSaveToDb(
       SudokuDb db, SudokuAppBoardState initialState) async {
     final model = SudokuAppBoardModel(initialState);
-    await _saveToDb(db, model);
+    await sudokuDbStore(db, model);
     return model;
   }
 
@@ -79,7 +50,7 @@ class _SudokuDBController
   Future<void> _save(SudokuAppBoardModel state) {
     print("saving!!");
     return dbLock
-        .synchronized(() => _saveToDb(db, state))
+        .synchronized(() => sudokuDbStore(db, state))
         .then((_) => _savedState.value = state);
   }
 
@@ -104,7 +75,7 @@ class _SudokuDBController
       _savedState,
       _didRequestSave,
     ]);
-    db.close();
+    sudokuDbClose(db);
     IDisposable.disposeAll([
       _toBeSaved,
       _initialModel,

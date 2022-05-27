@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:app/base/controller.dart';
 import 'package:app/base/sudoku_data.dart';
+import 'package:app/base/sudoku_db.dart';
 import 'package:app/home_view/controller.dart';
 import 'package:app/home_view/view.dart';
 import 'package:app/view/controller.dart';
@@ -17,12 +18,7 @@ import 'view/data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Hive.registerAdapter(SudokuAppBoardStateAdapter());
-  Hive.registerAdapter(ChangeNumberAdapter());
-  Hive.registerAdapter(AddPossibilityAdapter());
-  Hive.registerAdapter(RemovePossibilityAdapter());
-  Hive.registerAdapter(CommitNumberAdapter());
-  Hive.registerAdapter(ClearTileAdapter());
+  sudokuDbInitialize();
   Hive.registerAdapter(SudokuHomeInfoAdapter());
   Hive.registerAdapter(SudokuHomeItemAdapter());
   Hive.registerAdapter(SudokuDifficultyAdapter());
@@ -30,7 +26,8 @@ void main() async {
 
   runPlatformThemedApp(
     const MyApp(),
-    initialOrFallback: () => PlatformPalette.fallback(primaryColor: Color(0xDEADBEEF)),
+    initialOrFallback: () =>
+        PlatformPalette.fallback(primaryColor: Color(0xDEADBEEF)),
   );
 }
 
@@ -41,7 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MD3Themes(
       monetThemeForFallbackPalette: MonetTheme.baseline3p,
-      builder:(context, light, dark) =>  MaterialApp(
+      builder: (context, light, dark) => MaterialApp(
         title: 'Flutter Demo',
         theme: light,
         darkTheme: dark,
