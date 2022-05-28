@@ -5,6 +5,7 @@ import 'package:app/module/base.dart';
 import 'package:app/module/theme.dart';
 import 'package:app/view/home.dart';
 import 'package:app/viewmodel/home.dart';
+import 'package:app/widget/animation_options.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:material_widgets/material_widgets.dart';
@@ -39,10 +40,15 @@ void main() async {
     child: SudokuApp(controller: themeController.handle),
   );
   // Also inject an animation controller
-  app = InheritedControllerInjector<SudokuAnimationController>(
+  app = ControllerInjectorBuilder<SudokuAnimationController>(
     factory: (_) =>
         ControllerBase.create(() => SudokuAnimationController.open()),
-    child: app,
+    builder: (_, animController) => animController.unwrap.animationOptions
+        .map((opts) => InheritedAnimationOptions(
+              animationOptions: opts,
+              child: app,
+            ))
+        .build(),
   );
 
   runPlatformThemedApp(
