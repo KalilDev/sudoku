@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/module/animation.dart';
 import 'package:app/module/base.dart';
 import 'package:app/module/theme.dart';
@@ -17,27 +19,91 @@ void main() async {
   sudokuAnimationDbInitialize();
   Hive.init(await pp.getTemporaryDirectory().then((d) => d.path));
 
+  // We need to initialize the theme module and ensure it is ready before
+  // running the app so that we do not flicker when the theme is loaded.
+  final themeController =
+      ControllerBase.create(() => SudokuThemeController.open());
+  final themeControllerReadyCompleter = Completer();
+  final untilThemeControllerIsReady = themeControllerReadyCompleter.future;
+  // assumes that isReady is only true after it is true once
+  themeController.isReady.unique().connect((isReady) {
+    if (isReady) {
+      themeControllerReadyCompleter.complete();
+    }
+  });
+  await untilThemeControllerIsReady;
+  // Now run the app with this theme controller and inject it into the tree
+  final app = InheritedController<SudokuThemeController>(
+    handle: themeController.handle,
+    child: SudokuApp(controller: themeController.handle),
+  );
+
   runPlatformThemedApp(
-    const MyApp(),
+    app,
     initialOrFallback: () =>
         PlatformPalette.fallback(primaryColor: Color(0xDEADBEEF)),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class SudokuApp extends ControllerWidget<SudokuThemeController> {
+  const SudokuApp({
+    Key? key,
+    required ControllerHandle<SudokuThemeController> controller,
+  }) : super(
+          key: key,
+          controller: controller,
+        );
+
+  static MonetTheme _seededThemeToMonetTheme(SudokuSeededTheme theme) {
+    final monetTheme = generateTheme(
+      theme.seed,
+      secondarySeed: theme.secondarySeed,
+    );
+    if (theme.background == null) {
+      return monetTheme;
+    }
+    switch (theme.brightness) {
+      case Brightness.dark:
+        return monetTheme.copyWith(
+          dark: monetTheme.dark.copyWith(background: theme.background),
+        );
+      case Brightness.light:
+        return monetTheme.copyWith(
+          light: monetTheme.light.copyWith(background: theme.background),
+        );
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return MD3Themes(
-      monetThemeForFallbackPalette: MonetTheme.baseline3p,
-      builder: (context, light, dark) => MaterialApp(
-        title: 'Flutter Demo',
-        theme: light,
-        darkTheme: dark,
-        home: const MyHomePage(),
-      ),
-    );
+  Widget build(ControllerContext<SudokuThemeController> context) {
+    final activeTheme = context.use(controller.activeTheme);
+    return activeTheme
+        .map((theme) => theme.visit(
+              sudokuMaterialYouTheme: (theme) => MD3Themes(
+                monetThemeForFallbackPalette: MonetTheme.baseline3p,
+                builder: (context, light, dark) => MaterialApp(
+                  title: 'Sudoku',
+                  theme: light,
+                  darkTheme: dark,
+                  themeMode: theme.themeMode,
+                  home: const MyHomePage(),
+                ),
+              ),
+              sudokuSeededTheme: (theme) => MD3Themes(
+                usePlatformPalette: false,
+                monetThemeForFallbackPalette: _seededThemeToMonetTheme(theme),
+                builder: (context, light, dark) => MaterialApp(
+                  title: 'Sudoku',
+                  theme: light,
+                  darkTheme: dark,
+                  themeMode: theme.brightness == Brightness.dark
+                      ? ThemeMode.dark
+                      : ThemeMode.light,
+                  home: const MyHomePage(),
+                ),
+              ),
+            ))
+        .build();
   }
 }
 
