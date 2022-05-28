@@ -23,7 +23,7 @@ class SudokuBoardDecoration extends StatelessWidget {
   Widget build(BuildContext context) {
     final decoratedChild = AnimatedBuilder(
       animation: secondaryOpacity,
-      builder: (context, child) => Ink(
+      builder: (context, child) => DecoratedBox(
         decoration: _SudokuBoardDecoration(
             sideSqrt: sideSqrt,
             color: colorScheme(context).primary,
