@@ -36,4 +36,8 @@ enum AnimationSpeed { none, normal, fast, fastest }
     ]))
 const Type _animationOptions = AnimationOptions;
 
-const defaultAnimationOptions = null;
+const defaultAnimationOptions = AnimationOptions(
+  SelectionAnimationOptions(true, true),
+  TextAnimationOptions(true, true, true, true),
+  AnimationSpeed.fast,
+);
