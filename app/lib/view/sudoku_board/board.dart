@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:app/module/base.dart';
 import 'package:app/old/board_button/board_button.dart';
-import 'package:app/old/models/animation_options.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
+import 'package:app/widget/animation_options.dart';
 import 'package:app/widget/decoration.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,17 +13,6 @@ import 'package:value_notifier/value_notifier.dart';
 
 import 'flutter_intents.dart';
 import 'locking.dart';
-
-const AnimationOptions defaultAnimationOptions = AnimationOptions(
-  selectSize: true,
-  selectColor: true,
-  textPosition: true,
-  textOpacity: true,
-  textSize: true,
-  textColor: true,
-  textString: true,
-  speed: AnimationSpeed.normal,
-);
 
 class _TileWidget extends StatelessWidget {
   const _TileWidget({
@@ -52,7 +41,7 @@ class _TileWidget extends StatelessWidget {
       isBottomText: tile is Possibilities,
       isInvalid:
           tile is Number && (tile as Number).validation == Validation.invalid,
-      animationOptions: defaultAnimationOptions,
+      animationOptions: animationOptions(context),
       isInitial: tile is Permanent,
     );
   }
