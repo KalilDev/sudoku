@@ -1,3 +1,4 @@
+import 'package:app/module/animation/sudoku_animation_db.dart';
 import 'package:app/module/base.dart';
 import 'package:app/module/theme.dart';
 import 'package:app/view/home.dart';
@@ -13,6 +14,7 @@ void main() async {
   sudokuDbInitialize();
   sudokuHomeDbInitialize();
   sudokuUserThemesDbInitialize();
+  sudokuAnimationDbInitialize();
   Hive.init(await pp.getTemporaryDirectory().then((d) => d.path));
 
   runPlatformThemedApp(
