@@ -1,6 +1,6 @@
+import 'package:app/module/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_you/material_you.dart';
-import '../models.dart';
 
 import 'speed.dart';
 
@@ -66,15 +66,15 @@ class _AnimatedBoardButtonDecorationState
     };
     return _AnimatedBoardButtonContainer(
       backgroundColor: backgroundColor.resolve(backgroundStates),
-      animateBackground: widget.animationOptions.selectColor,
+      animateBackground: widget.animationOptions.e0.color,
       foregroundColor: foregroundColor.resolve(foregroundStates),
-      animateForeground: widget.animationOptions.textColor,
-      duration: durationForSpeed(widget.animationOptions.speed),
+      animateForeground: widget.animationOptions.e1.color,
+      duration: durationForSpeed(widget.animationOptions.e2),
       backgroundPosition:
           (widget.isSelected || !widget.isEnabled || widget.isInvalid)
               ? 1.0
               : 0.0,
-      animateBackgroundPosition: widget.animationOptions.selectSize,
+      animateBackgroundPosition: widget.animationOptions.e0.size,
       child: widget.child,
     );
   }

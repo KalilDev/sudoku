@@ -1,4 +1,4 @@
-import '../models.dart';
+import 'package:app/module/animation.dart';
 
 Duration durationForSpeed(AnimationSpeed speed) {
   switch (speed) {

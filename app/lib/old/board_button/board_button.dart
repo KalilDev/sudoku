@@ -1,9 +1,9 @@
+import 'package:app/module/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:material_you/material_you.dart';
 import 'decoration.dart';
 import 'text.dart';
-import '../models.dart';
 
 class BoardButton extends StatelessWidget {
   const BoardButton({

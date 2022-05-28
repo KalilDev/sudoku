@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:app/module/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_you/material_you.dart';
-import '../models.dart';
 
 import 'speed.dart';
 
@@ -39,16 +39,16 @@ class BoardButtonTextAnimation extends StatelessWidget {
 
         return _AnimatedBoardButtonText(
           alignment: bottom ? Alignment.bottomCenter : Alignment.center,
-          animateAlignment: animationOptions.textPosition,
+          animateAlignment: animationOptions.e1.position,
           textStyle: textStyle,
-          animateTextStyle: animationOptions.textSize,
+          animateTextStyle: animationOptions.e1.size,
           bottomText: bottom ? text : '',
           topText: bottom ? '' : text,
-          animateTextString: animationOptions.textString,
+          animateTextString: animationOptions.e1.string,
           bottomTextOpacity: bottom ? 1.0 : 0.0,
           topTextOpacity: bottom ? 0.0 : 1.0,
-          animateTextOpacity: animationOptions.textOpacity,
-          duration: durationForSpeed(animationOptions.speed),
+          animateTextOpacity: animationOptions.e1.opacity,
+          duration: durationForSpeed(animationOptions.e2),
         );
       },
     );
