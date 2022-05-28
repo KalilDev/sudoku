@@ -33,9 +33,15 @@ void main() async {
   });
   await untilThemeControllerIsReady;
   // Now run the app with this theme controller and inject it into the tree
-  final app = InheritedController<SudokuThemeController>(
+  Widget app = InheritedController<SudokuThemeController>(
     handle: themeController.handle,
     child: SudokuApp(controller: themeController.handle),
+  );
+  // Also inject an animation controller
+  app = InheritedControllerInjector<SudokuAnimationController>(
+    factory: (_) =>
+        ControllerBase.create(() => SudokuAnimationController.open()),
+    child: app,
   );
 
   runPlatformThemedApp(
