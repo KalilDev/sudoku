@@ -31,12 +31,14 @@ class _TextAnimationOptionsAdapter extends TypeAdapter<TextAnimationOptions> {
     writer.writeBool(obj.opacity);
     writer.writeBool(obj.color);
     writer.writeBool(obj.string);
+    writer.writeBool(obj.size);
   }
 
   @override
   TextAnimationOptions read(BinaryReader reader) {
     final version = reader.readInt();
     return TextAnimationOptions(
+      reader.readBool(),
       reader.readBool(),
       reader.readBool(),
       reader.readBool(),

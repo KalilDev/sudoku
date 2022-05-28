@@ -34,18 +34,19 @@ class TextAnimationOptions implements ProductType {
   final bool opacity;
   final bool color;
   final bool string;
+  final bool size;
 
   const TextAnimationOptions(
-      this.position, this.opacity, this.color, this.string)
+      this.position, this.opacity, this.color, this.string, this.size)
       : super();
 
   @override
   ProductRuntimeType get runtimeType =>
-      ProductRuntimeType([bool, bool, bool, bool]);
+      ProductRuntimeType([bool, bool, bool, bool, bool]);
 
   @override
-  int get hashCode =>
-      Object.hash((TextAnimationOptions), position, opacity, color, string);
+  int get hashCode => Object.hash(
+      (TextAnimationOptions), position, opacity, color, string, size);
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -54,11 +55,12 @@ class TextAnimationOptions implements ProductType {
           this.position == other.position &&
           this.opacity == other.opacity &&
           this.color == other.color &&
-          this.string == other.string);
+          this.string == other.string &&
+          this.size == other.size);
 
   @override
   String toString() =>
-      "TextAnimationOptions { $position, $opacity, $color, $string }";
+      "TextAnimationOptions { $position, $opacity, $color, $string, $size }";
 }
 
 class AnimationOptions

@@ -21,6 +21,7 @@ const Type _selectionAnimationOptions = SelectionAnimationOptions;
       #opacity: T(#bool),
       #color: T(#bool),
       #string: T(#bool),
+      #size: T(#bool),
     }))
 const Type _textAnimationOptions = TextAnimationOptions;
 
@@ -38,6 +39,6 @@ const Type _animationOptions = AnimationOptions;
 
 const defaultAnimationOptions = AnimationOptions(
   SelectionAnimationOptions(true, true),
-  TextAnimationOptions(true, true, true, true),
+  TextAnimationOptions(true, true, true, true, true),
   AnimationSpeed.fast,
 );
