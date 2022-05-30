@@ -35,7 +35,17 @@ ffi.DynamicLibrary _openLib(String name) {
   return ffi.DynamicLibrary.open(soname);
 }
 
-final libsudoku = _openLib('libsudoku');
+final libsudoku = () {
+  final libsudoku = _openLib('libsudoku');
+  // Initialize the random state.
+  final s_rand_set_state = libsudoku.lookupFunction<
+      s_rand_set_state_signature_native,
+      s_rand_set_state_signature_dart>('s_rand_set_state');
+  s_rand_set_state(Random().nextInt(1 << 32));
+  return libsudoku;
+}();
+typedef s_rand_set_state_signature_native = ffi.Void Function(ffi.Int32 state);
+typedef s_rand_set_state_signature_dart = void Function(int board);
 typedef s_board_initialize_to_zero_signature_native = ffi.Void Function(
     ffi.Pointer<S_Board> board);
 typedef s_board_initialize_to_zero_signature_dart = void Function(
