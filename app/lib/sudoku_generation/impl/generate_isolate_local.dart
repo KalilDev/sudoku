@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:app/module/base.dart';
 
-import '../data.dart';
-import 'exposed_extern_api.dart';
+import 'data.dart';
+import 'extern/exposed_extern_api.dart';
 
 Stream<SudokuGenerationEvent> generateSudokuStreamingIsolateLocal(
   int sideSqrt,

@@ -1,7 +1,7 @@
 import 'dart:isolate';
 
 import '../data.dart';
-import '../extern/exposed_base.dart';
+import '../generate_isolate_local.dart';
 
 class IsolateStartMessage {
   final SendPort bus;
