@@ -31,12 +31,12 @@ class PreferencesDialogAnimationFragment
       children: [
         SwitchTile(
           value: use(opts().mguS((s) => s.size)),
-          setValue: setS.compL(opts().value.e0.withSize),
+          setValue: (v) => setS.compL(opts().value.e0.withSize)(v),
           title: Text('Tamanho'),
         ),
         SwitchTile(
           value: use(opts().mguS((s) => s.color)),
-          setValue: setS.compL(opts().value.e0.withColor),
+          setValue: (v) => setS.compL(opts().value.e0.withColor)(v),
           title: Text('Cor'),
         ),
       ],
@@ -46,27 +46,27 @@ class PreferencesDialogAnimationFragment
       children: [
         SwitchTile(
           value: use(opts().mguT((s) => s.position)),
-          setValue: setT.compL(opts().value.e1.withPosition),
+          setValue: (v) => setT.compL(opts().value.e1.withPosition)(v),
           title: Text('Posição'),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.opacity)),
-          setValue: setT.compL(opts().value.e1.withOpacity),
+          setValue: (v) => setT.compL(opts().value.e1.withOpacity)(v),
           title: Text('Opacidade'),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.color)),
-          setValue: setT.compL(opts().value.e1.withColor),
+          setValue: (v) => setT.compL(opts().value.e1.withColor)(v),
           title: Text('Cor'),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.string)),
-          setValue: setT.compL(opts().value.e1.withString),
+          setValue: (v) => setT.compL(opts().value.e1.withString)(v),
           title: Text('Texto'),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.size)),
-          setValue: setT.compL(opts().value.e1.withSize),
+          setValue: (v) => setT.compL(opts().value.e1.withSize)(v),
           title: Text('Tamanho'),
         ),
       ],
