@@ -47,7 +47,7 @@ class _TileWidget extends StatelessWidget {
   }
 }
 
-class SudokuViewBoardWidget extends StatelessWidget {
+class SudokuViewBoardWidget extends StatefulWidget {
   const SudokuViewBoardWidget({
     Key? key,
     required this.board,
@@ -58,6 +58,11 @@ class SudokuViewBoardWidget extends StatelessWidget {
   final ValueListenable<MatrixIndex?> selectedIndex;
   final int side;
 
+  @override
+  State<SudokuViewBoardWidget> createState() => _SudokuViewBoardWidgetState();
+}
+
+class _SudokuViewBoardWidgetState extends State<SudokuViewBoardWidget> {
   static final _indexedShortcutCache =
       <SudokuBoardIndex, Map<ShortcutActivator, Intent>>{};
   static Map<ShortcutActivator, Intent> shortcutsForIndex(
@@ -133,15 +138,15 @@ class SudokuViewBoardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableOwnerBuilder<MatrixIndex?>(
-      valueListenable: selectedIndex,
+      valueListenable: widget.selectedIndex,
       builder: (context, selectedIndex) => _GridLayout(
-        child: board
+        child: widget.board
             .map(
               (board) => SudokuBoardHeroDecoration(
-                  sideSqrt: sqrt(side).toInt(),
+                  sideSqrt: sqrt(widget.side).toInt(),
                   isHome: false,
                   child: _BoardGrid(
-                    side: side,
+                    side: widget.side,
                     buildChild: _buildChild.apL(board).apL(selectedIndex),
                   )),
             )
@@ -155,16 +160,19 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
   const SudokuViewBoard({
     Key? key,
     required ControllerHandle<SudokuViewBoardController> controller,
+    this.sudokuBoardKey,
   }) : super(
           key: key,
           controller: controller,
         );
+  final Key? sudokuBoardKey;
 
   @override
   Widget build(ControllerContext<SudokuViewBoardController> context) {
     final board = context.useLazy((c) => c.board);
     final selected = context.use(controller.selectedIndex);
     return SudokuViewBoardWidget(
+      key: sudokuBoardKey,
       board: board,
       selectedIndex: selected,
       side: controller.side,
