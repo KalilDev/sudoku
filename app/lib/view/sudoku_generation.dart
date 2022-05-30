@@ -115,10 +115,15 @@ class _LoadingGenerationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        LinearProgressIndicator(value: progress),
-        Expanded(
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: LinearProgressIndicator(value: progress),
+        ),
+        Positioned.fill(
           child: Actions(
             actions: SudokuView.emptyActions,
             child: SudokuBoardIsLocked(
