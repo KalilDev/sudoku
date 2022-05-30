@@ -3,6 +3,7 @@ library app.view.home;
 import 'package:app/module/base.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
 import 'package:app/util/monadic.dart';
+import 'package:app/view/preferences_dialog.dart';
 import 'package:app/view/sudoku_board.dart';
 import 'package:app/view/sudoku_generation.dart';
 import 'package:app/viewmodel/home.dart';
@@ -67,7 +68,16 @@ class HomeView extends ControllerWidget<HomeViewController> {
         left: (create) => MaterialPageRoute(builder: (context) {
           print('create controller');
           return MD3AdaptativeScaffold(
-            appBar: MD3SmallAppBar(title: Text("Sudoku")),
+            appBar: MD3SmallAppBar(
+              title: Text("Sudoku"),
+              actions: [
+                IconButton(
+                  onPressed: () =>
+                      showPreferencesDialogAndUpdateModules(context),
+                  icon: Icon(Icons.settings_outlined),
+                ),
+              ],
+            ),
             body: MD3ScaffoldBody.noMargin(
               child: ControllerInjectorBuilder<GenerationController>(
                 factory: (context) => ControllerBase.create(() =>
@@ -91,7 +101,16 @@ class HomeView extends ControllerWidget<HomeViewController> {
         }),
         right: (resume) => MaterialPageRoute(
           builder: (context) => MD3AdaptativeScaffold(
-            appBar: MD3SmallAppBar(title: Text("Sudoku")),
+            appBar: MD3SmallAppBar(
+              title: Text("Sudoku"),
+              actions: [
+                IconButton(
+                  onPressed: () =>
+                      showPreferencesDialogAndUpdateModules(context),
+                  icon: Icon(Icons.settings_outlined),
+                ),
+              ],
+            ),
             body: MD3ScaffoldBody.noMargin(
               child: ControllerInjectorBuilder<SudokuViewController>(
                 factory: (context) {

@@ -4,6 +4,7 @@ import 'package:app/module/animation.dart';
 import 'package:app/module/base.dart';
 import 'package:app/module/theme.dart';
 import 'package:app/view/home.dart';
+import 'package:app/view/preferences_dialog.dart';
 import 'package:app/viewmodel/home.dart';
 import 'package:app/widget/animation_options.dart';
 import 'package:flutter/material.dart';
@@ -58,6 +59,26 @@ void main() async {
   );
 }
 
+MonetTheme seededThemeToMonetTheme(SudokuSeededTheme theme) {
+  final monetTheme = generateTheme(
+    theme.seed,
+    secondarySeed: theme.secondarySeed,
+  );
+  if (theme.background == null) {
+    return monetTheme;
+  }
+  switch (theme.brightness) {
+    case Brightness.dark:
+      return monetTheme.copyWith(
+        dark: monetTheme.dark.copyWith(background: theme.background),
+      );
+    case Brightness.light:
+      return monetTheme.copyWith(
+        light: monetTheme.light.copyWith(background: theme.background),
+      );
+  }
+}
+
 class SudokuApp extends ControllerWidget<SudokuThemeController> {
   const SudokuApp({
     Key? key,
@@ -66,26 +87,6 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
           key: key,
           controller: controller,
         );
-
-  static MonetTheme _seededThemeToMonetTheme(SudokuSeededTheme theme) {
-    final monetTheme = generateTheme(
-      theme.seed,
-      secondarySeed: theme.secondarySeed,
-    );
-    if (theme.background == null) {
-      return monetTheme;
-    }
-    switch (theme.brightness) {
-      case Brightness.dark:
-        return monetTheme.copyWith(
-          dark: monetTheme.dark.copyWith(background: theme.background),
-        );
-      case Brightness.light:
-        return monetTheme.copyWith(
-          light: monetTheme.light.copyWith(background: theme.background),
-        );
-    }
-  }
 
   @override
   Widget build(ControllerContext<SudokuThemeController> context) {
@@ -104,7 +105,7 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
               ),
               sudokuSeededTheme: (theme) => MD3Themes(
                 usePlatformPalette: false,
-                monetThemeForFallbackPalette: _seededThemeToMonetTheme(theme),
+                monetThemeForFallbackPalette: seededThemeToMonetTheme(theme),
                 builder: (context, light, dark) => MaterialApp(
                   title: 'Sudoku',
                   theme: light,
@@ -128,8 +129,12 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MD3AdaptativeScaffold(
-      appBar: const MD3CenterAlignedAppBar(
+      appBar: MD3CenterAlignedAppBar(
         title: Text("Sudoku"),
+        trailing: IconButton(
+          onPressed: () => showPreferencesDialogAndUpdateModules(context),
+          icon: Icon(Icons.settings_outlined),
+        ),
       ),
       body: MD3ScaffoldBody.noMargin(
         child: HomeView(
