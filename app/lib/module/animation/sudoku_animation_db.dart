@@ -23,27 +23,28 @@ void sudokuAnimationDbInitialize() {
   Hive.registerAdapter(_AnimationOptionsAdapter());
 }
 
+typedef SudokuAnimationDbValues = TupleN3<SelectionAnimationOptions?,
+    TextAnimationOptions?, AnimationSpeed?>;
+
 Future<SudokuAnimationDb> sudokuAnimationDbOpen() =>
     Hive.openBox<dynamic>('sudoku-animation').then(SudokuAnimationDb._);
-Future<AnimationOptions?> sudokuAnimationDbRead(SudokuAnimationDb db) async {
-  if (db._unwrap.length != 3) {
-    return null;
-  }
+Future<SudokuAnimationDbValues> sudokuAnimationDbRead(
+    SudokuAnimationDb db) async {
   final sel = await _sudokuAnimationDbReadSelection(db);
   final text = await _sudokuAnimationDbReadText(db);
   final speed = await _sudokuAnimationDbReadSpeed(db);
-  return AnimationOptions(sel, text, speed);
+  return SudokuAnimationDbValues(sel, text, speed);
 }
 
-Future<SelectionAnimationOptions> _sudokuAnimationDbReadSelection(
+Future<SelectionAnimationOptions?> _sudokuAnimationDbReadSelection(
   SudokuAnimationDb db,
 ) async =>
     db._unwrap.get('sel');
-Future<TextAnimationOptions> _sudokuAnimationDbReadText(
+Future<TextAnimationOptions?> _sudokuAnimationDbReadText(
   SudokuAnimationDb db,
 ) async =>
     db._unwrap.get('text');
-Future<AnimationSpeed> _sudokuAnimationDbReadSpeed(
+Future<AnimationSpeed?> _sudokuAnimationDbReadSpeed(
   SudokuAnimationDb db,
 ) async =>
     db._unwrap.get('speed');

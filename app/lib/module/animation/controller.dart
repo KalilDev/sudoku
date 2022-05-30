@@ -5,6 +5,14 @@ import 'package:value_notifier/value_notifier.dart';
 import 'data.dart';
 import 'sudoku_animation_db.dart';
 
+AnimationOptions _dbValuesFilledWith(
+        AnimationOptions defaults, SudokuAnimationDbValues vs) =>
+    AnimationOptions(
+      vs.e0 ?? defaults.e0,
+      vs.e1 ?? defaults.e1,
+      vs.e2 ?? defaults.e2,
+    );
+
 class _SudokuAnimationDbController extends SubcontrollerBase<
     SudokuAnimationController, _SudokuAnimationDbController> {
   final EventNotifier<SelectionAnimationOptions> _didChangeSelection =
@@ -31,7 +39,8 @@ class _SudokuAnimationDbController extends SubcontrollerBase<
           ? const Maybe<AnimationOptions>.none().asValueListenable
           : sudokuAnimationDbRead(db).toValueListenable(eager: true).map((r) =>
               r.hasData
-                  ? Just(r.requireData ?? defaultAnimationOptions)
+                  ? Just(_dbValuesFilledWith(
+                      defaultAnimationOptions, r.requireData))
                   : const None()));
   ValueListenable<Maybe<AnimationOptions>> get initialAnimationOptions =>
       _initialAnimationOptions.view();
