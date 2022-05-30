@@ -1,0 +1,33 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:material_widgets/material_widgets.dart';
+import 'package:value_notifier/value_notifier.dart';
+
+class SwitchTile extends StatelessWidget {
+  const SwitchTile({
+    Key? key,
+    required this.value,
+    required this.setValue,
+    required this.title,
+    this.subtitle,
+  }) : super(key: key);
+  final ValueListenable<bool> value;
+  final ValueSetter<bool> setValue;
+  final Widget title;
+  final Widget? subtitle;
+
+  @override
+  Widget build(BuildContext context) => value
+      .map(
+        (value) => ListTile(
+          onTap: () => setValue(!value),
+          title: title,
+          subtitle: subtitle,
+          trailing: MD3Switch(
+            value: value,
+            onChanged: setValue,
+          ),
+        ),
+      )
+      .build();
+}
