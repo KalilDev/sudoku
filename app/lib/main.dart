@@ -44,6 +44,7 @@ void main() async {
   final appWithAnimation = ControllerInjectorBuilder<SudokuAnimationController>(
     factory: (_) =>
         ControllerBase.create(() => SudokuAnimationController.open()),
+    inherited: true,
     builder: (_, animController) => animController.unwrap.animationOptions
         .map((opts) => InheritedAnimationOptions(
               animationOptions: opts,
