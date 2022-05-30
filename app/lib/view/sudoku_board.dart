@@ -110,10 +110,12 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
   const SudokuView({
     Key? key,
     required ControllerHandle<SudokuViewController> controller,
+    this.sudokuBoardKey,
   }) : super(
           key: key,
           controller: controller,
         );
+  final Key? sudokuBoardKey;
 
   void onMaybeError(BuildContext context, Object? error) {
     if (error == null) {
@@ -181,6 +183,7 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
                 child: SudokuViewLayout(
                   board: SudokuViewBoard(
                     controller: controller.board.handle,
+                    sudokuBoardKey: sudokuBoardKey,
                   ),
                   keypad: SudokuBoardKeypad(
                     controller: controller.keypad.handle,
