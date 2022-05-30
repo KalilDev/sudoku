@@ -49,6 +49,8 @@ class _SudokuUserThemeDbController extends SubcontrollerBase<
   Future<void> removeTheme(int i) => sudokuUserThemesDbRemove(_db.value!, i);
   Future<void> modifyTheme(int i, SudokuSeededTheme theme) =>
       sudokuUserThemesDbModify(_db.value!, i, theme);
+  Future<void> setUserThemes(List<SudokuSeededTheme> themes) =>
+      sudokuUserThemesDbStore(_db.value!, themes);
 
   void init() {
     super.init();
@@ -114,4 +116,6 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
   late final addTheme = _db.addTheme;
   late final removeTheme = _db.removeTheme;
   late final modifyTheme = _db.modifyTheme;
+  late final setUserThemes = _db.setUserThemes;
+  late final changeIndex = _activeThemeIndex.setter;
 }
