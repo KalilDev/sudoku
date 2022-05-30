@@ -80,13 +80,16 @@ class GenerationView extends ControllerWidget<GenerationController> {
     context.useEventHandler(controller.generationEvents, _onGenerationEvent);
     final progress = context.use(controller.generationProgress);
     final challengeBoard = context.use(controller.challengeBoard);
+    // needs to be outside the map because otherwise the progress and challenge
+    // board would be used more than once, violating the ownership contract
+    final loadingViewW = (_loadingView.curry(context).asValueListenable >>
+            progress >>
+            challengeBoard)
+        .build();
     return generatedBoard
         .map(
           (maybeGeneratedBoard) => maybeGeneratedBoard == null
-              ? (_loadingView.curry(context).asValueListenable >>
-                      progress >>
-                      challengeBoard)
-                  .build()
+              ? loadingViewW
               : ControllerInjectorBuilder<SudokuViewController>(
                   factory: (context) =>
                       createBoardControllerFromGenerated(maybeGeneratedBoard),
