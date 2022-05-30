@@ -33,9 +33,10 @@ class _SudokuAnimationDbController extends SubcontrollerBase<
               r.hasData
                   ? Just(r.requireData ?? defaultAnimationOptions)
                   : const None()));
-
+  ValueListenable<Maybe<AnimationOptions>> get initialAnimationOptions =>
+      _initialAnimationOptions.view();
   ValueListenable<AnimationOptions> get animationOptions =>
-      _initialAnimationOptions.bind(
+      initialAnimationOptions.bind(
         (initialOptions) => initialOptions.visit(
           just: (loadedInitial) =>
               AnimationOptions.new.curry.asValueListenable >>
