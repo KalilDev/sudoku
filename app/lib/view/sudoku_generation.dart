@@ -6,6 +6,7 @@ import 'package:app/util/monadic.dart';
 import 'package:app/view/sudoku_board.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:app/viewmodel/sudoku_generation.dart';
+import 'package:app/widget/memo.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:utils/utils.dart';
@@ -23,8 +24,6 @@ ContextfulAction<void> showSnackbar(SnackBar snackBar) =>
     scaffoldMessenger.map((messenger) => messenger.showSnackBar(snackBar));
 
 class GenerationView extends ControllerWidget<GenerationController> {
-  final SudokuViewController Function(SolvedAndChallengeBoard)
-      createBoardControllerFromGenerated;
   const GenerationView({
     Key? key,
     required this.createBoardControllerFromGenerated,
@@ -34,8 +33,12 @@ class GenerationView extends ControllerWidget<GenerationController> {
           controller: controller,
         );
 
+  final SudokuViewController Function(SolvedAndChallengeBoard)
+      createBoardControllerFromGenerated;
+
   static Widget _loadingView(
     BuildContext context,
+    GlobalKey sudokuBoardKey,
     double? progress,
     SudokuBoard challengeBoard,
   ) =>
@@ -43,6 +46,7 @@ class GenerationView extends ControllerWidget<GenerationController> {
         progress: progress,
         board: _tileMatrixFromSudokuBoard(challengeBoard),
         side: challengeBoard.length,
+        sudokuBoardKey: sudokuBoardKey,
       );
 
   static TileMatrix _tileMatrixFromSudokuBoard(SudokuBoard board) {
@@ -78,27 +82,33 @@ class GenerationView extends ControllerWidget<GenerationController> {
     }
 
     context.useEventHandler(controller.generationEvents, _onGenerationEvent);
-    final progress = context.use(controller.generationProgress);
-    final challengeBoard = context.use(controller.challengeBoard);
-    // needs to be outside the map because otherwise the progress and challenge
-    // board would be used more than once, violating the ownership contract
-    final loadingViewW = (_loadingView.curry(context).asValueListenable >>
-            progress >>
-            challengeBoard)
-        .build();
-    return generatedBoard
-        .map(
-          (maybeGeneratedBoard) => maybeGeneratedBoard == null
-              ? loadingViewW
-              : ControllerInjectorBuilder<SudokuViewController>(
-                  factory: (context) =>
-                      createBoardControllerFromGenerated(maybeGeneratedBoard),
-                  builder: (context, controller) =>
-                      SudokuView(controller: controller),
-                  key: ValueKey(maybeGeneratedBoard),
-                ),
-        )
-        .build();
+    return Memo<GlobalKey>(
+      factory: () => GlobalKey(debugLabel: 'sudokuBoardKey'),
+      builder: (context, sudokuBoardKey) {
+        // needs to be outside the map because otherwise the progress and challenge
+        // board would be used more than once, violating the ownership contract
+        final loadingViewW =
+            (_loadingView.curry(context)(sudokuBoardKey).asValueListenable >>
+                    controller.generationProgress >>
+                    controller.challengeBoard)
+                .build();
+        return generatedBoard
+            .map(
+              (maybeGeneratedBoard) => maybeGeneratedBoard == null
+                  ? loadingViewW
+                  : ControllerInjectorBuilder<SudokuViewController>(
+                      factory: (context) => createBoardControllerFromGenerated(
+                          maybeGeneratedBoard),
+                      builder: (context, controller) => SudokuView(
+                        controller: controller,
+                        sudokuBoardKey: sudokuBoardKey,
+                      ),
+                      key: ValueKey(maybeGeneratedBoard),
+                    ),
+            )
+            .build();
+      },
+    );
   }
 }
 
@@ -108,10 +118,12 @@ class _LoadingGenerationView extends StatelessWidget {
     required this.progress,
     required this.board,
     required this.side,
+    required this.sudokuBoardKey,
   }) : super(key: key);
   final double? progress;
   final TileMatrix board;
   final int side;
+  final GlobalKey sudokuBoardKey;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +142,7 @@ class _LoadingGenerationView extends StatelessWidget {
               isLocked: true,
               child: SudokuViewLayout(
                 board: SudokuViewBoardWidget(
+                  key: sudokuBoardKey,
                   board: board.asValueListenable,
                   selectedIndex: null.asValueListenable,
                   side: side,
