@@ -57,9 +57,9 @@ class SudokuBoardActionsWidget extends StatelessWidget {
       SudokuPlacementMode mode) {
     switch (mode) {
       case SudokuPlacementMode.possibility:
-        return filledStyle;
+        return sudokuFilledButtonStyle;
       case SudokuPlacementMode.number:
-        return outlinedActionAndKeypadButtonStyle;
+        return sudokuOutlinedButtonStyle;
     }
   }
 
@@ -170,7 +170,10 @@ class _ActionButton<T extends Intent> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = this.style ?? outlinedActionAndKeypadButtonStyle(context);
+    final style = this.style ?? sudokuOutlinedButtonStyle(context);
+    final orientation = viewLayoutOrientation(context);
+    final flipped = orientation == Orientation.landscape;
+
     final isLocked_ = isLocked(context);
     void invokeIntent() => Actions.invoke<T>(context, onPressed!);
     return Tooltip(

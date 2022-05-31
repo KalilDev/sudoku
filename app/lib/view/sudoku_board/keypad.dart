@@ -13,20 +13,18 @@ import 'style.dart';
 const minKeypadDimension = 64.0;
 const minKeypadSquare = Size.square(minKeypadDimension);
 final ContextfulAction<ButtonStyle> unselectedkeypadStyle =
-    outlinedActionAndKeypadButtonStyle.map(
+    sudokuOutlinedButtonStyle.map(
   (style) => style.copyWith(
     fixedSize: MaterialStateProperty.all(minKeypadSquare),
     padding: MaterialStateProperty.all(EdgeInsets.all(2)),
   ),
 );
 final ContextfulAction<ButtonStyle> selectedkeypadStyle = colorScheme.bind(
-  (scheme) => filledStyle.map(
+  (scheme) => sudokuFilledButtonStyle.map(
     (style) => style.copyWith(
       fixedSize: MaterialStateProperty.all(minKeypadSquare),
       padding: MaterialStateProperty.all(EdgeInsets.all(2)),
-      side: MaterialStateProperty.all(
-        BorderSide(color: scheme.primary, width: 0.0),
-      ),
+      side: MaterialStateProperty.all(BorderSide.none),
     ),
   ),
 );
