@@ -151,12 +151,9 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MD3AdaptativeScaffold(
-      appBar: MD3CenterAlignedAppBar(
+      appBar: const MD3CenterAlignedAppBar(
         title: Text("Sudoku"),
-        trailing: IconButton(
-          onPressed: () => showPreferencesDialogAndUpdateModules(context),
-          icon: Icon(Icons.settings_outlined),
-        ),
+        trailing: PreferencesButton(),
       ),
       body: MD3ScaffoldBody.noMargin(
         child: HomeView(

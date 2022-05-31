@@ -71,11 +71,7 @@ class HomeView extends ControllerWidget<HomeViewController> {
             appBar: MD3SmallAppBar(
               title: Text("Sudoku"),
               actions: [
-                IconButton(
-                  onPressed: () =>
-                      showPreferencesDialogAndUpdateModules(context),
-                  icon: Icon(Icons.settings_outlined),
-                ),
+                const PreferencesButton(),
               ],
             ),
             body: MD3ScaffoldBody.noMargin(
@@ -101,14 +97,10 @@ class HomeView extends ControllerWidget<HomeViewController> {
         }),
         right: (resume) => MaterialPageRoute(
           builder: (context) => MD3AdaptativeScaffold(
-            appBar: MD3SmallAppBar(
+            appBar: const MD3SmallAppBar(
               title: Text("Sudoku"),
               actions: [
-                IconButton(
-                  onPressed: () =>
-                      showPreferencesDialogAndUpdateModules(context),
-                  icon: Icon(Icons.settings_outlined),
-                ),
+                PreferencesButton(),
               ],
             ),
             body: MD3ScaffoldBody.noMargin(
