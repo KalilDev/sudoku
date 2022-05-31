@@ -1,5 +1,6 @@
 import 'package:app/module/base.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/view/preferences_dialog.dart';
 import 'package:app/view/sudoku_board.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
@@ -40,8 +41,8 @@ class _SudokuResumeViewState extends State<SudokuResumeView> {
     return WillPopScope(
       onWillPop: () => _willPop(context),
       child: MD3AdaptativeScaffold(
-        appBar: const MD3SmallAppBar(
-          title: Text("Sudoku"),
+        appBar: MD3SmallAppBar(
+          title: Text(context.l10n.sudoku),
           actions: [
             PreferencesButton(),
           ],

@@ -1,5 +1,6 @@
 library app.view.sudoku_board;
 
+import 'package:app/util/l10n.dart';
 import 'package:app/util/monadic.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
@@ -70,8 +71,8 @@ class SudokuBoardActionsWidget extends StatelessWidget {
   ) =>
       _ActionButton(
         tooltip: placementMode == SudokuPlacementMode.number
-            ? 'Editar possibilidades'
-            : 'Editar numeros',
+            ? context.l10n.edit_possibilities
+            : context.l10n.edit_numbers,
         child: const Icon(Icons.edit),
         style: style(context),
         onPressed: const ChangePlacementModeIntent(),
@@ -85,13 +86,13 @@ class SudokuBoardActionsWidget extends StatelessWidget {
     );
     final children = [
       paddingSquare,
-      const _ActionButton(
-        tooltip: 'Resetar sudoku',
+      _ActionButton(
+        tooltip: context.l10n.reset_sudoku,
         child: Icon(Icons.refresh),
         onPressed: ResetBoardIntent(),
       ),
-      const _ActionButton(
-        tooltip: 'Validar Sudoku',
+      _ActionButton(
+        tooltip: context.l10n.validate_sudoku,
         child: Icon(Icons.check),
         onPressed: ValidateBoardIntent(),
       ),
@@ -105,7 +106,7 @@ class SudokuBoardActionsWidget extends StatelessWidget {
       ),
       canUndo
           .map((canUndo) => _ActionButton(
-                tooltip: 'Desfazer',
+                tooltip: context.l10n.undo,
                 child: const Icon(Icons.undo),
                 onPressed: canUndo ? const UndoIntent() : null,
               ))

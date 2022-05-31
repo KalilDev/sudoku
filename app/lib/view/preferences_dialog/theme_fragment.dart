@@ -1,5 +1,6 @@
 import 'package:app/main.dart';
 import 'package:app/module/theme.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/view/sudoku_board/layout.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
 import 'package:app/widget/grid_widget.dart';
@@ -7,6 +8,34 @@ import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+extension on AppLocalizations {
+  String defaultTheme(String name) {
+    switch (name) {
+      case 'dark_green':
+        return themes_default_dark_green;
+      case 'black_green':
+        return themes_default_black_green;
+      case 'material_light':
+        return themes_default_material_light;
+      case 'material_dark':
+        return themes_default_material_dark;
+      case 'seaside_light':
+        return themes_default_seaside_light;
+      case 'seaside_dark':
+        return themes_default_seaside_dark;
+      case 'desert_light':
+        return themes_default_desert_light;
+      case 'desert_dark':
+        return themes_default_desert_dark;
+      case 'pixel_blue':
+        return themes_default_pixel_blue;
+      default:
+        return 'TODO: $name';
+    }
+  }
+}
 
 class PreferencesDialogThemeFragment
     extends ControllerWidget<PreferencesDialogThemeController> {
@@ -67,17 +96,19 @@ class PreferencesDialogThemeFragment
                 isElevated: isElevated,
                 child: Text(
                   defaultTheme.visit(
-                      sudokuMaterialYouTheme: (mu) {
-                        switch (mu.themeMode) {
-                          case ThemeMode.system:
-                            return 'Material You Automático';
-                          case ThemeMode.light:
-                            return 'Material You Claro';
-                          case ThemeMode.dark:
-                            return 'Material You Escuro';
-                        }
-                      },
-                      sudokuSeededTheme: (seeded) => seeded.name),
+                    sudokuMaterialYouTheme: (mu) {
+                      switch (mu.themeMode) {
+                        case ThemeMode.system:
+                          return context.l10n.themes_mu_system;
+                        case ThemeMode.light:
+                          return context.l10n.themes_mu_light;
+                        case ThemeMode.dark:
+                          return context.l10n.themes_mu_dark;
+                      }
+                    },
+                    sudokuSeededTheme: (seeded) =>
+                        context.l10n.defaultTheme(seeded.name),
+                  ),
                 ),
               ))
           .build();
@@ -142,7 +173,7 @@ class PreferencesDialogThemeFragment
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Temas', style: sectionTitle),
+        Text(context.l10n.themes, style: sectionTitle),
         gutterW,
         defaultThemesW,
         maybeUserThemesGutterW,
@@ -243,8 +274,8 @@ class __AddThemeButtonState extends State<_AddThemeButton>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
-            Text('Criar Novo'),
+          children: [
+            Text(context.l10n.themes_create_new),
             SizedBox(
               width: 12.0,
             ),

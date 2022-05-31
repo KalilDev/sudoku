@@ -3,6 +3,7 @@ library app.view.home;
 import 'package:app/module/base.dart';
 import 'package:app/navigation/src/navigation.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/util/monadic.dart';
 import 'package:app/viewmodel/home.dart';
 import 'package:app/widget/decoration.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final ContextfulAction<bool> isHomeLocked = readC.map(HomeViewIsLocked.of);
 
@@ -156,6 +158,29 @@ class HomeViewSideNewGameAction extends Action<SudokuHomeNewGameIntent> {
   }
 }
 
+extension on AppLocalizations {
+  String sideN(int n) => sudoku_side.replaceAll('%n', '$n');
+  String difficultyString(SudokuDifficulty d) {
+    switch (d) {
+      case SudokuDifficulty.begginer:
+        return difficulty_begginer;
+      case SudokuDifficulty.easy:
+        return difficulty_easy;
+      case SudokuDifficulty.medium:
+        return difficulty_medium;
+      case SudokuDifficulty.hard:
+        return difficulty_hard;
+      case SudokuDifficulty.extreme:
+        return difficulty_extreme;
+      case SudokuDifficulty.impossible:
+        return difficulty_impossible;
+    }
+  }
+
+  String difficultyD(SudokuDifficulty d) =>
+      difficulty.replaceAll('%d', difficultyString(d));
+}
+
 class _HomeView extends StatelessWidget {
   const _HomeView({
     Key? key,
@@ -174,6 +199,7 @@ class _HomeView extends StatelessWidget {
     final gutter = margin / 2;
     final gutterW = SizedBox.square(dimension: gutter);
     final isLocked = isHomeLocked(context);
+    final side = sideSqrt * sideSqrt;
     return Center(
       child: SingleChildScrollView(
         child: Column(
@@ -189,7 +215,7 @@ class _HomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("Lado: ${sideSqrt * sideSqrt}"),
+                  Text(context.l10n.sideN(side)),
                   gutterW,
                   MD3Slider(
                       value: sideSqrt.toDouble(),
@@ -201,7 +227,7 @@ class _HomeView extends StatelessWidget {
                           : (n) => Actions.invoke(context,
                               ChangeHomeViewSideSqrtIntent(n.toInt()))),
                   marginW,
-                  Text("Dificuldade: ${difficulty.name}"),
+                  Text(context.l10n.difficultyD(difficulty)),
                   gutterW,
                   MD3Slider(
                       value: difficulty.index.toDouble(),
@@ -221,7 +247,7 @@ class _HomeView extends StatelessWidget {
                                 context,
                                 SudokuHomeNewGameIntent(),
                               ),
-                      child: Text('Novo Jogo')),
+                      child: Text(context.l10n.new_game_action)),
                   marginW,
                   FilledTonalButton(
                       onPressed: isLocked || !canResume
@@ -230,7 +256,7 @@ class _HomeView extends StatelessWidget {
                                 context,
                                 SudokuHomeContinueGameIntent(),
                               ),
-                      child: Text('Continuar')),
+                      child: Text(context.l10n.continue_action)),
                 ],
               ),
             ),

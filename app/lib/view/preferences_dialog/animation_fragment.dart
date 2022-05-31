@@ -1,4 +1,5 @@
 import 'package:app/module/animation.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
 import 'package:app/widget/switch_tile.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,27 @@ import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+extension on AppLocalizations {
+  String speedString(AnimationSpeed speed) {
+    switch (speed) {
+      case AnimationSpeed.disabled:
+        return animation_speed_disabled;
+      case AnimationSpeed.fastest:
+        return animation_speed_fastest;
+      case AnimationSpeed.fast:
+        return animation_speed_fast;
+      case AnimationSpeed.normal:
+        return animation_speed_normal;
+      case AnimationSpeed.slow:
+        return animation_speed_slow;
+    }
+  }
+
+  String speedSelectedS(AnimationSpeed speed) =>
+      animation_speed_selected.replaceAll('%s', speedString(speed));
+}
 
 class PreferencesDialogAnimationFragment
     extends ControllerWidget<PreferencesDialogAnimationController> {
@@ -26,18 +48,19 @@ class PreferencesDialogAnimationFragment
         controller.setSelection(options);
     void setT(TextAnimationOptions options) => controller.setText(options);
     void setSp(AnimationSpeed speed) => controller.setSpeed(speed);
+    final l10n = context.l10n;
     final selection = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         SwitchTile(
           value: use(opts().mguS((s) => s.size)),
           setValue: (v) => setS.compL(opts().value.e0.withSize)(v),
-          title: Text('Tamanho'),
+          title: Text(l10n.animation_selection_size),
         ),
         SwitchTile(
           value: use(opts().mguS((s) => s.color)),
           setValue: (v) => setS.compL(opts().value.e0.withColor)(v),
-          title: Text('Cor'),
+          title: Text(l10n.animation_selection_color),
         ),
       ],
     );
@@ -47,40 +70,30 @@ class PreferencesDialogAnimationFragment
         SwitchTile(
           value: use(opts().mguT((s) => s.position)),
           setValue: (v) => setT.compL(opts().value.e1.withPosition)(v),
-          title: Text('Posição'),
+          title: Text(l10n.animation_text_position),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.opacity)),
           setValue: (v) => setT.compL(opts().value.e1.withOpacity)(v),
-          title: Text('Opacidade'),
+          title: Text(l10n.animation_text_opacity),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.color)),
           setValue: (v) => setT.compL(opts().value.e1.withColor)(v),
-          title: Text('Cor'),
+          title: Text(l10n.animation_text_color),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.string)),
           setValue: (v) => setT.compL(opts().value.e1.withString)(v),
-          title: Text('Texto'),
+          title: Text(l10n.animation_text_text),
         ),
         SwitchTile(
           value: use(opts().mguT((s) => s.size)),
           setValue: (v) => setT.compL(opts().value.e1.withSize)(v),
-          title: Text('Tamanho'),
+          title: Text(l10n.animation_text_size),
         ),
       ],
     );
-    final speed = use(opts().muSp())
-        .map(
-          (speed) => MD3Slider(
-            value: speed.index.toDouble(),
-            max: (AnimationSpeed.values.length - 1).toDouble(),
-            onChanged: (v) => setSp(AnimationSpeed.values[v.round()]),
-            divisions: AnimationSpeed.values.length,
-          ),
-        )
-        .build();
     final margin = context.sizeClass.minimumMargins;
     final gutter = margin / 2;
     final marginW = SizedBox.square(
@@ -89,6 +102,23 @@ class PreferencesDialogAnimationFragment
     final gutterW = SizedBox.square(
       dimension: gutter,
     );
+    final speed = use(opts().muSp())
+        .map(
+          (speed) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              MD3Slider(
+                value: speed.index.toDouble(),
+                max: (AnimationSpeed.values.length - 1).toDouble(),
+                onChanged: (v) => setSp(AnimationSpeed.values[v.round()]),
+                divisions: AnimationSpeed.values.length,
+              ),
+              Text(l10n.speedSelectedS(speed))
+            ],
+          ),
+        )
+        .build();
     final headerStyle = context.textTheme.titleLarge;
     final sectionTitle = context.textTheme.titleMedium;
     return ListTileTheme(
@@ -98,26 +128,26 @@ class PreferencesDialogAnimationFragment
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Animação",
+            l10n.animation,
             style: headerStyle,
           ),
           gutterW,
           Text(
-            "Seleção",
+            l10n.animation_selection,
             style: sectionTitle,
           ),
           gutterW,
           selection,
           marginW,
           Text(
-            "Texto",
+            l10n.animation_text,
             style: sectionTitle,
           ),
           gutterW,
           text,
           marginW,
           Text(
-            "Velocidade",
+            l10n.animation_speed,
             style: sectionTitle,
           ),
           gutterW,

@@ -1,5 +1,6 @@
 import 'package:app/main.dart';
 import 'package:app/module/theme.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/view/sudoku_board/layout.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
 import 'package:flutter/material.dart';
@@ -48,13 +49,13 @@ class PreferencesDialog extends StatelessWidget {
         context,
         PopCommitingPreferencesIntent(),
       ),
-      child: Text('Salvar'),
+      child: Text(context.l10n.save),
     );
     switch (context.sizeClass) {
       case MD3WindowSizeClass.compact:
         return MD3FullScreenDialog(
           action: saveButton,
-          title: Text('Configurações'),
+          title: Text(context.l10n.settings),
           body: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
               horizontal: margin,
@@ -66,7 +67,7 @@ class PreferencesDialog extends StatelessWidget {
       case MD3WindowSizeClass.medium:
       case MD3WindowSizeClass.expanded:
         return MD3BasicDialog(
-          title: Text('Configurações'),
+          title: Text(context.l10n.settings),
           content: child,
           scrollable: true,
           actions: [
@@ -75,7 +76,7 @@ class PreferencesDialog extends StatelessWidget {
                 context,
                 PopNotCommitingPreferencesIntent(),
               ),
-              child: Text('Cancelar'),
+              child: Text(context.l10n.cancel),
             ),
             saveButton,
           ],

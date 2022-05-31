@@ -1,3 +1,4 @@
+import 'package:app/util/l10n.dart';
 import 'package:app/view/home.dart';
 import 'package:app/view/preferences_dialog.dart';
 import 'package:app/viewmodel/home.dart';
@@ -13,8 +14,8 @@ class SudokuHomeView extends StatelessWidget {
     return ControllerInjectorBuilder<HomeViewController>(
       factory: (_) => ControllerBase.create(() => HomeViewController()),
       builder: (context, controller) => MD3AdaptativeScaffold(
-        appBar: const MD3CenterAlignedAppBar(
-          title: Text("Sudoku"),
+        appBar: MD3CenterAlignedAppBar(
+          title: Text(context.l10n.sudoku),
           trailing: PreferencesButton(),
         ),
         body: MD3ScaffoldBody.noMargin(

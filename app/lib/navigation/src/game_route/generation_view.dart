@@ -1,6 +1,7 @@
 import 'package:app/module/base.dart';
 import 'package:app/navigation/src/game_route/data.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/view/home.dart';
 import 'package:app/view/preferences_dialog.dart';
 import 'package:app/view/sudoku_generation.dart';
@@ -40,8 +41,8 @@ class _SudokuGenerationViewState extends State<SudokuGenerationView> {
     return WillPopScope(
       onWillPop: () => _willPop(context),
       child: MD3AdaptativeScaffold(
-        appBar: const MD3SmallAppBar(
-          title: Text("Sudoku"),
+        appBar: MD3SmallAppBar(
+          title: Text(context.l10n.sudoku),
           actions: [
             PreferencesButton(),
           ],

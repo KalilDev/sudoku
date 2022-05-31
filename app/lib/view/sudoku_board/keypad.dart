@@ -1,3 +1,4 @@
+import 'package:app/util/l10n.dart';
 import 'package:app/util/monadic.dart' hide colorScheme;
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
@@ -118,14 +119,17 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
         child: selectedNumber
             .map((s) => s == 0)
             .unique()
-            .map((isSelected) => KeypadButton(
-                  isSelected: isSelected,
-                  number: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: const Icon(
-                      Icons.close,
-                      size: 20,
+            .map((isSelected) => Tooltip(
+                  message: context.l10n.clear_tile,
+                  child: KeypadButton(
+                    isSelected: isSelected,
+                    number: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: const Icon(
+                        Icons.close,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ))
