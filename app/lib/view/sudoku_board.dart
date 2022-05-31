@@ -174,10 +174,8 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
         .map(
           (isLocked) => Actions(
             actions: isLocked ? emptyActions : enabledActions,
-            dispatcher: DebugDispatcher(),
             child: Shortcuts(
               shortcuts: shortcuts,
-              manager: DebugShortcutManager(),
               child: SudokuBoardIsLocked(
                 isLocked: isLocked,
                 child: SudokuViewLayout(
@@ -197,22 +195,5 @@ class SudokuView extends ControllerWidget<SudokuViewController> {
           ),
         )
         .build();
-  }
-}
-
-class DebugShortcutManager extends ShortcutManager {
-  KeyEventResult handleKeypress(BuildContext context, RawKeyEvent event) {
-    final r = super.handleKeypress(context, event);
-    print('shortcut keypress $event result $r');
-    print(super.shortcuts);
-    return r;
-  }
-}
-
-class DebugDispatcher extends ActionDispatcher {
-  Object? invokeAction(Action<Intent> action, Intent intent,
-      [BuildContext? context]) {
-    print('invoke action $action intent $intent');
-    return super.invokeAction(action, intent, context);
   }
 }
