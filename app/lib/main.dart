@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app/module/animation.dart';
 import 'package:app/module/base.dart';
 import 'package:app/module/theme.dart';
+import 'package:app/navigation/src/navigation.dart';
 import 'package:app/view/home.dart';
 import 'package:app/view/preferences_dialog.dart';
 import 'package:app/viewmodel/home.dart';
@@ -94,7 +95,6 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
 
   static const _debugLocale = Locale('en');
   static const _locale = kDebugMode ? _debugLocale : null;
-  static const _home = MyHomePage();
   static const _localizationsDelegates = [
     AppLocalizations.delegate,
     GlobalMaterialLocalizations.delegate,
@@ -116,10 +116,11 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
                   darkTheme: dark,
                   themeMode: theme.themeMode,
                   onGenerateTitle: _onGenerateTitle,
+                  onGenerateRoute: SudokuNavigation.onGenerateRoute,
                   locale: _locale,
                   localizationsDelegates: _localizationsDelegates,
                   supportedLocales: _supportedLocales,
-                  home: _home,
+                  home: SudokuNavigation.homeView,
                 ),
               ),
               sudokuSeededTheme: (theme) => MD3Themes(
@@ -132,34 +133,14 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
                       ? ThemeMode.dark
                       : ThemeMode.light,
                   onGenerateTitle: _onGenerateTitle,
+                  onGenerateRoute: SudokuNavigation.onGenerateRoute,
                   locale: _locale,
                   localizationsDelegates: _localizationsDelegates,
                   supportedLocales: _supportedLocales,
-                  home: _home,
+                  home: SudokuNavigation.homeView,
                 ),
               ),
             ))
         .build();
-  }
-}
-
-final homeController = ControllerBase.create(() => HomeViewController());
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MD3AdaptativeScaffold(
-      appBar: const MD3CenterAlignedAppBar(
-        title: Text("Sudoku"),
-        trailing: PreferencesButton(),
-      ),
-      body: MD3ScaffoldBody.noMargin(
-        child: HomeView(
-          controller: homeController.handle,
-        ),
-      ),
-    );
   }
 }

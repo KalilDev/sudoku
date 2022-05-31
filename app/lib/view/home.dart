@@ -1,14 +1,10 @@
 library app.view.home;
 
 import 'package:app/module/base.dart';
+import 'package:app/navigation/src/navigation.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
 import 'package:app/util/monadic.dart';
-import 'package:app/view/preferences_dialog.dart';
-import 'package:app/view/sudoku_board.dart';
-import 'package:app/view/sudoku_generation.dart';
 import 'package:app/viewmodel/home.dart';
-import 'package:app/viewmodel/sudoku_board.dart';
-import 'package:app/viewmodel/sudoku_generation.dart';
 import 'package:app/widget/decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
@@ -61,71 +57,10 @@ class HomeView extends ControllerWidget<HomeViewController> {
     final difficulty = context.use(controller.difficulty);
     final isLocked = context.use(controller.isLocked);
     void requestNavigation(SudokuNavigationTarget target) async {
-      // TODO
-      //showSnackbar(SnackBar(content: Text(target.toString())))(context);
-      SudokuController? sudokuController;
-      final route = target.visit<Route>(
-        left: (create) => MaterialPageRoute(builder: (context) {
-          print('create controller');
-          return MD3AdaptativeScaffold(
-            appBar: MD3SmallAppBar(
-              title: Text("Sudoku"),
-              actions: [
-                const PreferencesButton(),
-              ],
-            ),
-            body: MD3ScaffoldBody.noMargin(
-              child: ControllerInjectorBuilder<GenerationController>(
-                factory: (context) => ControllerBase.create(() =>
-                    GenerationController.generate(
-                        create.sideSqrt, create.difficulty)),
-                builder: (context, genController) => GenerationView(
-                  createBoardControllerFromGenerated:
-                      (SolvedAndChallengeBoard boards) {
-                    print('create view controller');
-                    sudokuController = ControllerBase.create(() =>
-                        SudokuController.fromInitialState(
-                            create.db, stateFromSolvedAndChallenge(boards)));
-                    return ControllerBase.create(() => SudokuViewController(
-                        sudokuController!, boards.left.length));
-                  },
-                  controller: genController,
-                ),
-              ),
-            ),
-          );
-        }),
-        right: (resume) => MaterialPageRoute(
-          builder: (context) => MD3AdaptativeScaffold(
-            appBar: const MD3SmallAppBar(
-              title: Text("Sudoku"),
-              actions: [
-                PreferencesButton(),
-              ],
-            ),
-            body: MD3ScaffoldBody.noMargin(
-              child: ControllerInjectorBuilder<SudokuViewController>(
-                factory: (context) {
-                  print('create controller');
-                  sudokuController = ControllerBase.create(
-                      () => SudokuController.fromStorage(resume.db));
-                  print('create view controller');
-                  return ControllerBase.create(() => SudokuViewController(
-                      sudokuController!, resume.sideSqrt * resume.sideSqrt));
-                },
-                builder: (context, controller) => SudokuView(
-                  controller: controller,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-      await navigator(context).push(route);
-      if (sudokuController != null) {
-        controller
-            .popTarget(SudokuNavigationPopInfo(target, sudokuController!));
-        sudokuController!.dispose();
+      final result = await SudokuNavigation.pushGameRoute(context, target);
+      if (result != null) {
+        controller.popTarget(SudokuNavigationPopInfo(target, result));
+        result.dispose();
       }
     }
 

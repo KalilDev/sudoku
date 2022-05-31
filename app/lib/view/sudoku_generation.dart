@@ -96,11 +96,14 @@ class GenerationView extends ControllerWidget<GenerationController> {
             .map(
               (maybeGeneratedBoard) => maybeGeneratedBoard == null
                   ? loadingViewW
-                  : ControllerInjectorBuilder<SudokuViewController>(
-                      factory: (context) => createBoardControllerFromGenerated(
-                          maybeGeneratedBoard),
+                  // Memo instead of ControllerInjectorBuilder because we are
+                  // not responsible for the lifecycle of the SudokuController
+                  : Memo<SudokuViewController>(
+                      factory: () => createBoardControllerFromGenerated(
+                        maybeGeneratedBoard,
+                      ),
                       builder: (context, controller) => SudokuView(
-                        controller: controller,
+                        controller: controller.handle,
                         sudokuBoardKey: sudokuBoardKey,
                       ),
                       key: ValueKey(maybeGeneratedBoard),
