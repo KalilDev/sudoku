@@ -25,7 +25,13 @@ const Type _selectionAnimationOptions = SelectionAnimationOptions;
     }))
 const Type _textAnimationOptions = TextAnimationOptions;
 
-enum AnimationSpeed { none, normal, fast, fastest }
+enum AnimationSpeed {
+  disabled,
+  fastest,
+  fast,
+  normal,
+  slow,
+}
 
 @data(
     #AnimationOptions,
