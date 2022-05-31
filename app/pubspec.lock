@@ -216,6 +216,11 @@ packages:
       url: "http://localhost:4000"
     source: hosted
     version: "1.0.4"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_monet_theme:
     dependency: transitive
     description:
@@ -270,6 +275,13 @@ packages:
       url: "http://localhost:4000"
     source: hosted
     version: "4.0.1"
+  intl:
+    dependency: "direct main"
+    description:
+      name: intl
+      url: "http://localhost:4000"
+    source: hosted
+    version: "0.17.0"
   io:
     dependency: transitive
     description:

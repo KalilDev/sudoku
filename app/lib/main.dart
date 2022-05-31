@@ -7,11 +7,14 @@ import 'package:app/view/home.dart';
 import 'package:app/view/preferences_dialog.dart';
 import 'package:app/viewmodel/home.dart';
 import 'package:app/widget/animation_options.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:value_notifier/value_notifier.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,6 +92,21 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
           controller: controller,
         );
 
+  static const _debugLocale = Locale('en');
+  static const _locale = kDebugMode ? _debugLocale : null;
+  static const _home = MyHomePage();
+  static const _localizationsDelegates = [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+  static const _supportedLocales = [
+    Locale('en'),
+    Locale('pt', 'BR'),
+  ];
+  static String _onGenerateTitle(BuildContext context) =>
+      AppLocalizations.of(context)!.sudoku;
+
   @override
   Widget build(ControllerContext<SudokuThemeController> context) {
     final activeTheme = context.use(controller.activeTheme);
@@ -97,24 +115,30 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
               sudokuMaterialYouTheme: (theme) => MD3Themes(
                 monetThemeForFallbackPalette: MonetTheme.baseline3p,
                 builder: (context, light, dark) => MaterialApp(
-                  title: 'Sudoku',
                   theme: light,
                   darkTheme: dark,
                   themeMode: theme.themeMode,
-                  home: const MyHomePage(),
+                  onGenerateTitle: _onGenerateTitle,
+                  locale: _locale,
+                  localizationsDelegates: _localizationsDelegates,
+                  supportedLocales: _supportedLocales,
+                  home: _home,
                 ),
               ),
               sudokuSeededTheme: (theme) => MD3Themes(
                 usePlatformPalette: false,
                 monetThemeForFallbackPalette: seededThemeToMonetTheme(theme),
                 builder: (context, light, dark) => MaterialApp(
-                  title: 'Sudoku',
                   theme: light,
                   darkTheme: dark,
                   themeMode: theme.brightness == Brightness.dark
                       ? ThemeMode.dark
                       : ThemeMode.light,
-                  home: const MyHomePage(),
+                  onGenerateTitle: _onGenerateTitle,
+                  locale: _locale,
+                  localizationsDelegates: _localizationsDelegates,
+                  supportedLocales: _supportedLocales,
+                  home: _home,
                 ),
               ),
             ))
