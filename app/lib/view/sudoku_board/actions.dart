@@ -127,6 +127,7 @@ class SudokuBoardActionsWidget extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: padding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            verticalDirection: VerticalDirection.up,
             children: children,
           ),
         );
