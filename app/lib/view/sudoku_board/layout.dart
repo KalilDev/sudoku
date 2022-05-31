@@ -45,7 +45,7 @@ class SudokuViewLayout extends StatelessWidget {
       case Orientation.portrait:
         return _PortraitLayoutDelegate();
       case Orientation.landscape:
-        return _PortraitLayoutDelegate();
+        return _LandscapeLayoutDelegate();
     }
   }
 
@@ -124,7 +124,35 @@ class _PortraitLayoutDelegate extends MultiChildLayoutDelegate {
 class _LandscapeLayoutDelegate extends MultiChildLayoutDelegate {
   @override
   void performLayout(Size size) {
-    // TODO: implement performLayout
+    final Size totalSize = size;
+    final actionsSize = layoutChild(
+      _SlotId.actions,
+      BoxConstraints(
+        maxWidth: size.width,
+        minWidth: 0,
+        minHeight: size.height,
+        maxHeight: size.height,
+      ),
+    );
+    size = Size(size.width - actionsSize.width, size.height);
+    positionChild(_SlotId.actions, Offset(size.width, 0));
+
+    final keypadSize = layoutChild(
+      _SlotId.keypad,
+      BoxConstraints(
+        minWidth: size.width,
+        maxWidth: size.width,
+        minHeight: 0,
+        maxHeight: size.height,
+      ),
+    );
+    size = Size(size.width, size.height - keypadSize.height);
+    positionChild(_SlotId.keypad, Offset(0, size.height));
+    final boardSize = layoutChild(_SlotId.board, BoxConstraints.tight(size));
+    positionChild(
+      _SlotId.board,
+      Offset.zero,
+    );
   }
 
   @override
