@@ -44,9 +44,14 @@ class _KeypadButtonChildWrapper extends StatelessWidget {
           maxWidth: maxChildSize,
           maxHeight: maxChildSize,
         ),
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child: child,
+        child: AspectRatio(
+          aspectRatio: 4 / 3,
+          child: SizedBox.expand(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: child,
+            ),
+          ),
         ),
       );
 }
@@ -116,9 +121,12 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
             .map((isSelected) => KeypadButton(
                   isSelected: isSelected,
                   number: 0,
-                  child: const Icon(
-                    Icons.close,
-                    size: 20,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: const Icon(
+                      Icons.close,
+                      size: 20,
+                    ),
                   ),
                 ))
             .build(),
