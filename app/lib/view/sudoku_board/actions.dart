@@ -173,16 +173,22 @@ class _ActionButton<T extends Intent> extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = this.style ?? sudokuOutlinedButtonStyle(context);
     final orientation = viewLayoutOrientation(context);
-    final flipped = orientation == Orientation.landscape;
+    final rotated = orientation == Orientation.landscape;
 
     final isLocked_ = isLocked(context);
     void invokeIntent() => Actions.invoke<T>(context, onPressed!);
     return Tooltip(
       message: (isLocked_ || onPressed == null) ? '' : tooltip,
-      child: OutlinedButton(
-        onPressed: isLocked_ || onPressed == null ? null : invokeIntent,
-        style: style,
-        child: child,
+      child: RotatedBox(
+        quarterTurns: rotated ? 1 : 0,
+        child: OutlinedButton(
+          onPressed: isLocked_ || onPressed == null ? null : invokeIntent,
+          style: style,
+          child: RotatedBox(
+            quarterTurns: rotated ? -1 : 0,
+            child: child,
+          ),
+        ),
       ),
     );
   }
