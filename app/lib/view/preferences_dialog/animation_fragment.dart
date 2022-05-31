@@ -91,36 +91,39 @@ class PreferencesDialogAnimationFragment
     );
     final headerStyle = context.textTheme.titleLarge;
     final sectionTitle = context.textTheme.titleMedium;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Animação",
-          style: headerStyle,
-        ),
-        gutterW,
-        Text(
-          "Seleção",
-          style: sectionTitle,
-        ),
-        gutterW,
-        selection,
-        marginW,
-        Text(
-          "Texto",
-          style: sectionTitle,
-        ),
-        gutterW,
-        text,
-        marginW,
-        Text(
-          "Velocidade",
-          style: sectionTitle,
-        ),
-        gutterW,
-        speed,
-      ],
+    return ListTileTheme(
+      data: ListTileThemeData(contentPadding: EdgeInsets.only(left: 8)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Animação",
+            style: headerStyle,
+          ),
+          gutterW,
+          Text(
+            "Seleção",
+            style: sectionTitle,
+          ),
+          gutterW,
+          selection,
+          marginW,
+          Text(
+            "Texto",
+            style: sectionTitle,
+          ),
+          gutterW,
+          text,
+          marginW,
+          Text(
+            "Velocidade",
+            style: sectionTitle,
+          ),
+          gutterW,
+          speed,
+        ],
+      ),
     );
   }
 }
