@@ -11,6 +11,7 @@ import 'package:value_notifier/value_notifier.dart';
 import 'flutter_intents.dart';
 import 'layout.dart';
 import 'locking.dart';
+import 'style.dart';
 
 // ignore: prefer_function_declarations_over_variables
 final ContextfulAction<MonetColorScheme> colorScheme =
@@ -58,7 +59,7 @@ class SudokuBoardActionsWidget extends StatelessWidget {
       case SudokuPlacementMode.possibility:
         return filledStyle;
       case SudokuPlacementMode.number:
-        return outlineStyle;
+        return outlinedActionAndKeypadButtonStyle;
     }
   }
 
@@ -169,7 +170,7 @@ class _ActionButton<T extends Intent> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = this.style ?? outlineStyle(context);
+    final style = this.style ?? outlinedActionAndKeypadButtonStyle(context);
     final isLocked_ = isLocked(context);
     void invokeIntent() => Actions.invoke<T>(context, onPressed!);
     return Tooltip(

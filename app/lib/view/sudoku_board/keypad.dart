@@ -1,4 +1,4 @@
-import 'package:app/util/monadic.dart';
+import 'package:app/util/monadic.dart' hide colorScheme;
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,19 +8,26 @@ import 'package:value_notifier/value_notifier.dart';
 import 'actions.dart';
 import 'flutter_intents.dart';
 import 'locking.dart';
+import 'style.dart';
 
 const minKeypadDimension = 64.0;
 const minKeypadSquare = Size.square(minKeypadDimension);
-final ContextfulAction<ButtonStyle> unselectedkeypadStyle = outlineStyle.map(
+final ContextfulAction<ButtonStyle> unselectedkeypadStyle =
+    outlinedActionAndKeypadButtonStyle.map(
   (style) => style.copyWith(
     fixedSize: MaterialStateProperty.all(minKeypadSquare),
     padding: MaterialStateProperty.all(EdgeInsets.all(2)),
   ),
 );
-final ContextfulAction<ButtonStyle> selectedkeypadStyle = filledStyle.map(
-  (style) => style.copyWith(
-    fixedSize: MaterialStateProperty.all(minKeypadSquare),
-    padding: MaterialStateProperty.all(EdgeInsets.all(2)),
+final ContextfulAction<ButtonStyle> selectedkeypadStyle = colorScheme.bind(
+  (scheme) => filledStyle.map(
+    (style) => style.copyWith(
+      fixedSize: MaterialStateProperty.all(minKeypadSquare),
+      padding: MaterialStateProperty.all(EdgeInsets.all(2)),
+      side: MaterialStateProperty.all(
+        BorderSide(color: scheme.primary, width: 0.0),
+      ),
+    ),
   ),
 );
 
