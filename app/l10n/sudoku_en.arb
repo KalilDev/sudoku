@@ -1,6 +1,6 @@
 {
     "sudoku": "Sudoku",
-    "sudoku_side": "Side",
+    "sudoku_side": "Side: %n",
     "difficulty": "Difficulty: %d",
     "difficulty_begginer": "Begginer",
     "difficulty_easy": "Easy",
@@ -30,7 +30,7 @@
     "animation_selection": "Selection",
     "animation_selection_size": "Size",
     "animation_selection_color": "Color",
-    "animation_text": "Selection",
+    "animation_text": "Text",
     "animation_text_position": "Position",
     "animation_text_opacity": "Opacity",
     "animation_text_color": "Color",
@@ -52,11 +52,12 @@
     "edit_possibilities": "Edit possibilities",
     "editing_numbers": "Editing numbers",
     "edit_numbers": "Edit numbers",
-    "undo": "undo",
+    "undo": "Undo",
     "tile_index": "Tile at row %r, column %c, is %s with %ps_const_or_n",
     "tile_state_selected": "selected",
     "tile_state_unselected": "not selected",
     "tile_state_const": "fixed %n",
     "tile_state_number": "%n",
-    "tile_state_possibilities": "possibilities %ps"
+    "tile_state_possibilities": "possibilities %ps",
+    "tile_state_possibilities_empty": "no possibilities"
 }
