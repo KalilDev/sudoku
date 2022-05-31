@@ -89,11 +89,17 @@ class PreferencesDialogAnimationFragment
     final gutterW = SizedBox.square(
       dimension: gutter,
     );
-    final sectionTitle = context.textTheme.titleLarge;
+    final headerStyle = context.textTheme.titleLarge;
+    final sectionTitle = context.textTheme.titleMedium;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          "Animação",
+          style: headerStyle,
+        ),
+        gutterW,
         Text(
           "Seleção",
           style: sectionTitle,
