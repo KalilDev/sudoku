@@ -9,6 +9,7 @@ enum SudokuDifficulty {
   begginer,
   easy,
   medium,
+  hard,
   extreme,
   impossible,
 }
@@ -24,8 +25,12 @@ int filledSudokuCellCountFromDifficulty(SudokuDifficulty difficulty, int side) {
       return ((24 / 81) * sideSquared).toInt();
     case SudokuDifficulty.medium:
       return ((22 / 81) * sideSquared).toInt();
-    case SudokuDifficulty.extreme:
+    // Tween from medium to impossible
+    case SudokuDifficulty.hard:
       return ((20 / 81) * sideSquared).toInt();
+    // Tween from medium to impossible
+    case SudokuDifficulty.extreme:
+      return ((19 / 81) * sideSquared).toInt();
     case SudokuDifficulty.impossible:
       // The least amount of filled cells for an sudoku with a single solution
       // is 17 for an sudoku with the side 9. Therefore, we extrapolate it to
