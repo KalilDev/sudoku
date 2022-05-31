@@ -1,9 +1,9 @@
-import 'package:app/main.dart';
 import 'package:app/module/theme.dart';
 import 'package:app/util/l10n.dart';
 import 'package:app/view/sudoku_board/layout.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
 import 'package:app/widget/grid_widget.dart';
+import 'package:app/widget/theme_override.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';

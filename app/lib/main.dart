@@ -17,6 +17,8 @@ import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'widget/theme_override.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   sudokuDbInitialize();
@@ -62,26 +64,6 @@ void main() async {
     initialOrFallback: () =>
         PlatformPalette.fallback(primaryColor: Color(0xDEADBEEF)),
   );
-}
-
-MonetTheme seededThemeToMonetTheme(SudokuSeededTheme theme) {
-  final monetTheme = generateTheme(
-    theme.seed,
-    secondarySeed: theme.secondarySeed,
-  );
-  if (theme.background == null) {
-    return monetTheme;
-  }
-  switch (theme.brightness) {
-    case Brightness.dark:
-      return monetTheme.copyWith(
-        dark: monetTheme.dark.copyWith(background: theme.background),
-      );
-    case Brightness.light:
-      return monetTheme.copyWith(
-        light: monetTheme.light.copyWith(background: theme.background),
-      );
-  }
 }
 
 class SudokuApp extends ControllerWidget<SudokuThemeController> {
