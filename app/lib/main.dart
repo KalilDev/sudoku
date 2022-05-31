@@ -100,10 +100,7 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
   ];
-  static const _supportedLocales = [
-    Locale('en'),
-    Locale('pt', 'BR'),
-  ];
+  static const _supportedLocales = AppLocalizations.supportedLocales;
   static String _onGenerateTitle(BuildContext context) =>
       AppLocalizations.of(context)!.sudoku;
 
