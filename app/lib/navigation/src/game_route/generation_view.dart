@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:value_notifier/value_notifier.dart';
 
+import 'base_view.dart';
+
 class SudokuGenerationView extends StatefulWidget {
   const SudokuGenerationView({
     Key? key,
@@ -40,41 +42,33 @@ class _SudokuGenerationViewState extends State<SudokuGenerationView> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () => _willPop(context),
-      child: MD3AdaptativeScaffold(
-        appBar: MD3SmallAppBar(
-          title: Text(context.l10n.sudoku),
-          actions: [
-            PreferencesButton(),
-          ],
-        ),
-        body: MD3ScaffoldBody.noMargin(
-          child: ControllerInjectorBuilder<GenerationController>(
-            factory: (context) => ControllerBase.create(
-              () => GenerationController.generate(
-                widget.sideSqrt,
-                widget.difficulty,
-              ),
+      child: BaseSudokuView(
+        child: ControllerInjectorBuilder<GenerationController>(
+          factory: (context) => ControllerBase.create(
+            () => GenerationController.generate(
+              widget.sideSqrt,
+              widget.difficulty,
             ),
-            builder: (context, genController) => GenerationView(
-              createBoardControllerFromGenerated:
-                  (SolvedAndChallengeBoard boards) {
-                print('create view controller');
-                assert(sudokuController == null);
-                sudokuController = ControllerBase.create(
-                  () => SudokuController.fromInitialState(
-                    widget.db,
-                    stateFromSolvedAndChallenge(boards),
-                  ),
-                );
-                return ControllerBase.create(
-                  () => SudokuViewController(
-                    sudokuController!,
-                    boards.left.length,
-                  ),
-                );
-              },
-              controller: genController,
-            ),
+          ),
+          builder: (context, genController) => GenerationView(
+            createBoardControllerFromGenerated:
+                (SolvedAndChallengeBoard boards) {
+              print('create view controller');
+              assert(sudokuController == null);
+              sudokuController = ControllerBase.create(
+                () => SudokuController.fromInitialState(
+                  widget.db,
+                  stateFromSolvedAndChallenge(boards),
+                ),
+              );
+              return ControllerBase.create(
+                () => SudokuViewController(
+                  sudokuController!,
+                  boards.left.length,
+                ),
+              );
+            },
+            controller: genController,
           ),
         ),
       ),

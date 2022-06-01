@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:value_notifier/value_notifier.dart';
 
+import 'base_view.dart';
 import 'data.dart';
 
 class SudokuResumeView extends StatefulWidget {
@@ -40,34 +41,26 @@ class _SudokuResumeViewState extends State<SudokuResumeView> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () => _willPop(context),
-      child: MD3AdaptativeScaffold(
-        appBar: MD3SmallAppBar(
-          title: Text(context.l10n.sudoku),
-          actions: [
-            PreferencesButton(),
-          ],
-        ),
-        body: MD3ScaffoldBody.noMargin(
-          // Memo instead of ControllerInjectorBuilder because the route is
-          // responsible for the lifecycle of the SudokuController
-          child: Memo<SudokuViewController>(
-            factory: () {
-              print('create controller');
-              assert(sudokuController == null);
-              sudokuController = ControllerBase.create(
-                () => SudokuController.fromStorage(widget.db),
-              );
-              print('create view controller');
-              return ControllerBase.create(
-                () => SudokuViewController(
-                  sudokuController!,
-                  widget.sideSqrt * widget.sideSqrt,
-                ),
-              );
-            },
-            builder: (context, controller) => SudokuView(
-              controller: controller.handle,
-            ),
+      child: BaseSudokuView(
+        // Memo instead of ControllerInjectorBuilder because the route is
+        // responsible for the lifecycle of the SudokuController
+        child: Memo<SudokuViewController>(
+          factory: () {
+            print('create controller');
+            assert(sudokuController == null);
+            sudokuController = ControllerBase.create(
+              () => SudokuController.fromStorage(widget.db),
+            );
+            print('create view controller');
+            return ControllerBase.create(
+              () => SudokuViewController(
+                sudokuController!,
+                widget.sideSqrt * widget.sideSqrt,
+              ),
+            );
+          },
+          builder: (context, controller) => SudokuView(
+            controller: controller.handle,
           ),
         ),
       ),
