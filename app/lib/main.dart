@@ -141,6 +141,14 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
         platformBrightness,
       );
 
+  Widget Function(BuildContext context, Widget? home) _builder(
+    ThemeMode themeMode,
+  ) =>
+      (context, home) => AnimatedMonetColorSchemes<NoAppScheme, NoAppTheme>(
+            child: home!,
+            themeMode: themeMode,
+          );
+
   @override
   Widget build(BuildContext context) {
     return ControllerWidgetBuilder<SudokuThemeController>(
@@ -161,6 +169,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                         localizationsDelegates: _localizationsDelegates,
                         supportedLocales: _supportedLocales,
                         color: _color(context, theme.themeMode),
+                        builder: _builder(theme.themeMode),
                         home: SudokuNavigation.homeView,
                       ),
                     ),
@@ -185,6 +194,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                             context,
                             themeMode,
                           ),
+                          builder: _builder(themeMode),
                           home: SudokuNavigation.homeView,
                         ),
                       );
