@@ -9,6 +9,5 @@ export 'old_sudoku.dart' if (dart.library.ffi) 'ffi.dart'
         externSudokuSide,
         sudokuBoardFromExtern,
         generateExternSudokuBlocking,
-        solveExternSudokuBlocking,
         externSudokuHasOneSolBlocking,
         externSudokuFree;

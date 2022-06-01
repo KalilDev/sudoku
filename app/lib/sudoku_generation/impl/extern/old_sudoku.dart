@@ -58,10 +58,10 @@ ExternSudokuBoard generateExternSudokuBlocking(int side) {
   final seed = validValues.toList(growable: false)..shuffle(rand);
   state.initialState[0] = seed;
   // Solve the sudoku for this unique seed
-  return solveExternSudokuBlocking(state);
+  return _solveSudokuBlocking(state);
 }
 
-ExternSudokuBoard solveExternSudokuBlocking(ExternSudokuBoard board) {
+ExternSudokuBoard _solveSudokuBlocking(ExternSudokuBoard board) {
   final result = emptyExternSudokuBoard(externSudokuSide(board));
   for (var y = 0; y < result.side; y++) {
     for (var x = 0; x < result.side; x++) {
