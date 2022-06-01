@@ -25,7 +25,7 @@ void main() async {
   sudokuHomeDbInitialize();
   sudokuUserThemesDbInitialize();
   sudokuAnimationDbInitialize();
-  Hive.init(await pp.getTemporaryDirectory().then((d) => d.path));
+  Hive.init(await pp.getApplicationSupportDirectory().then((d) => d.path));
 
   // We need to initialize the theme module and ensure it is ready before
   // running the app so that we do not flicker when the theme is loaded.
