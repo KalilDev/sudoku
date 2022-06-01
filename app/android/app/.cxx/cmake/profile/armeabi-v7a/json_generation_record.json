@@ -1,0 +1,80 @@
+[
+  {
+    "level": "INFO",
+    "message": "Start JSON generation. Platform version: 16 min SDK version: armeabi-v7a",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "Trying to locate CMake in local SDK repository.",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "Requested CMake version 3.23.2 was not satisfied by default version 3.10.2 for this Android Gradle Plugin",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "Trying to locate CMake in PATH.",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "- CMake found in PATH at \u0027/usr\u0027 had version \u00273.23.2\u0027",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "rebuilding JSON /home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/armeabi-v7a/android_gradle_build.json due to:",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "- expected json /home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/armeabi-v7a/android_gradle_build.json file is not present, will remove stale json folder",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "- missing previous command file /home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/armeabi-v7a/build_command.txt, will remove stale json folder",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "- command changed from previous, will remove stale json folder",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "removing stale contents from \u0027/home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/armeabi-v7a\u0027",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "created folder \u0027/home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/armeabi-v7a\u0027",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "executing cmake Executable : /usr/bin/cmake\narguments : \n-H/home/pedro/projects/sudoku_functional/app/libsudoku\n-DCMAKE_FIND_ROOT_PATH\u003d/home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/prefab/armeabi-v7a/prefab\n-DCMAKE_BUILD_TYPE\u003dDebug\n-DCMAKE_TOOLCHAIN_FILE\u003d/home/pedro/Android/Sdk/ndk-bundle/build/cmake/android.toolchain.cmake\n-DANDROID_ABI\u003darmeabi-v7a\n-DANDROID_NDK\u003d/home/pedro/Android/Sdk/ndk-bundle\n-DANDROID_PLATFORM\u003dandroid-16\n-DCMAKE_ANDROID_ARCH_ABI\u003darmeabi-v7a\n-DCMAKE_ANDROID_NDK\u003d/home/pedro/Android/Sdk/ndk-bundle\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003d/home/pedro/projects/sudoku_functional/app/build/app/intermediates/cmake/profile/obj/armeabi-v7a\n-DCMAKE_MAKE_PROGRAM\u003d/usr/bin/ninja\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_SYSTEM_VERSION\u003d16\n-B/home/pedro/projects/sudoku_functional/app/android/app/.cxx/cmake/profile/armeabi-v7a\n-GNinja\njvmArgs : \n\n",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  },
+  {
+    "level": "INFO",
+    "message": "null\n",
+    "file": "/home/pedro/projects/sudoku_functional/app/libsudoku/CMakeLists.txt",
+    "tag": "profile|armeabi-v7a"
+  }
+]

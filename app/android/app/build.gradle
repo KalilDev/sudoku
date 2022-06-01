@@ -37,6 +37,13 @@ android {
         jvmTarget = '1.8'
     }
 
+    externalNativeBuild {
+        cmake {
+            path file('../../libsudoku/CMakeLists.txt')
+            version '3.23.2'
+        }
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
@@ -48,6 +55,12 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        ndkVersion '22.1.7171670'
+        externalNativeBuild {
+            cmake {
+                cppFlags ''
+            }
+        }
     }
 
     buildTypes {
