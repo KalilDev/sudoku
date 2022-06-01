@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:app/module/animation.dart';
 import 'package:app/module/base.dart';
@@ -66,14 +67,40 @@ void main() async {
   );
 }
 
-class SudokuApp extends ControllerWidget<SudokuThemeController> {
+class SudokuApp extends StatefulWidget {
   const SudokuApp({
     Key? key,
-    required ControllerHandle<SudokuThemeController> controller,
+    required this.controller,
   }) : super(
           key: key,
-          controller: controller,
         );
+  final ControllerHandle<SudokuThemeController> controller;
+
+  @override
+  State<SudokuApp> createState() => _SudokuAppState();
+}
+
+class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
+  late Brightness platformBrightness;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!.addObserver(this);
+    platformBrightness = window.platformBrightness;
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    setState(() => platformBrightness = window.platformBrightness);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
 
   static const _debugLocale = Locale('en');
   static const _locale = kDebugMode ? _debugLocale : null;
@@ -86,43 +113,84 @@ class SudokuApp extends ControllerWidget<SudokuThemeController> {
   static String _onGenerateTitle(BuildContext context) =>
       AppLocalizations.of(context)!.sudoku;
 
+  static Color _primaryContainerColor(
+    MonetTheme theme,
+    ThemeMode themeMode,
+    Brightness platformBrightnes,
+  ) {
+    switch (themeMode) {
+      case ThemeMode.system:
+        switch (platformBrightnes) {
+          case Brightness.dark:
+            return theme.dark.primaryContainer;
+          case Brightness.light:
+            return theme.light.primaryContainer;
+        }
+      case ThemeMode.light:
+        return theme.light.primaryContainer;
+      case ThemeMode.dark:
+        return theme.dark.primaryContainer;
+    }
+  }
+
+  // uses platform brightness
+  Color _color(BuildContext context, ThemeMode themeMode) =>
+      _primaryContainerColor(
+        context.monetTheme,
+        themeMode,
+        platformBrightness,
+      );
+
   @override
-  Widget build(ControllerContext<SudokuThemeController> context) {
-    final activeTheme = context.use(controller.activeTheme);
-    return activeTheme
-        .map((theme) => theme.visit(
-              sudokuMaterialYouTheme: (theme) => MD3Themes(
-                monetThemeForFallbackPalette: MonetTheme.baseline3p,
-                builder: (context, light, dark) => MaterialApp(
-                  theme: light,
-                  darkTheme: dark,
-                  themeMode: theme.themeMode,
-                  onGenerateTitle: _onGenerateTitle,
-                  onGenerateRoute: SudokuNavigation.onGenerateRoute,
-                  locale: _locale,
-                  localizationsDelegates: _localizationsDelegates,
-                  supportedLocales: _supportedLocales,
-                  home: SudokuNavigation.homeView,
-                ),
-              ),
-              sudokuSeededTheme: (theme) => MD3Themes(
-                usePlatformPalette: false,
-                monetThemeForFallbackPalette: seededThemeToMonetTheme(theme),
-                builder: (context, light, dark) => MaterialApp(
-                  theme: light,
-                  darkTheme: dark,
-                  themeMode: theme.brightness == Brightness.dark
-                      ? ThemeMode.dark
-                      : ThemeMode.light,
-                  onGenerateTitle: _onGenerateTitle,
-                  onGenerateRoute: SudokuNavigation.onGenerateRoute,
-                  locale: _locale,
-                  localizationsDelegates: _localizationsDelegates,
-                  supportedLocales: _supportedLocales,
-                  home: SudokuNavigation.homeView,
-                ),
-              ),
-            ))
-        .build();
+  Widget build(BuildContext context) {
+    return ControllerWidgetBuilder<SudokuThemeController>(
+        controller: widget.controller,
+        builder: (context, controller) {
+          final activeTheme = context.use(controller.activeTheme);
+          return activeTheme
+              .map((theme) => theme.visit(
+                    sudokuMaterialYouTheme: (theme) => MD3Themes(
+                      monetThemeForFallbackPalette: MonetTheme.baseline3p,
+                      builder: (context, light, dark) => MaterialApp(
+                        theme: light,
+                        darkTheme: dark,
+                        themeMode: theme.themeMode,
+                        onGenerateTitle: _onGenerateTitle,
+                        onGenerateRoute: SudokuNavigation.onGenerateRoute,
+                        locale: _locale,
+                        localizationsDelegates: _localizationsDelegates,
+                        supportedLocales: _supportedLocales,
+                        color: _color(context, theme.themeMode),
+                        home: SudokuNavigation.homeView,
+                      ),
+                    ),
+                    sudokuSeededTheme: (theme) {
+                      final themeMode = theme.brightness == Brightness.dark
+                          ? ThemeMode.dark
+                          : ThemeMode.light;
+                      return MD3Themes(
+                        usePlatformPalette: false,
+                        monetThemeForFallbackPalette:
+                            seededThemeToMonetTheme(theme),
+                        builder: (context, light, dark) => MaterialApp(
+                          theme: light,
+                          darkTheme: dark,
+                          themeMode: themeMode,
+                          onGenerateTitle: _onGenerateTitle,
+                          onGenerateRoute: SudokuNavigation.onGenerateRoute,
+                          locale: _locale,
+                          localizationsDelegates: _localizationsDelegates,
+                          supportedLocales: _supportedLocales,
+                          color: _color(
+                            context,
+                            themeMode,
+                          ),
+                          home: SudokuNavigation.homeView,
+                        ),
+                      );
+                    },
+                  ))
+              .build();
+        });
   }
 }
