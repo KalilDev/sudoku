@@ -187,6 +187,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
             .map(
               (seedHue) => _DisablableHuePicker(
                 title: Text("Secondary"),
+                defaultValue: _hueFromColor(context.colorScheme.secondary),
                 value: seedHue,
                 onChanged: (hue) => controller.setSecondarySeed(
                   hue == null ? null : _colorFromHue(hue),
@@ -212,10 +213,12 @@ class _DisablableHuePicker extends StatefulWidget {
   const _DisablableHuePicker({
     Key? key,
     required this.title,
+    this.defaultValue,
     this.value,
     required this.onChanged,
   }) : super(key: key);
   final Widget title;
+  final double? defaultValue;
   final double? value;
   final ValueChanged<double?> onChanged;
 
@@ -224,24 +227,39 @@ class _DisablableHuePicker extends StatefulWidget {
 }
 
 class __DisablableHuePickerState extends State<_DisablableHuePicker> {
-  late double value;
+  late double lastValue;
+  late bool usingDefault;
+  double get defaultValue => widget.defaultValue ?? 0.0;
+  double get value => usingDefault ? defaultValue : lastValue;
+  @override
   void initState() {
     super.initState();
-    value = widget.value ?? 0.0;
+    lastValue = widget.value ?? defaultValue;
+    usingDefault = widget.value == null;
+  }
+
+  @override
+  void didUpdateWidget(_DisablableHuePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      lastValue = widget.value ?? defaultValue;
+      usingDefault = widget.value == null;
+    }
   }
 
   @override
   Widget build(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          MD3ValueListenableSwitchTile(
+          MD3SwitchTile(
             title: widget.title,
-            value: (widget.value != null).asValueListenable,
-            setValue: (willEnable) =>
-                willEnable ? widget.onChanged(value) : widget.onChanged(null),
+            value: widget.value != null,
+            setValue: (willEnable) => willEnable
+                ? widget.onChanged(usingDefault ? defaultValue : lastValue)
+                : widget.onChanged(null),
           ),
           HuePicker(
-            current: value,
+            current: usingDefault ? defaultValue : widget.value!,
             onChanged: widget.value == null ? null : widget.onChanged,
           ),
         ],
