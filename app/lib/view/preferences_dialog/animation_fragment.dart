@@ -52,12 +52,12 @@ class PreferencesDialogAnimationFragment
     final selection = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguS((s) => s.size)),
           setValue: (v) => setS.compL(opts().value.e0.withSize)(v),
           title: Text(l10n.animation_selection_size),
         ),
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguS((s) => s.color)),
           setValue: (v) => setS.compL(opts().value.e0.withColor)(v),
           title: Text(l10n.animation_selection_color),
@@ -67,27 +67,27 @@ class PreferencesDialogAnimationFragment
     final text = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguT((s) => s.position)),
           setValue: (v) => setT.compL(opts().value.e1.withPosition)(v),
           title: Text(l10n.animation_text_position),
         ),
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguT((s) => s.opacity)),
           setValue: (v) => setT.compL(opts().value.e1.withOpacity)(v),
           title: Text(l10n.animation_text_opacity),
         ),
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguT((s) => s.color)),
           setValue: (v) => setT.compL(opts().value.e1.withColor)(v),
           title: Text(l10n.animation_text_color),
         ),
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguT((s) => s.string)),
           setValue: (v) => setT.compL(opts().value.e1.withString)(v),
           title: Text(l10n.animation_text_text),
         ),
-        SwitchTile(
+        MD3ValueListenableSwitchTile(
           value: use(opts().mguT((s) => s.size)),
           setValue: (v) => setT.compL(opts().value.e1.withSize)(v),
           title: Text(l10n.animation_text_size),
