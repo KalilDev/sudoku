@@ -199,6 +199,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
             .map(
               (background) => _DisablableColorPicker(
                 title: Text("Background"),
+                defaultValue: context.colorScheme.background,
                 value: background,
                 onChanged: controller.setBackground,
               ),
@@ -270,10 +271,12 @@ class _DisablableColorPicker extends StatefulWidget {
   const _DisablableColorPicker({
     Key? key,
     required this.title,
+    this.defaultValue,
     this.value,
     required this.onChanged,
   }) : super(key: key);
   final Widget title;
+  final Color? defaultValue;
   final Color? value;
   final ValueChanged<Color?> onChanged;
 
@@ -282,30 +285,48 @@ class _DisablableColorPicker extends StatefulWidget {
 }
 
 class __DisablableColorPicker extends State<_DisablableColorPicker> {
-  late Color value;
+  late Color lastValue;
+  late bool usingDefault;
+  Color get defaultValue => widget.defaultValue ?? Colors.grey;
+  Color get value => usingDefault ? defaultValue : lastValue;
+  @override
   void initState() {
     super.initState();
+    lastValue = widget.value ?? defaultValue;
+    usingDefault = widget.value == null;
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    value = widget.value ?? Colors.grey;
+  void didUpdateWidget(_DisablableColorPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      lastValue = widget.value ?? defaultValue;
+      usingDefault = widget.value == null;
+    }
   }
 
   @override
   Widget build(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          MD3ValueListenableSwitchTile(
+          MD3SwitchTile(
             title: widget.title,
-            value: (widget.value != null).asValueListenable,
+            value: widget.value != null,
             setValue: (willEnable) =>
                 willEnable ? widget.onChanged(value) : widget.onChanged(null),
           ),
-          ColorPicker(
-            pickerColor: value,
-            onColorChanged: widget.value == null ? (_) {} : widget.onChanged,
+          IgnorePointer(
+            ignoring: widget.value == null,
+            child: AnimatedOpacity(
+              opacity: widget.value == null ? 0.6 : 1.0,
+              duration: kThemeAnimationDuration,
+              child: ColorPicker(
+                pickerColor: value,
+                enableAlpha: false,
+                onColorChanged:
+                    widget.value == null ? (_) {} : widget.onChanged,
+              ),
+            ),
           ),
         ],
       );
