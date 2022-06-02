@@ -62,5 +62,9 @@
     "tile_state_possibilities": "possibilities %ps",
     "tile_state_possibilities_empty": "no possibilities",
     "create_theme": "Create Theme",
-    "theme_name": "Theme Name"
+    "theme_name": "Theme Name",
+    "theme_dark": "Dark",
+    "theme_primary": "Primary",
+    "theme_secondary": "Secondary",
+    "theme_background": "Background"
 }

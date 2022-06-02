@@ -86,7 +86,7 @@ class CreateThemeDialog extends StatelessWidget {
       case MD3WindowSizeClass.compact:
         return MD3FullScreenDialog(
           action: saveButton,
-          title: Text(context.l10n.settings),
+          title: Text(context.l10n.create_theme),
           body: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
               horizontal: margin,
@@ -98,7 +98,7 @@ class CreateThemeDialog extends StatelessWidget {
       case MD3WindowSizeClass.medium:
       case MD3WindowSizeClass.expanded:
         return MD3BasicDialog(
-          title: Text(context.l10n.settings),
+          title: Text(context.l10n.create_theme),
           content: child,
           scrollable: true,
           actions: [
@@ -163,14 +163,14 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
                 ))
             .build(),
         MD3ValueListenableSwitchTile(
-          title: Text("Escuro"),
+          title: Text(context.l10n.theme_dark),
           value: controller.brightness
               .map((brightness) => brightness == Brightness.dark),
           setValue: (isDark) => controller.setBrightness(
             isDark ? Brightness.dark : Brightness.light,
           ),
         ),
-        ListTile(title: Text('Primary')),
+        ListTile(title: Text(context.l10n.theme_primary)),
         controller.seed
             .map(_hueFromColor)
             .map(
@@ -186,7 +186,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
             .map((s) => s == null ? null : _hueFromColor(s))
             .map(
               (seedHue) => _DisablableHuePicker(
-                title: Text("Secondary"),
+                title: Text(context.l10n.theme_secondary),
                 defaultValue: _hueFromColor(context.colorScheme.secondary),
                 value: seedHue,
                 onChanged: (hue) => controller.setSecondarySeed(
@@ -198,7 +198,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
         controller.background
             .map(
               (background) => _DisablableColorPicker(
-                title: Text("Background"),
+                title: Text(context.l10n.theme_background),
                 defaultValue: context.colorScheme.background,
                 value: background,
                 onChanged: controller.setBackground,

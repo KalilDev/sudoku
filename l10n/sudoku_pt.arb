@@ -62,5 +62,9 @@
     "tile_state_possibilities": "possibilidades %ps",
     "tile_state_possibilities_empty": "sem possibilidades",
     "create_theme": "Criar tema",
-    "theme_name": "Nome do tema"
+    "theme_name": "Nome do tema",
+    "theme_dark": "Escuro",
+    "theme_primary": "Primária",
+    "theme_secondary": "Secundaria",
+    "theme_background": "Plano de fundo"
 }
