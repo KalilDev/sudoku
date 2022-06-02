@@ -114,7 +114,10 @@ class PreferencesDialogThemeFragment
               ))
           .build();
   Widget _buildUserTheme(
-          BuildContext context, SudokuSeededTheme userTheme, int i) =>
+    BuildContext context,
+    SudokuSeededTheme userTheme,
+    int i,
+  ) =>
       controller.currentTheme
           .map((curr) => curr == userTheme)
           .unique()
@@ -124,6 +127,11 @@ class PreferencesDialogThemeFragment
               isElevated: isElevated,
               colorScheme: colorSchemeFromSudokuTheme(context, userTheme),
               child: Text(userTheme.name),
+              action: _UserThemeActionWidget(
+                controller: controller,
+                index: i,
+                theme: userTheme,
+              ),
             ),
           )
           .build();
@@ -306,9 +314,11 @@ class _ThemeCard extends StatelessWidget {
     required this.colorScheme,
     required this.isElevated,
     required this.child,
+    this.action,
   }) : super(key: key);
   final VoidCallback onPressed;
   final MonetColorScheme colorScheme;
+  final Widget? action;
   final bool isElevated;
   final Widget child;
 
@@ -324,31 +334,113 @@ class _ThemeCard extends StatelessWidget {
     );
     return SizedBox(
       height: _kCardHeight,
-      child: ColoredCard(
-        onPressed: onPressed,
-        style: CardStyle(
-            padding: MaterialStateProperty.all(
-              EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 16.0,
-              ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ColoredCard(
+              onPressed: onPressed,
+              style: CardStyle(
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 16.0,
+                    ),
+                  ),
+                  side: MaterialStateProperty.all(
+                    BorderSide(
+                      color: color.color,
+                      width: 2,
+                    ),
+                  ),
+                  elevation: MD3MaterialStateElevation(
+                    isElevated
+                        ? context.elevation.level2
+                        : context.elevation.level0,
+                    isElevated
+                        ? context.elevation.level3
+                        : context.elevation.level1,
+                    pressed: isElevated
+                        ? context.elevation.level4
+                        : context.elevation.level2,
+                  )),
+              color: color,
+              child: child,
             ),
-            side: MaterialStateProperty.all(
-              BorderSide(
-                color: color.color,
-                width: 2,
-              ),
-            ),
-            elevation: MD3MaterialStateElevation(
-              isElevated ? context.elevation.level2 : context.elevation.level0,
-              isElevated ? context.elevation.level3 : context.elevation.level1,
-              pressed: isElevated
-                  ? context.elevation.level4
-                  : context.elevation.level2,
-            )),
-        color: color,
-        child: child,
+          ),
+          if (action != null)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: action!,
+            )
+        ],
       ),
     );
   }
+}
+
+enum _UserThemeAction {
+  delete,
+  modify,
+}
+
+class _UserThemeActionWidget extends StatelessWidget {
+  const _UserThemeActionWidget({
+    Key? key,
+    required this.controller,
+    required this.index,
+    required this.theme,
+  }) : super(key: key);
+
+  final PreferencesDialogThemeController controller;
+  final int index;
+  final SudokuSeededTheme theme;
+
+  void _onSelected(BuildContext context, _UserThemeAction action) async {
+    switch (action) {
+      case _UserThemeAction.delete:
+        controller.removeUserTheme(index);
+        break;
+      case _UserThemeAction.modify:
+        final newTheme = await showCreateThemeDialogWithInitial(context, theme);
+        if (newTheme == null) {
+          return;
+        }
+        controller.modifyUserTheme(index, newTheme);
+        break;
+    }
+  }
+
+  Color _color(BuildContext context) {
+    final currentBrightness = context.theme.brightness;
+    final backgroundBrightness = theme.background == null
+        ? theme.brightness
+        : ThemeData.estimateBrightnessForColor(theme.background!);
+    if (currentBrightness == backgroundBrightness) {
+      return context.colorScheme.onBackground;
+    }
+    return context.colorScheme.onInverseSurface;
+  }
+
+  @override
+  Widget build(BuildContext context) => MD3PopupMenuButton<_UserThemeAction>(
+        icon: Icon(
+          Icons.more_vert,
+          color: _color(context),
+        ),
+        onSelected: (action) =>
+            action == null ? null : _onSelected(context, action),
+        itemBuilder: (c) => [
+          MD3PopupMenuItem(
+            value: _UserThemeAction.delete,
+            child: Text(context.l10n.theme_user_delete),
+            trailing: Icon(Icons.delete_outlined),
+          ),
+          MD3PopupMenuItem(
+            value: _UserThemeAction.modify,
+            child: Text(context.l10n.theme_user_edit),
+            trailing: Icon(Icons.edit),
+          ),
+        ],
+      );
 }

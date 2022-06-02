@@ -66,5 +66,7 @@
     "theme_dark": "Dark",
     "theme_primary": "Primary",
     "theme_secondary": "Secondary",
-    "theme_background": "Background"
+    "theme_background": "Background",
+    "theme_user_delete": "Delete",
+    "theme_user_edit": "Modify"
 }

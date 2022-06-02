@@ -66,5 +66,7 @@
     "theme_dark": "Escuro",
     "theme_primary": "Primária",
     "theme_secondary": "Secundaria",
-    "theme_background": "Plano de fundo"
+    "theme_background": "Plano de fundo",
+    "theme_user_delete": "Remover",
+    "theme_user_edit": "Editar"
 }
