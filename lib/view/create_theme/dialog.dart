@@ -323,6 +323,7 @@ class __DisablableColorPicker extends State<_DisablableColorPicker> {
               child: ColorPicker(
                 pickerColor: value,
                 enableAlpha: false,
+                labelTypes: [],
                 onColorChanged:
                     widget.value == null ? (_) {} : widget.onChanged,
               ),
