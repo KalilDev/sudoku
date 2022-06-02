@@ -46,6 +46,7 @@ dependencies:
   sudoku_core:
     path: ../../sudoku/sudoku_core
   adt_annotation: ^3.0.1
+  flutter_colorpicker:
 
 dev_dependencies:
   adt_generator: ^3.0.0
