@@ -570,7 +570,7 @@ packages:
   sudoku_core:
     dependency: "direct main"
     description:
-      path: "../../sudoku/sudoku_core"
+      path: "../sudoku/sudoku_core"
       relative: true
     source: path
     version: "0.0.0"
