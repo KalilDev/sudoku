@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:material_widgets/material_widgets.dart';
 
 class HuePicker extends StatelessWidget {
   const HuePicker({
@@ -16,13 +17,26 @@ class HuePicker extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          DecoratedBox(
-            decoration: _HuePickerDecoration(
-              current: current,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(
+                end: context.theme.brightness == Brightness.light ? 0.0 : 1.0,
+              ),
+              duration: kThemeChangeDuration,
+              builder: (context, brightness, _) => DecoratedBox(
+                decoration: _HuePickerDecoration(
+                  current: current,
+                  brightness: brightness,
+                ),
+                child: const SizedBox(
+                  height: 24.0,
+                  width: double.infinity,
+                ),
+              ),
             ),
-            child: SizedBox(height: 24.0, width: double.infinity),
           ),
-          Slider(
+          MD3Slider(
             min: 0.0,
             max: 360.0,
             value: current,
@@ -34,32 +48,55 @@ class HuePicker extends StatelessWidget {
 
 class _HuePickerDecoration extends Decoration {
   final double current;
+  final double brightness;
 
-  _HuePickerDecoration({
+  const _HuePickerDecoration({
     required this.current,
+    required this.brightness,
   });
 
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) =>
-      _HuePickerDecorationPainter(current);
+      _HuePickerDecorationPainter(current, brightness);
 }
 
 class _HuePickerDecorationPainter extends BoxPainter {
   final double current;
+  final double brightness;
 
-  _HuePickerDecorationPainter(this.current);
+  _HuePickerDecorationPainter(this.current, this.brightness);
 
   static const _stepCount = 36;
-  static const _hsvSaturation = 1.0;
-  static const _hsvValue = 1.0;
+  static const _hsvSaturation = 0.8;
+  static const _lightHsvValue = 0.9;
+  static const _darkHsvValue = 0.65;
   static final _hueGradientSteps = List.generate(
     _stepCount,
-    (i) => _stepCount / i,
+    (i) => i / _stepCount,
   );
-  static final _hueGradientColors = List.generate(
+  static final _lightHueGradientColors = List.generate(
     _stepCount,
-    (i) =>
-        HSVColor.fromAHSV(1, i.toDouble(), _hsvSaturation, _hsvValue).toColor(),
+    (i) {
+      final hue = (i / _stepCount) * 360;
+      return HSVColor.fromAHSV(
+        1,
+        hue,
+        _hsvSaturation,
+        _lightHsvValue,
+      ).toColor();
+    },
+  );
+  static final _darkHueGradientColors = List.generate(
+    _stepCount,
+    (i) {
+      final hue = (i / _stepCount) * 360;
+      return HSVColor.fromAHSV(
+        1,
+        hue,
+        _hsvSaturation,
+        _darkHsvValue,
+      ).toColor();
+    },
   );
 
   @override
@@ -69,32 +106,46 @@ class _HuePickerDecorationPainter extends BoxPainter {
     ImageConfiguration configuration,
   ) {
     final size = configuration.size!;
+    canvas.save();
+    canvas.clipRRect(RRect.fromRectAndRadius(
+        startOffset & size, Radius.circular(size.height / 2)));
+    final hueGradientColors = List.generate(
+      _stepCount,
+      (i) => Color.lerp(
+        _lightHueGradientColors[i],
+        _darkHueGradientColors[i],
+        brightness,
+      )!,
+    );
     final gradientPaint = Paint()
       ..shader = ui.Gradient.linear(
-        startOffset,
-        startOffset.translate(size.width, 0),
-        _hueGradientColors,
+        startOffset.translate(0, size.height / 2),
+        startOffset.translate(size.width, size.height / 2),
+        hueGradientColors,
         _hueGradientSteps,
       );
-    canvas.save();
-    canvas.clipRect(startOffset & size);
     canvas.drawPaint(gradientPaint);
-    canvas.restore();
     final currentContrasting = HSVColor.fromAHSV(
-            1,
-            current > 180.0 ? current - 180 : current + 180,
-            _hsvSaturation,
-            _hsvValue)
-        .toColor();
+      1,
+      current > 180.0 ? current - 180 : current + 180,
+      _hsvSaturation,
+      ui.lerpDouble(
+        _lightHsvValue,
+        _darkHsvValue,
+        brightness,
+      )!,
+    ).toColor();
     final cursorPaint = Paint()
       ..color = currentContrasting
-      ..strokeCap = StrokeCap.round;
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2.0;
     final cursorOffset = (current / 360.0) * size.width;
     final cursorStart = startOffset.translate(cursorOffset, 0);
     canvas.drawLine(
-      cursorStart,
-      cursorStart.translate(0, size.height),
+      cursorStart.translate(0, size.height / 4),
+      cursorStart.translate(0, 3 * size.height / 4),
       cursorPaint,
     );
+    canvas.restore();
   }
 }
