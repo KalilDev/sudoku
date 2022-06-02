@@ -170,7 +170,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
             isDark ? Brightness.dark : Brightness.light,
           ),
         ),
-        Text('Primary'),
+        ListTile(title: Text('Primary')),
         controller.seed
             .map(_hueFromColor)
             .map(
