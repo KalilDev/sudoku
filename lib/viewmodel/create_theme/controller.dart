@@ -19,6 +19,12 @@ class CreateThemeController extends ControllerBase<CreateThemeController> {
         _seed = ValueNotifier(initialSeed),
         _secondarySeed = ValueNotifier(null),
         _background = ValueNotifier(null);
+  CreateThemeController.withInitial(SudokuSeededTheme theme)
+      : _name = ValueNotifier(theme.name),
+        _brightness = ValueNotifier(theme.brightness),
+        _seed = ValueNotifier(theme.seed),
+        _secondarySeed = ValueNotifier(theme.secondarySeed),
+        _background = ValueNotifier(theme.background);
 
   ValueListenable<String> get name => _name.view();
   ValueListenable<Brightness> get brightness => _brightness.view();

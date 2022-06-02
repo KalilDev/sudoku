@@ -20,3 +20,18 @@ Future<SudokuSeededTheme?> showCreateThemeDialog(BuildContext context) {
     ),
   );
 }
+
+Future<SudokuSeededTheme?> showCreateThemeDialogWithInitial(
+    BuildContext context, SudokuSeededTheme theme) {
+  return showDialog(
+    context: context,
+    builder: (context) => ControllerInjectorBuilder<CreateThemeController>(
+      factory: (_) => ControllerBase.create(
+        () => CreateThemeController.withInitial(theme),
+      ),
+      builder: (context, controller) => CreateThemeDialog(
+        controller: controller,
+      ),
+    ),
+  );
+}
