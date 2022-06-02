@@ -44,13 +44,32 @@ class _SudokuUserThemeDbController extends SubcontrollerBase<
             none: () => false,
           ));
 
-  Future<int> addTheme(SudokuSeededTheme theme) =>
-      sudokuUserThemesDbAdd(_db.value!, theme);
-  Future<void> removeTheme(int i) => sudokuUserThemesDbRemove(_db.value!, i);
-  Future<void> modifyTheme(int i, SudokuSeededTheme theme) =>
-      sudokuUserThemesDbModify(_db.value!, i, theme);
-  Future<void> setUserThemes(List<SudokuSeededTheme> themes) =>
-      sudokuUserThemesDbStore(_db.value!, themes);
+  Future<int> addTheme(SudokuSeededTheme theme) {
+    _didChangeUserSudokuThemes.add([
+      ...userSudokuThemes.value,
+      theme,
+    ]);
+    return sudokuUserThemesDbAdd(_db.value!, theme);
+  }
+
+  Future<void> removeTheme(int i) {
+    _didChangeUserSudokuThemes.add([
+      ...userSudokuThemes.value,
+    ]..removeAt(i));
+    return sudokuUserThemesDbRemove(_db.value!, i);
+  }
+
+  Future<void> modifyTheme(int i, SudokuSeededTheme theme) {
+    _didChangeUserSudokuThemes.add([
+      ...userSudokuThemes.value,
+    ]..[i] = theme);
+    return sudokuUserThemesDbModify(_db.value!, i, theme);
+  }
+
+  Future<void> setUserThemes(List<SudokuSeededTheme> themes) {
+    _didChangeUserSudokuThemes.add(themes);
+    return sudokuUserThemesDbStore(_db.value!, themes);
+  }
 
   void init() {
     super.init();
