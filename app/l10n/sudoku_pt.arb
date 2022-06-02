@@ -60,5 +60,7 @@
     "tile_state_const": "%n fixo",
     "tile_state_number": "%n",
     "tile_state_possibilities": "possibilidades %ps",
-    "tile_state_possibilities_empty": "sem possibilidades"
+    "tile_state_possibilities_empty": "sem possibilidades",
+    "create_theme": "Criar tema",
+    "theme_name": "Nome do tema"
 }

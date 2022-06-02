@@ -1,5 +1,6 @@
 import 'package:app/module/theme.dart';
 import 'package:app/util/l10n.dart';
+import 'package:app/view/create_theme.dart';
 import 'package:app/view/sudoku_board/layout.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
 import 'package:app/widget/grid_widget.dart';
@@ -126,8 +127,17 @@ class PreferencesDialogThemeFragment
             ),
           )
           .build();
+
+  void _onAddTheme(BuildContext context) async {
+    final result = await showCreateThemeDialog(context);
+    if (result == null) {
+      return;
+    }
+    controller.addUserTheme(result);
+  }
+
   Widget _buildAddTheme(BuildContext context) =>
-      _AddThemeButton(onPressed: () {});
+      _AddThemeButton(onPressed: () => _onAddTheme(context));
 
   @override
   Widget build(ControllerContext<PreferencesDialogThemeController> context) {
