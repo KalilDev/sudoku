@@ -1,4 +1,4 @@
-part of 'sudoku_user_themes_db.dart';
+part of 'sudoku_themes_db.dart';
 
 class _SudokuSeededThemeAdapter extends TypeAdapter<SudokuSeededTheme> {
   int get typeId => 12;

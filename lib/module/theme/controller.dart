@@ -3,45 +3,76 @@ import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'data.dart';
-import 'sudoku_user_themes_db.dart';
+import 'sudoku_themes_db.dart';
 
-class _SudokuUserThemeDbController extends SubcontrollerBase<
-    SudokuThemeController, _SudokuUserThemeDbController> {
+class _SudokuThemesDbController extends SubcontrollerBase<SudokuThemeController,
+    _SudokuThemesDbController> {
   final EventNotifier<List<SudokuSeededTheme>> _didChangeUserSudokuThemes =
       EventNotifier();
-  late final ValueListenable<SudokuUserThemesDb?> _db;
-  _SudokuUserThemeDbController.alreadyOpen(SudokuUserThemesDb db) {
+  final EventNotifier<int> _didChangeActiveIndex = EventNotifier();
+  late final ValueListenable<SudokuThemesDb?> _db;
+  _SudokuThemesDbController.alreadyOpen(SudokuThemesDb db) {
     _db = db.asValueListenable;
   }
-  _SudokuUserThemeDbController.open() {
-    _db = sudokuUserThemesDbOpen()
+  _SudokuThemesDbController.open() {
+    _db = sudokuThemesDbOpen()
         .toValueListenable()
         .map((r) => r.hasData ? r.requireData : null);
   }
   ValueListenable<List<SudokuSeededTheme>?> get didChangeUserSudokuThemes =>
       _didChangeUserSudokuThemes.view();
+  ValueListenable<int?> get didChangeActiveIndex =>
+      _didChangeActiveIndex.view();
+
+  late final ValueListenable<Maybe<int>> _initialActiveIndex = _db.view().bind(
+      (db) => db == null
+          ? const Maybe<int>.none().asValueListenable
+          : sudokuThemesDbReadActiveIndex(db)
+              .toValueListenable(eager: true)
+              .map((r) => r.hasData ? Just(r.requireData ?? 0) : const None()));
+
   late final ValueListenable<Maybe<List<SudokuSeededTheme>>>
       _initialUserSudokuThemes = _db.view().bind((db) => db == null
           ? const Maybe<List<SudokuSeededTheme>>.none().asValueListenable
-          : sudokuUserThemesDbRead(db)
+          : sudokuThemesDbReadUserThemes(db)
               .toValueListenable(eager: true)
               .map((r) => r.hasData ? Just(r.requireData) : const None()));
+
+  ValueListenable<Maybe<int>> get loadingActiveIndex =>
+      _initialActiveIndex.view().bind((initial) => initial.visit(
+          just: (initial) => didChangeActiveIndex
+              .map((change) => change ?? initial)
+              .map(Maybe.just),
+          none: () => Maybe<int>.none().asValueListenable));
+
   ValueListenable<Maybe<List<SudokuSeededTheme>>> get loadingUserSudokuThemes =>
       _initialUserSudokuThemes.view().bind((initial) => initial.visit(
           just: (initial) => didChangeUserSudokuThemes
               .map((change) => change ?? initial)
               .map(Maybe.just),
           none: () => Maybe<List<SudokuSeededTheme>>.none().asValueListenable));
+
   ValueListenable<List<SudokuSeededTheme>> get userSudokuThemes =>
       loadingUserSudokuThemes.map((loading) => loading.visit(
             just: (loaded) => loaded,
             none: () => [],
           ));
 
-  ValueListenable<bool> get isReady =>
-      loadingUserSudokuThemes.map((loading) => loading.visit(
-            just: (_) => true,
-            none: () => false,
+  ValueListenable<int> get activeIndex =>
+      loadingActiveIndex.map((loading) => loading.visit(
+            just: (loaded) => loaded,
+            none: () => 0,
+          ));
+
+  ValueListenable<bool> get isReady => loadingUserSudokuThemes
+      .bind((loadingUserThemes) => loadingUserThemes.visit(
+            just: (_) => loadingActiveIndex.map(
+              (loadingActiveIndex) => loadingActiveIndex.visit(
+                just: (_) => true,
+                none: () => false,
+              ),
+            ),
+            none: () => false.asValueListenable,
           ));
 
   Future<int> addTheme(SudokuSeededTheme theme) {
@@ -49,56 +80,61 @@ class _SudokuUserThemeDbController extends SubcontrollerBase<
       ...userSudokuThemes.value,
       theme,
     ]);
-    return sudokuUserThemesDbAdd(_db.value!, theme);
+    return sudokuThemesDbAddUserTheme(_db.value!, theme);
   }
 
   Future<void> removeTheme(int i) {
     _didChangeUserSudokuThemes.add([
       ...userSudokuThemes.value,
     ]..removeAt(i));
-    return sudokuUserThemesDbRemove(_db.value!, i);
+    return sudokuThemesDbRemoveUserTheme(_db.value!, i);
   }
 
   Future<void> modifyTheme(int i, SudokuSeededTheme theme) {
     _didChangeUserSudokuThemes.add([
       ...userSudokuThemes.value,
     ]..[i] = theme);
-    return sudokuUserThemesDbModify(_db.value!, i, theme);
+    return sudokuThemesDbModifyUserTheme(_db.value!, i, theme);
   }
 
   Future<void> setUserThemes(List<SudokuSeededTheme> themes) {
     _didChangeUserSudokuThemes.add(themes);
-    return sudokuUserThemesDbStore(_db.value!, themes);
+    return sudokuThemesDbStoreUserThemes(_db.value!, themes);
+  }
+
+  Future<void> changeActiveIndex(int i) {
+    _didChangeActiveIndex.add(i);
+    return sudokuThemesDbStoreActiveIndex(_db.value!, i);
   }
 
   void init() {
     super.init();
     // ensure it is kicked off
     _initialUserSudokuThemes.listen(() {});
+    _initialActiveIndex.listen(() {});
   }
 
   void dispose() {
     IDisposable.disposeAll([
+      _didChangeActiveIndex,
       _didChangeUserSudokuThemes,
+      _initialActiveIndex,
       _initialUserSudokuThemes,
     ]);
-    sudokuUserThemesDbClose(_db.value!);
+    sudokuThemesDbClose(_db.value!);
     super.dispose();
   }
 }
 
 class SudokuThemeController extends ControllerBase<SudokuThemeController> {
-  final _SudokuUserThemeDbController _db;
-  final ValueNotifier<int> _activeThemeIndex;
+  final _SudokuThemesDbController _db;
 
-  SudokuThemeController.alreadyOpen(SudokuUserThemesDb db, int activeIndex)
+  SudokuThemeController.alreadyOpen(SudokuThemesDb db, int activeIndex)
       : _db = ControllerBase.create(
-            () => _SudokuUserThemeDbController.alreadyOpen(db)),
-        _activeThemeIndex = ValueNotifier(activeIndex);
+            () => _SudokuThemesDbController.alreadyOpen(db));
 
   SudokuThemeController.open()
-      : _db = ControllerBase.create(() => _SudokuUserThemeDbController.open()),
-        _activeThemeIndex = ValueNotifier(0);
+      : _db = ControllerBase.create(() => _SudokuThemesDbController.open());
 
   ValueListenable<List<SudokuSeededTheme>> get userSudokuThemes =>
       _db.userSudokuThemes;
@@ -106,7 +142,7 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
   ValueListenable<List<SudokuTheme>> get sudokuThemes => userSudokuThemes
       .map((user) => defaultSudokuThemes.followedBy(user).toList());
 
-  ValueListenable<int> get activeThemeIndex => _activeThemeIndex.view();
+  ValueListenable<int> get activeThemeIndex => _db.activeIndex;
 
   // When the user themes are not ready and the theme would be one of the user
   // themes, we would have to fall back. This isnt ideal, so we will expose when
@@ -115,9 +151,7 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
       isReady.bind((isReady) => sudokuThemes.bind((themes) => activeThemeIndex
           .map((i) => !isReady ? defaultSudokuThemes[0] : themes[i])));
 
-  ValueListenable<bool> get isReady =>
-      _db.isReady.bind((userThemesAreReady) => activeThemeIndex
-          .map((i) => i < defaultSudokuThemes.length || userThemesAreReady));
+  ValueListenable<bool> get isReady => _db.isReady;
 
   void init() {
     super.init();
@@ -125,9 +159,6 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
   }
 
   void dispose() {
-    IDisposable.disposeAll([
-      _activeThemeIndex,
-    ]);
     disposeSubcontroller(_db);
     super.dispose();
   }
@@ -135,17 +166,17 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
   late final addTheme = _db.addTheme;
   void setUserThemes(List<SudokuSeededTheme> userThemes) {
     final isCurrentUserDefined =
-        _activeThemeIndex.value >= defaultSudokuThemes.length;
+        activeThemeIndex.value >= defaultSudokuThemes.length;
     if (isCurrentUserDefined) {
       final previousTheme = activeTheme.value as SudokuSeededTheme;
       if (userThemes.contains(previousTheme)) {
         final nextIndex = userThemes.indexOf(previousTheme);
         _db.setUserThemes(userThemes);
-        _activeThemeIndex.value = nextIndex;
+        _db.changeActiveIndex(nextIndex);
         return;
       }
       _db.setUserThemes(userThemes);
-      _activeThemeIndex.value = 0;
+      _db.changeActiveIndex(0);
       return;
     }
 
@@ -153,7 +184,7 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
   }
 
   void removeTheme(int i) {
-    if (_activeThemeIndex.value == i + defaultSudokuThemes.length) {
+    if (activeThemeIndex.value == i + defaultSudokuThemes.length) {
       // We were at the deleted theme. update the index to the first theme
       changeIndex(0);
     }
@@ -171,6 +202,6 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
     if (i >= sudokuThemes.value.length) {
       throw IndexError(i, sudokuThemes.value);
     }
-    _activeThemeIndex.value = i;
+    _db.changeActiveIndex(i);
   }
 }
