@@ -133,8 +133,44 @@ class SudokuThemeController extends ControllerBase<SudokuThemeController> {
   }
 
   late final addTheme = _db.addTheme;
-  late final removeTheme = _db.removeTheme;
-  late final modifyTheme = _db.modifyTheme;
-  late final setUserThemes = _db.setUserThemes;
-  late final changeIndex = _activeThemeIndex.setter;
+  void setUserThemes(List<SudokuSeededTheme> userThemes) {
+    final isCurrentUserDefined =
+        _activeThemeIndex.value >= defaultSudokuThemes.length;
+    if (isCurrentUserDefined) {
+      final previousTheme = activeTheme.value as SudokuSeededTheme;
+      if (userThemes.contains(previousTheme)) {
+        final nextIndex = userThemes.indexOf(previousTheme);
+        _db.setUserThemes(userThemes);
+        _activeThemeIndex.value = nextIndex;
+        return;
+      }
+      _db.setUserThemes(userThemes);
+      _activeThemeIndex.value = 0;
+      return;
+    }
+
+    _db.setUserThemes(userThemes);
+  }
+
+  void removeTheme(int i) {
+    if (_activeThemeIndex.value == i + defaultSudokuThemes.length) {
+      // We were at the deleted theme. update the index to the first theme
+      changeIndex(0);
+    }
+    _db.removeTheme(i);
+  }
+
+  void modifyTheme(int i, SudokuSeededTheme theme) {
+    if (i >= userSudokuThemes.value.length) {
+      throw IndexError(i, userSudokuThemes.value);
+    }
+    _db.modifyTheme(i, theme);
+  }
+
+  void changeIndex(int i) {
+    if (i >= sudokuThemes.value.length) {
+      throw IndexError(i, sudokuThemes.value);
+    }
+    _activeThemeIndex.value = i;
+  }
 }

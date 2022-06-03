@@ -31,6 +31,8 @@ Future<bool> showPreferencesDialogAndUpdateModules(BuildContext context) =>
           InheritedController.get<SudokuThemeController>(context).unwrap;
       final animation =
           InheritedController.get<SudokuAnimationController>(context).unwrap;
+      // set the user themes first because the index may be of one of the new
+      // user themes
       theme.setUserThemes(r.e0.e1);
       theme.changeIndex(r.e0.e0);
       animation.changeAnimationOptions(r.e1);

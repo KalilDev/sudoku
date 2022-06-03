@@ -30,11 +30,28 @@ class PreferencesDialogThemeController extends SubcontrollerBase<
 
   void addUserTheme(SudokuSeededTheme theme) =>
       _userThemes.value = [..._userThemes.value, theme];
-  void modifyUserTheme(int i, SudokuSeededTheme newTheme) =>
-      _userThemes.value = [..._userThemes.value]..[i] = newTheme;
-  void removeUserTheme(int i) =>
-      _userThemes.value = [..._userThemes.value]..removeAt(i);
-  late final changeCurrentIndex = _currentIndex.setter;
+
+  void modifyUserTheme(int i, SudokuSeededTheme newTheme) {
+    if (i >= userThemes.value.length) {
+      throw IndexError(i, userThemes.value);
+    }
+    _userThemes.value = [..._userThemes.value]..[i] = newTheme;
+  }
+
+  void removeUserTheme(int i) {
+    if (currentIndex.value == i + defaultThemes.length) {
+      // We were at the deleted theme. update the index to the first theme
+      changeCurrentIndex(0);
+    }
+    _userThemes.value = [..._userThemes.value]..removeAt(i);
+  }
+
+  void changeCurrentIndex(int i) {
+    if (i >= themes.value.length) {
+      throw IndexError(i, themes.value);
+    }
+    _currentIndex.value = i;
+  }
 
   void init() {
     super.init();
