@@ -111,61 +111,64 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        controller.name
-            .map((name) => ValueTextField(
-                  value: name,
-                  onChanged: controller.setName,
-                  maxLength: CreateThemeController.maxNameLength,
-                  decoration: _nameFieldDecoration(context),
-                ))
-            .build(),
-        MD3ValueListenableSwitchTile(
-          title: Text(context.l10n.theme_dark),
-          value: controller.brightness
-              .map((brightness) => brightness == Brightness.dark),
-          setValue: (isDark) => controller.setBrightness(
-            isDark ? Brightness.dark : Brightness.light,
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: 400),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          controller.name
+              .map((name) => ValueTextField(
+                    value: name,
+                    onChanged: controller.setName,
+                    maxLength: CreateThemeController.maxNameLength,
+                    decoration: _nameFieldDecoration(context),
+                  ))
+              .build(),
+          MD3ValueListenableSwitchTile(
+            title: Text(context.l10n.theme_dark),
+            value: controller.brightness
+                .map((brightness) => brightness == Brightness.dark),
+            setValue: (isDark) => controller.setBrightness(
+              isDark ? Brightness.dark : Brightness.light,
+            ),
           ),
-        ),
-        ListTile(title: Text(context.l10n.theme_primary)),
-        controller.seed
-            .map(_hueFromColor)
-            .map(
-              (seedHue) => HuePicker(
-                current: seedHue,
-                onChanged: (hue) => controller.setSeed(
-                  _colorFromHue(hue),
+          ListTile(title: Text(context.l10n.theme_primary)),
+          controller.seed
+              .map(_hueFromColor)
+              .map(
+                (seedHue) => HuePicker(
+                  current: seedHue,
+                  onChanged: (hue) => controller.setSeed(
+                    _colorFromHue(hue),
+                  ),
                 ),
-              ),
-            )
-            .build(),
-        controller.secondarySeed
-            .map((s) => s == null ? null : _hueFromColor(s))
-            .map(
-              (seedHue) => _DisablableHuePicker(
-                title: Text(context.l10n.theme_secondary),
-                defaultValue: _hueFromColor(context.colorScheme.secondary),
-                value: seedHue,
-                onChanged: (hue) => controller.setSecondarySeed(
-                  hue == null ? null : _colorFromHue(hue),
+              )
+              .build(),
+          controller.secondarySeed
+              .map((s) => s == null ? null : _hueFromColor(s))
+              .map(
+                (seedHue) => _DisablableHuePicker(
+                  title: Text(context.l10n.theme_secondary),
+                  defaultValue: _hueFromColor(context.colorScheme.secondary),
+                  value: seedHue,
+                  onChanged: (hue) => controller.setSecondarySeed(
+                    hue == null ? null : _colorFromHue(hue),
+                  ),
                 ),
-              ),
-            )
-            .build(),
-        controller.background
-            .map(
-              (background) => _DisablableColorPicker(
-                title: Text(context.l10n.theme_background),
-                defaultValue: context.colorScheme.background,
-                value: background,
-                onChanged: controller.setBackground,
-              ),
-            )
-            .build(),
-      ],
+              )
+              .build(),
+          controller.background
+              .map(
+                (background) => _DisablableColorPicker(
+                  title: Text(context.l10n.theme_background),
+                  defaultValue: context.colorScheme.background,
+                  value: background,
+                  onChanged: controller.setBackground,
+                ),
+              )
+              .build(),
+        ],
+      ),
     );
   }
 }
@@ -281,6 +284,7 @@ class __DisablableColorPicker extends State<_DisablableColorPicker> {
               opacity: widget.value == null ? 0.6 : 1.0,
               duration: kThemeAnimationDuration,
               child: ColorPicker(
+                portraitOnly: true,
                 pickerColor: value,
                 enableAlpha: false,
                 labelTypes: [],
