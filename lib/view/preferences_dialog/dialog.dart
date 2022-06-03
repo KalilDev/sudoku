@@ -9,81 +9,40 @@ import 'animation_fragment.dart';
 import 'flutter_intents.dart';
 import 'theme_fragment.dart';
 
-class PreferencesDialog extends StatelessWidget {
-  const PreferencesDialog({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
-  final ControllerHandle<PreferencesDialogController> controller;
-
-  @override
-  Widget build(BuildContext context) => Actions(
+abstract class PreferencesDialog extends StatelessWidget {
+  static Widget builder(BuildContext context, Widget body) => Actions(
         actions: {
-          PopCommitingPreferencesIntent:
-              PoppedCommitingPreferencesAction(controller.unwrap),
+          PopCommitingPreferencesIntent: PoppedCommitingPreferencesAction(
+              InheritedController.of<PreferencesDialogController>(context)
+                  .unwrap),
           PopNotCommitingPreferencesIntent:
               PoppedNotCommitingPreferencesAction(),
         },
         child: Builder(
           builder: (context) => _theme(
             context,
-            child: _layout(
-              context,
-              child: _PreferencesDialogBody(
-                controller: controller,
-              ),
-            ),
+            controller:
+                InheritedController.of<PreferencesDialogController>(context),
+            child: body,
           ),
         ),
       );
+  static Widget buildBody(BuildContext context) => _PreferencesDialogBody(
+        controller:
+            InheritedController.of<PreferencesDialogController>(context),
+      );
+  static Widget buildTitle(BuildContext context) => Text(context.l10n.settings);
+  static Widget buildSave(BuildContext context) => TextButton(
+        onPressed: () => Actions.invoke(
+          context,
+          PopCommitingPreferencesIntent(),
+        ),
+        child: Text(context.l10n.save),
+      );
 
-  Widget _layout(
+  static Widget _theme(
     BuildContext context, {
-    required Widget child,
-  }) {
-    final margin = context.sizeClass.minimumMargins;
-    final saveButton = TextButton(
-      onPressed: () => Actions.invoke(
-        context,
-        PopCommitingPreferencesIntent(),
-      ),
-      child: Text(context.l10n.save),
-    );
-    switch (context.sizeClass) {
-      case MD3WindowSizeClass.compact:
-        return MD3FullScreenDialog(
-          action: saveButton,
-          title: Text(context.l10n.settings),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: margin,
-              vertical: margin / 2,
-            ),
-            child: child,
-          ),
-        );
-      case MD3WindowSizeClass.medium:
-      case MD3WindowSizeClass.expanded:
-        return MD3BasicDialog(
-          title: Text(context.l10n.settings),
-          content: child,
-          scrollable: true,
-          actions: [
-            TextButton(
-              onPressed: () => Actions.invoke(
-                context,
-                PopNotCommitingPreferencesIntent(),
-              ),
-              child: Text(context.l10n.cancel),
-            ),
-            saveButton,
-          ],
-        );
-    }
-  }
-
-  Widget _theme(
-    BuildContext context, {
+    required ControllerHandle<PreferencesDialogController> controller,
     required Widget child,
   }) =>
       controller.unwrap.currentTheme

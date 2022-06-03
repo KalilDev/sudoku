@@ -1,15 +1,16 @@
 import 'package:app/module/animation.dart';
 import 'package:app/module/theme.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
+import 'package:app/widget/adaptative_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'dialog.dart';
 
 Future<PreferencesDialogResult?> showPreferencesDialog(BuildContext context) =>
-    showDialog(
-      context: context,
-      builder: (context) =>
+    showAdaptativeDialog(
+      context,
+      builder: (context, body) =>
           ControllerInjectorBuilder<PreferencesDialogController>(
         factory: (_) => ControllerBase.create(
           () => PreferencesDialogController(
@@ -17,9 +18,13 @@ Future<PreferencesDialogResult?> showPreferencesDialog(BuildContext context) =>
             InheritedController.get<SudokuAnimationController>(context),
           ),
         ),
+        inherited: true,
         builder: (context, controller) =>
-            PreferencesDialog(controller: controller),
+            PreferencesDialog.builder(context, body),
       ),
+      bodyBuilder: PreferencesDialog.buildBody,
+      saveBuilder: PreferencesDialog.buildSave,
+      titleBuilder: PreferencesDialog.buildTitle,
     );
 
 Future<bool> showPreferencesDialogAndUpdateModules(BuildContext context) =>
