@@ -85,15 +85,18 @@ class _PreferencesDialogBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final margin = context.sizeClass.minimumMargins;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PreferencesDialogThemeFragment(controller: controller.unwrap.theme),
-        SizedBox(height: margin),
-        PreferencesDialogAnimationFragment(
-            controller: controller.unwrap.animation),
-      ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: 400),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          PreferencesDialogThemeFragment(controller: controller.unwrap.theme),
+          SizedBox(height: margin),
+          PreferencesDialogAnimationFragment(
+              controller: controller.unwrap.animation),
+        ],
+      ),
     );
   }
 }
