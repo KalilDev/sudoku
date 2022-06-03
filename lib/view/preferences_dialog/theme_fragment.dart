@@ -87,7 +87,10 @@ class PreferencesDialogThemeFragment
       );
 
   Widget _buildDefaultTheme(
-          BuildContext context, SudokuTheme defaultTheme, int i) =>
+    BuildContext context,
+    SudokuTheme defaultTheme,
+    int i,
+  ) =>
       controller.currentTheme
           .map((curr) => curr == defaultTheme)
           .unique()
@@ -123,7 +126,8 @@ class PreferencesDialogThemeFragment
           .unique()
           .map(
             (isElevated) => _ThemeCard(
-              onPressed: () {},
+              onPressed: () => controller
+                  .changeCurrentIndex(i + controller.defaultThemes.length),
               isElevated: isElevated,
               colorScheme: colorSchemeFromSudokuTheme(context, userTheme),
               child: Text(userTheme.name),
