@@ -39,84 +39,44 @@ class PoppedCommitingThemeAction
   }
 }
 
-class CreateThemeDialog extends StatelessWidget {
-  const CreateThemeDialog({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
-  final ControllerHandle<CreateThemeController> controller;
-
-  @override
-  Widget build(BuildContext context) => Actions(
+abstract class CreateThemeDialog {
+  static Widget builder(BuildContext context, Widget body) => Actions(
         actions: {
-          PopCommitingThemeIntent:
-              PoppedCommitingThemeAction(controller.unwrap),
+          PopCommitingThemeIntent: PoppedCommitingThemeAction(
+              InheritedController.of<CreateThemeController>(context).unwrap),
           PopNotCommitingThemeIntent: PoppedNotCommitingThemeAction(),
         },
         child: Builder(
           builder: (context) => _theme(
             context,
-            child: _layout(
-              context,
-              child: _CreateThemeDialogBody(
-                controller: controller,
-              ),
-            ),
+            controller: InheritedController.of<CreateThemeController>(context),
+            child: body,
           ),
         ),
       );
+  static Widget buildTitle(BuildContext context) =>
+      Text(context.l10n.create_theme);
+  static Widget buildSave(BuildContext context) =>
+      InheritedController.of<CreateThemeController>(context)
+          .unwrap
+          .canSave
+          .map((canSave) => TextButton(
+                onPressed: canSave
+                    ? () => Actions.invoke(
+                          context,
+                          PopCommitingThemeIntent(),
+                        )
+                    : null,
+                child: Text(context.l10n.save),
+              ))
+          .build();
+  static Widget buildBody(BuildContext context) => _CreateThemeDialogBody(
+        controller: InheritedController.of<CreateThemeController>(context),
+      );
 
-  Widget _layout(
+  static Widget _theme(
     BuildContext context, {
-    required Widget child,
-  }) {
-    final margin = context.sizeClass.minimumMargins;
-    final saveButton = controller.unwrap.canSave
-        .map((canSave) => TextButton(
-              onPressed: canSave
-                  ? () => Actions.invoke(
-                        context,
-                        PopCommitingThemeIntent(),
-                      )
-                  : null,
-              child: Text(context.l10n.save),
-            ))
-        .build();
-    switch (context.sizeClass) {
-      case MD3WindowSizeClass.compact:
-        return MD3FullScreenDialog(
-          action: saveButton,
-          title: Text(context.l10n.create_theme),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: margin,
-              vertical: margin / 2,
-            ),
-            child: child,
-          ),
-        );
-      case MD3WindowSizeClass.medium:
-      case MD3WindowSizeClass.expanded:
-        return MD3BasicDialog(
-          title: Text(context.l10n.create_theme),
-          content: child,
-          scrollable: true,
-          actions: [
-            TextButton(
-              onPressed: () => Actions.invoke(
-                context,
-                PopNotCommitingThemeIntent(),
-              ),
-              child: Text(context.l10n.cancel),
-            ),
-            saveButton,
-          ],
-        );
-    }
-  }
-
-  Widget _theme(
-    BuildContext context, {
+    required ControllerHandle<CreateThemeController> controller,
     required Widget child,
   }) =>
       controller.unwrap.overrideTheme
