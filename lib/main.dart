@@ -102,7 +102,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  static const _debugLocale = Locale('pt');
+  static const _debugLocale = Locale('en');
   static const _locale = kDebugMode ? _debugLocale : null;
   static const _localizationsDelegates = [
     AppLocalizations.delegate,
