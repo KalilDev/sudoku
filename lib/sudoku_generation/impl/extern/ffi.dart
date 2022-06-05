@@ -12,16 +12,16 @@ import 'package:path/path.dart' as p;
 typedef S_El = ffi.Uint8;
 typedef S_Size = ffi.Uint32;
 
-class S_Board extends ffi.Struct {
-  external ffi.Pointer<S_El> board;
-  // uint
-  @S_Size()
-  external int sideSqrt;
-}
+class S_Board extends ffi.Opaque {}
 
-typedef ExternSudokuBoard = ffi.Pointer<S_Board>;
+typedef S_Board_Ptr = ffi.Pointer<S_Board>;
 
-ffi.DynamicLibrary _openLib(String name) {
+typedef ExternSudokuBoard = S_Board_Ptr;
+
+ffi.DynamicLibrary _openLib(
+  String name, [
+  String version = '',
+]) {
   final String suffix;
   if (Platform.isMacOS || Platform.isIOS) {
     suffix = '.dylib';
@@ -29,7 +29,7 @@ ffi.DynamicLibrary _openLib(String name) {
     suffix = '.dll';
   } else {
     assert(Platform.isAndroid || Platform.isFuchsia || Platform.isLinux);
-    suffix = '.so';
+    suffix = '.so${version.isEmpty ? '' : '.'}$version';
   }
   final soname = '$name$suffix';
   if (Platform.isLinux || Platform.isWindows || Platform.isIOS) {
@@ -40,7 +40,7 @@ ffi.DynamicLibrary _openLib(String name) {
 }
 
 final libsudoku = () {
-  final libsudoku = _openLib('libsudoku');
+  final libsudoku = _openLib('libsudoku', '2.0.1');
   // Initialize the random state.
   final s_rand_set_state = libsudoku.lookupFunction<
       s_rand_set_state_signature_native,
@@ -49,70 +49,84 @@ final libsudoku = () {
   return libsudoku;
 }();
 typedef s_rand_set_state_signature_native = ffi.Void Function(ffi.Int32 state);
-typedef s_rand_set_state_signature_dart = void Function(int board);
+typedef s_rand_set_state_signature_dart = void Function(int state);
 typedef s_board_initialize_to_zero_signature_native = ffi.Void Function(
-    S_Board board);
+    S_Board_Ptr board);
 typedef s_board_initialize_to_zero_signature_dart = void Function(
-    S_Board board);
+    S_Board_Ptr board);
 final s_board_initialize_to_zero = libsudoku.lookupFunction<
     s_board_initialize_to_zero_signature_native,
     s_board_initialize_to_zero_signature_dart>('s_board_initialize_to_zero');
 
+typedef s_board_side_sqrt_signature_native = S_Size Function(S_Board_Ptr board);
+typedef s_board_side_sqrt_signature_dart = int Function(S_Board_Ptr board);
+final s_board_side_sqrt = libsudoku.lookupFunction<
+    s_board_side_sqrt_signature_native,
+    s_board_side_sqrt_signature_dart>('s_board_side_sqrt');
+
+typedef s_board_side_signature_native = S_Size Function(S_Board_Ptr board);
+typedef s_board_side_signature_dart = int Function(S_Board_Ptr board);
+final s_board_side = libsudoku.lookupFunction<s_board_side_signature_native,
+    s_board_side_signature_dart>('s_board_side');
+
 typedef s_board_get_at_signature_native = S_El Function(
-    S_Board board, S_Size r, S_Size c);
+    S_Board_Ptr board, S_Size r, S_Size c);
 typedef s_board_get_at_signature_dart = int Function(
-    S_Board board, int r, int c);
+    S_Board_Ptr board, int r, int c);
 final s_board_get_at = libsudoku.lookupFunction<s_board_get_at_signature_native,
     s_board_get_at_signature_dart>('s_board_get_at');
 
 typedef s_board_set_at_signature_native = ffi.Void Function(
-    S_Board board, S_Size r, S_Size c, S_El value);
+    S_Board_Ptr board, S_Size r, S_Size c, S_El value);
 typedef s_board_set_at_signature_dart = void Function(
-    S_Board board, int r, int c, int value);
+    S_Board_Ptr board, int r, int c, int value);
 final s_board_set_at = libsudoku.lookupFunction<s_board_set_at_signature_native,
     s_board_set_at_signature_dart>('s_board_set_at');
 
 typedef s_board_copy_into_signature_native = ffi.Void Function(
-    S_Board dest, S_Board src);
+    S_Board_Ptr dest, S_Board_Ptr src);
 typedef s_board_copy_into_signature_dart = void Function(
-    S_Board dest, S_Board src);
+    S_Board_Ptr dest, S_Board_Ptr src);
 final s_board_copy_into = libsudoku.lookupFunction<
     s_board_copy_into_signature_native,
     s_board_copy_into_signature_dart>('s_board_copy_into');
 
-typedef s_sudoku_generate_signature_native = ffi.Void Function(S_Board board);
-typedef s_sudoku_generate_signature_dart = void Function(S_Board board);
+typedef s_board_new_signature_native = S_Board_Ptr Function(S_Size side_sqrt);
+typedef s_board_new_signature_dart = S_Board_Ptr Function(int sideSqrt);
+final s_board_new = libsudoku.lookupFunction<s_board_new_signature_native,
+    s_board_new_signature_dart>('s_board_new');
+
+typedef s_board_free_signature_native = S_Board_Ptr Function(S_Board_Ptr board);
+typedef s_board_free_signature_dart = S_Board_Ptr Function(S_Board_Ptr board);
+final s_board_free = libsudoku.lookupFunction<s_board_free_signature_native,
+    s_board_free_signature_dart>('s_board_free');
+
+typedef s_sudoku_generate_signature_native = ffi.Void Function(
+    S_Board_Ptr board);
+typedef s_sudoku_generate_signature_dart = void Function(S_Board_Ptr board);
 final s_sudoku_generate = libsudoku.lookupFunction<
     s_sudoku_generate_signature_native,
     s_sudoku_generate_signature_dart>('s_sudoku_generate');
 
 typedef s_sudoku_has_many_sols_signature_native = ffi.Bool Function(
-    S_Board board);
-typedef s_sudoku_has_many_sols_signature_dart = bool Function(S_Board board);
+    S_Board_Ptr board);
+typedef s_sudoku_has_many_sols_signature_dart = bool Function(
+    S_Board_Ptr board);
 final s_sudoku_has_many_sols = libsudoku.lookupFunction<
     s_sudoku_has_many_sols_signature_native,
     s_sudoku_has_many_sols_signature_dart>('s_sudoku_has_many_sols');
 
 ExternSudokuBoard _createExternBoardWithSideSqrt(int sideSqrt) {
-  final side = sideSqrt * sideSqrt;
-  final sideSquared = side * side;
-  final __board_size = ffi.sizeOf<S_El>() * sideSquared;
-  final __board = malloc.allocate(__board_size).cast<S_El>();
-  _dbg_ffi_print(
-      "Malloced __board[$__board_size] 0x${__board.address.toRadixString(16)}");
-  final board = malloc.allocate(ffi.sizeOf<S_Board>()).cast<S_Board>();
-  _dbg_ffi_print("Malloced board 0x${board.address.toRadixString(16)}");
-  board.ref.board = __board;
-  board.ref.sideSqrt = sideSqrt;
-  _dbg_ffi_print("Returning malloced ${_addresses(board)}");
+  final result = s_board_new(sideSqrt);
+  _dbg_ffi_print("Returning malloced ${_addresses(result)}");
 
-  return board;
+  return result;
 }
 
 void _zeroOutExternBoard(ExternSudokuBoard board) {
   _dbg_ffi_print("Zeroing board at ${_addresses(board)}");
 
-  s_board_initialize_to_zero(board.ref);
+  s_board_initialize_to_zero(board);
 }
 
 ExternSudokuBoard externSudokuBoardFrom(SudokuBoard board) {
@@ -124,7 +138,7 @@ ExternSudokuBoard externSudokuBoardFrom(SudokuBoard board) {
   for (int y = 0; y < side; y++) {
     for (int x = 0; x < side; x++) {
       s_board_set_at(
-        nativeBoard.ref,
+        nativeBoard,
         y,
         x,
         sudokuBoardGetAt(board, SudokuBoardIndex(x, y)),
@@ -149,26 +163,25 @@ ExternSudokuBoard emptyExternSudokuBoard(int side) {
 }
 
 ExternSudokuBoard cloneExternSudokuBoard(ExternSudokuBoard other) {
-  final result = _createExternBoardWithSideSqrt(other.ref.sideSqrt);
+  final result = _createExternBoardWithSideSqrt(s_board_side_sqrt(other));
   _dbg_ffi_print(
       "Gonna copy from ${_addresses(other)} to ${_addresses(result)}");
-  s_board_copy_into(result.ref, other.ref);
+  s_board_copy_into(result, other);
   _dbg_ffi_print("Copied!");
   return result;
 }
 
 int externSudokuBoardGetAt(ExternSudokuBoard board, SudokuBoardIndex index) =>
-    s_board_get_at(board.ref, index.y, index.x);
+    s_board_get_at(board, index.y, index.x);
 
 void externSudokuBoardSetAt(
   ExternSudokuBoard board,
   SudokuBoardIndex index,
   int value,
 ) =>
-    s_board_set_at(board.ref, index.y, index.x, value);
+    s_board_set_at(board, index.y, index.x, value);
 
-int externSudokuSide(ExternSudokuBoard board) =>
-    board.ref.sideSqrt * board.ref.sideSqrt;
+int externSudokuSide(ExternSudokuBoard board) => s_board_side(board);
 
 SudokuBoard sudokuBoardFromExtern(ExternSudokuBoard extern) {
   final side = externSudokuSide(extern);
@@ -187,20 +200,20 @@ SudokuBoard sudokuBoardFromExtern(ExternSudokuBoard extern) {
 }
 
 String _addresses(ExternSudokuBoard board) =>
-    '*board = 0x${board.address.toRadixString(16)} board->board = 0x${board.ref.board.address.toRadixString(16)}';
+    '*board = 0x${board.address.toRadixString(16)}';
 
 ExternSudokuBoard generateExternSudokuBlocking(int side) {
   final board = emptyExternSudokuBoard(side);
   _dbg_ffi_print("Created sudoku to use in generation at ${_addresses(board)}");
 
-  s_sudoku_generate(board.ref);
+  s_sudoku_generate(board);
 
   _dbg_ffi_print("Generated sudoku at ${_addresses(board)}");
   return board;
 }
 
 bool externSudokuHasOneSolBlocking(ExternSudokuBoard board) {
-  return !s_sudoku_has_many_sols(board.ref);
+  return !s_sudoku_has_many_sols(board);
 }
 
 const _dbg_ffi = true;
@@ -215,12 +228,8 @@ void _dbg_ffi_print(Object? object) {
   }
 }
 
-void externSudokuFree(ExternSudokuBoard board) async {
+void externSudokuFree(ExternSudokuBoard board) {
   _dbg_ffi_print("Freeing board ${_addresses(board)}");
-  // TODO: fix this...
-  // for now, let it rip, the board is pretty tiny, an 16x16 board is
-  // 256*4+8+4 bytes only. DEFINITELY an bad habit tho
-  malloc.free(board.ref.board);
-  malloc.free(board);
+  s_board_free(board);
   _dbg_ffi_print("Freed board");
 }
