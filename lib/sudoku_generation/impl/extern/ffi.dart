@@ -29,7 +29,8 @@ ffi.DynamicLibrary _openLib(
     suffix = '.dll';
   } else {
     assert(Platform.isAndroid || Platform.isFuchsia || Platform.isLinux);
-    suffix = '.so${version.isEmpty ? '' : '.'}$version';
+    suffix = '.so' +
+        (Platform.isLinux ? '${version.isEmpty ? '' : '.'}$version' : '');
   }
   final soname = '$name$suffix';
   if (Platform.isLinux || Platform.isWindows || Platform.isIOS) {
