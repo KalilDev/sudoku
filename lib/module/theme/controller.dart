@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
@@ -29,14 +30,18 @@ class _SudokuThemesDbController extends SubcontrollerBase<SudokuThemeController,
           ? const Maybe<int>.none().asValueListenable
           : sudokuThemesDbReadActiveIndex(db)
               .toValueListenable(eager: true)
-              .map((r) => r.hasData ? Just(r.requireData ?? 0) : const None()));
+              .map((r) =>
+                  r.connectionState == ConnectionState.done && !r.hasError
+                      ? Just(r.data ?? 0)
+                      : const None()));
 
   late final ValueListenable<Maybe<List<SudokuSeededTheme>>>
       _initialUserSudokuThemes = _db.view().bind((db) => db == null
           ? const Maybe<List<SudokuSeededTheme>>.none().asValueListenable
-          : sudokuThemesDbReadUserThemes(db)
-              .toValueListenable(eager: true)
-              .map((r) => r.hasData ? Just(r.requireData) : const None()));
+          : sudokuThemesDbReadUserThemes(db).toValueListenable(eager: true).map(
+              (r) => r.connectionState == ConnectionState.done && !r.hasError
+                  ? Just(r.requireData)
+                  : const None()));
 
   ValueListenable<Maybe<int>> get loadingActiveIndex =>
       _initialActiveIndex.view().bind((initial) => initial.visit(
