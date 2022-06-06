@@ -7,6 +7,7 @@ import 'package:app/util/l10n.dart';
 import 'package:app/util/monadic.dart';
 import 'package:app/viewmodel/home.dart';
 import 'package:app/widget/decoration.dart';
+import 'package:app/widget/slider_with_title.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';
@@ -205,9 +206,13 @@ class _HomeView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SudokuBoardHeroDecoration(
-              sideSqrt: sideSqrt,
-              isHome: true,
+            Semantics(
+              image: true,
+              label: 'Empty Sudoku board',
+              child: SudokuBoardHeroDecoration(
+                sideSqrt: sideSqrt,
+                isHome: true,
+              ),
             ),
             Padding(
               padding: InheritedMD3BodyMargin.of(context).padding +
@@ -215,21 +220,26 @@ class _HomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(context.l10n.sideN(side)),
-                  gutterW,
-                  MD3Slider(
-                      value: sideSqrt.toDouble(),
-                      min: 2.0,
-                      max: 4.0,
-                      divisions: 2,
-                      onChanged: isLocked
-                          ? null
-                          : (n) => Actions.invoke(context,
-                              ChangeHomeViewSideSqrtIntent(n.toInt()))),
+                  SiderWithTitle(
+                    value: sideSqrt.toDouble(),
+                    min: 2.0,
+                    max: 4.0,
+                    divisions: 2,
+                    label: Text(context.l10n.sideN(side)),
+                    onChanged: isLocked
+                        ? null
+                        : (n) => Actions.invoke(
+                              context,
+                              ChangeHomeViewSideSqrtIntent(n.toInt()),
+                            ),
+                    semanticFormatterCallback: (v) =>
+                        context.l10n.sideN(v.toInt() * v.toInt()),
+                  ),
                   marginW,
-                  Text(context.l10n.difficultyD(difficulty)),
-                  gutterW,
-                  MD3Slider(
+                  SiderWithTitle(
+                      label: Text(context.l10n.difficultyD(difficulty)),
+                      semanticFormatterCallback: (n) => context.l10n
+                          .difficultyD(SudokuDifficulty.values[n.toInt()]),
                       value: difficulty.index.toDouble(),
                       max: (SudokuDifficulty.values.length - 1).toDouble(),
                       divisions: SudokuDifficulty.values.length - 1,
