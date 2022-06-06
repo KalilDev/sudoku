@@ -12,14 +12,21 @@ MonetTheme seededThemeToMonetTheme(SudokuSeededTheme theme) {
   if (theme.background == null) {
     return monetTheme;
   }
+  // We use surface as the background, so override it too
   switch (theme.brightness) {
     case Brightness.dark:
       return monetTheme.copyWith(
-        dark: monetTheme.dark.copyWith(background: theme.background),
+        dark: monetTheme.dark.copyWith(
+          background: theme.background,
+          surface: theme.background,
+        ),
       );
     case Brightness.light:
       return monetTheme.copyWith(
-        light: monetTheme.light.copyWith(background: theme.background),
+        light: monetTheme.light.copyWith(
+          background: theme.background,
+          surface: theme.background,
+        ),
       );
   }
 }
