@@ -7,7 +7,7 @@ import 'package:material_widgets/material_widgets.dart';
 MonetTheme seededThemeToMonetTheme(SudokuSeededTheme theme) {
   final monetTheme = generateTheme(
     theme.seed,
-    secondarySeed: theme.secondarySeed,
+    tertiarySeed: theme.secondarySeed,
   );
   if (theme.background == null) {
     return monetTheme;

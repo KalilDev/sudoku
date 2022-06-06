@@ -149,7 +149,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
               .map(
                 (seedHue) => _DisablableHuePicker(
                   title: Text(context.l10n.theme_secondary),
-                  defaultValue: _hueFromColor(context.colorScheme.secondary),
+                  defaultValue: _hueFromColor(context.colorScheme.tertiary),
                   value: seedHue,
                   onChanged: (hue) => controller.setSecondarySeed(
                     hue == null ? null : _colorFromHue(hue),
