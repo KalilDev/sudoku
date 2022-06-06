@@ -32,6 +32,7 @@ Future<SudokuSeededTheme?> showCreateThemeDialogWithInitial(
     context,
     builder: (context, body) =>
         ControllerInjectorBuilder<CreateThemeController>(
+      inherited: true,
       factory: (_) =>
           ControllerBase.create(() => CreateThemeController.withInitial(theme)),
       builder: (context, controller) =>
