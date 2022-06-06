@@ -47,3 +47,6 @@ app.*.map.json
 
 # Shader warmup cache
 *.sksl.json
+
+# Linux libsudoku binary
+libsudoku.so*
