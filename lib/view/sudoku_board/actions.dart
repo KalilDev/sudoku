@@ -66,16 +66,25 @@ class SudokuBoardActionsWidget extends StatelessWidget {
 
   Widget _buildPlacementModeButton(
     BuildContext context,
-    ContextfulAction<ButtonStyle> style,
     SudokuPlacementMode placementMode,
   ) =>
-      _ActionButton(
-        tooltip: placementMode == SudokuPlacementMode.number
-            ? context.l10n.edit_possibilities
-            : context.l10n.edit_numbers,
-        child: const Icon(Icons.edit),
-        style: style(context),
-        onPressed: const ChangePlacementModeIntent(),
+      Semantics(
+        onTapHint: placementMode == SudokuPlacementMode.number
+            ? context.l10n.board_actions_edit_possibilities
+            : context.l10n.board_actions_edit_numbers,
+        child: _ActionButton(
+          tooltip: placementMode == SudokuPlacementMode.number
+              ? context.l10n.board_actions_edit_possibilities
+              : context.l10n.board_actions_edit_numbers,
+          child: Icon(
+            Icons.edit,
+            semanticLabel: placementMode == SudokuPlacementMode.number
+                ? context.l10n.board_actions_editing_numbers
+                : context.l10n.board_actions_editing_possibilities,
+          ),
+          isSelected: placementMode != SudokuPlacementMode.number,
+          onPressed: const ChangePlacementModeIntent(),
+        ),
       );
 
   @override
@@ -87,27 +96,35 @@ class SudokuBoardActionsWidget extends StatelessWidget {
     final children = [
       paddingSquare,
       _ActionButton(
-        tooltip: context.l10n.reset_sudoku,
-        child: Icon(Icons.refresh),
+        tooltip: context.l10n.board_actions_reset_sudoku,
+        child: Icon(
+          Icons.refresh,
+          semanticLabel: context.l10n.board_actions_reset_sudoku,
+        ),
         onPressed: ResetBoardIntent(),
       ),
       _ActionButton(
-        tooltip: context.l10n.validate_sudoku,
-        child: Icon(Icons.check),
+        tooltip: context.l10n.board_actions_validate_sudoku,
+        child: Icon(
+          Icons.check,
+          semanticLabel: context.l10n.board_actions_validate_sudoku,
+        ),
         onPressed: ValidateBoardIntent(),
       ),
       ValueListenableOwnerBuilder<SudokuPlacementMode>(
         valueListenable: placementMode,
         builder: (context, placementMode) =>
             (_buildPlacementModeButton.curry(context).asValueListenable >>
-                    placementMode().map(_styleForPlacementMode) >>
                     placementMode())
                 .build(),
       ),
       canUndo
           .map((canUndo) => _ActionButton(
-                tooltip: context.l10n.undo,
-                child: const Icon(Icons.undo),
+                tooltip: context.l10n.board_actions_undo,
+                child: Icon(
+                  Icons.undo,
+                  semanticLabel: context.l10n.board_actions_undo,
+                ),
                 onPressed: canUndo ? const UndoIntent() : null,
               ))
           .build(),
@@ -162,17 +179,19 @@ class _ActionButton<T extends Intent> extends StatelessWidget {
     Key? key,
     required this.tooltip,
     required this.child,
-    this.style,
+    this.isSelected = false,
     required this.onPressed,
   }) : super(key: key);
   final String tooltip;
   final Widget child;
-  final ButtonStyle? style;
+  final bool isSelected;
   final T? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final style = this.style ?? sudokuOutlinedButtonStyle(context);
+    final style = isSelected
+        ? sudokuFilledButtonStyle(context)
+        : sudokuOutlinedButtonStyle(context);
     final orientation = viewLayoutOrientation(context);
     final rotated = orientation == Orientation.landscape;
 
@@ -187,7 +206,7 @@ class _ActionButton<T extends Intent> extends StatelessWidget {
           style: style,
           child: RotatedBox(
             quarterTurns: rotated ? -1 : 0,
-            child: child,
+            child: BlockSemantics(child: child),
           ),
         ),
       ),
