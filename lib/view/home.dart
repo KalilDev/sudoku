@@ -193,83 +193,107 @@ class _HomeView extends StatelessWidget {
   final bool canResume;
   final SudokuDifficulty difficulty;
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSliders(BuildContext context) {
+    final margin = context.sizeClass.minimumMargins;
+    final marginW = SizedBox.square(dimension: margin);
+    final isLocked = isHomeLocked(context);
+    final side = sideSqrt * sideSqrt;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 480),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SiderWithTitle(
+            value: sideSqrt.toDouble(),
+            min: 2.0,
+            max: 4.0,
+            divisions: 2,
+            label: Text(context.l10n.sideN(side)),
+            onChanged: isLocked
+                ? null
+                : (n) => Actions.invoke(
+                      context,
+                      ChangeHomeViewSideSqrtIntent(n.toInt()),
+                    ),
+            semanticFormatterCallback: (v) =>
+                context.l10n.sideN(v.toInt() * v.toInt()),
+          ),
+          marginW,
+          SiderWithTitle(
+              label: Text(context.l10n.difficultyD(difficulty)),
+              semanticFormatterCallback: (n) =>
+                  context.l10n.difficultyD(SudokuDifficulty.values[n.toInt()]),
+              value: difficulty.index.toDouble(),
+              max: (SudokuDifficulty.values.length - 1).toDouble(),
+              divisions: SudokuDifficulty.values.length - 1,
+              onChanged: isLocked
+                  ? null
+                  : (n) => Actions.invoke(
+                      context,
+                      ChangeHomeViewDifficultyIntent(
+                          SudokuDifficulty.values[n.toInt()]))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
     final margin = context.sizeClass.minimumMargins;
     final marginW = SizedBox.square(dimension: margin);
     final gutter = margin / 2;
-    final gutterW = SizedBox.square(dimension: gutter);
     final isLocked = isHomeLocked(context);
-    final side = sideSqrt * sideSqrt;
+    return SizedBox(
+      child: Padding(
+        padding: InheritedMD3BodyMargin.of(context).padding +
+            EdgeInsets.only(bottom: gutter),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildSliders(context),
+            marginW,
+            FilledButton(
+                onPressed: isLocked
+                    ? null
+                    : () => Actions.invoke(
+                          context,
+                          SudokuHomeNewGameIntent(),
+                        ),
+                child: Text(context.l10n.new_game_action)),
+            marginW,
+            FilledTonalButton(
+                onPressed: isLocked || !canResume
+                    ? null
+                    : () => Actions.invoke(
+                          context,
+                          SudokuHomeContinueGameIntent(),
+                        ),
+                child: Text(context.l10n.continue_action)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Semantics(
-              image: true,
-              label: 'Empty Sudoku board',
-              child: SudokuBoardHeroDecoration(
-                sideSqrt: sideSqrt,
-                isHome: true,
-              ),
-            ),
             Padding(
-              padding: InheritedMD3BodyMargin.of(context).padding +
-                  EdgeInsets.only(bottom: gutter),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SiderWithTitle(
-                    value: sideSqrt.toDouble(),
-                    min: 2.0,
-                    max: 4.0,
-                    divisions: 2,
-                    label: Text(context.l10n.sideN(side)),
-                    onChanged: isLocked
-                        ? null
-                        : (n) => Actions.invoke(
-                              context,
-                              ChangeHomeViewSideSqrtIntent(n.toInt()),
-                            ),
-                    semanticFormatterCallback: (v) =>
-                        context.l10n.sideN(v.toInt() * v.toInt()),
-                  ),
-                  marginW,
-                  SiderWithTitle(
-                      label: Text(context.l10n.difficultyD(difficulty)),
-                      semanticFormatterCallback: (n) => context.l10n
-                          .difficultyD(SudokuDifficulty.values[n.toInt()]),
-                      value: difficulty.index.toDouble(),
-                      max: (SudokuDifficulty.values.length - 1).toDouble(),
-                      divisions: SudokuDifficulty.values.length - 1,
-                      onChanged: isLocked
-                          ? null
-                          : (n) => Actions.invoke(
-                              context,
-                              ChangeHomeViewDifficultyIntent(
-                                  SudokuDifficulty.values[n.toInt()]))),
-                  marginW,
-                  FilledButton(
-                      onPressed: isLocked
-                          ? null
-                          : () => Actions.invoke(
-                                context,
-                                SudokuHomeNewGameIntent(),
-                              ),
-                      child: Text(context.l10n.new_game_action)),
-                  marginW,
-                  FilledTonalButton(
-                      onPressed: isLocked || !canResume
-                          ? null
-                          : () => Actions.invoke(
-                                context,
-                                SudokuHomeContinueGameIntent(),
-                              ),
-                      child: Text(context.l10n.continue_action)),
-                ],
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Semantics(
+                image: true,
+                label: 'Empty Sudoku board',
+                child: SudokuBoardHeroDecoration(
+                  sideSqrt: sideSqrt,
+                  isHome: true,
+                ),
               ),
             ),
+            _buildBody(context),
           ],
         ),
       ),
