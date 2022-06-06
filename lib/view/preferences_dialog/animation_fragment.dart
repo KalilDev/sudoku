@@ -1,6 +1,7 @@
 import 'package:app/module/animation.dart';
 import 'package:app/util/l10n.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
+import 'package:app/widget/slider_with_title.dart';
 import 'package:app/widget/switch_tile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -102,25 +103,32 @@ class PreferencesDialogAnimationFragment
     final gutterW = SizedBox.square(
       dimension: gutter,
     );
+    final headerStyle = context.textTheme.titleLarge;
+    final sectionTitle = context.textTheme.titleMedium;
     final speed = use(opts().muSp())
         .map(
           (speed) => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              MD3Slider(
+              SiderWithTitle(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 value: speed.index.toDouble(),
                 max: (AnimationSpeed.values.length - 1).toDouble(),
                 onChanged: (v) => setSp(AnimationSpeed.values[v.round()]),
                 divisions: AnimationSpeed.values.length,
+                label: Text(
+                  l10n.speedSelectedS(speed),
+                  style: sectionTitle,
+                ),
+                semanticFormatterCallback: (v) => l10n.speedSelectedS(
+                  (AnimationSpeed.values[v.round()]),
+                ),
               ),
-              Text(l10n.speedSelectedS(speed))
             ],
           ),
         )
         .build();
-    final headerStyle = context.textTheme.titleLarge;
-    final sectionTitle = context.textTheme.titleMedium;
     return ListTileTheme(
       data: ListTileThemeData(contentPadding: EdgeInsets.only(left: 8)),
       child: Column(
@@ -146,11 +154,6 @@ class PreferencesDialogAnimationFragment
           gutterW,
           text,
           marginW,
-          Text(
-            l10n.animation_speed,
-            style: sectionTitle,
-          ),
-          gutterW,
           speed,
         ],
       ),
