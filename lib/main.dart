@@ -151,6 +151,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final kDebugSemantics = false;
     return ControllerWidgetBuilder<SudokuThemeController>(
         controller: widget.controller,
         builder: (context, controller) {
@@ -171,6 +172,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                         color: _color(context, theme.themeMode),
                         builder: _builder(theme.themeMode),
                         home: SudokuNavigation.homeView,
+                        showSemanticsDebugger: kDebugSemantics,
                       ),
                     ),
                     sudokuSeededTheme: (theme) {
@@ -196,6 +198,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                           ),
                           builder: _builder(themeMode),
                           home: SudokuNavigation.homeView,
+                          showSemanticsDebugger: kDebugSemantics,
                         ),
                       );
                     },
