@@ -94,10 +94,11 @@ class PreferencesDialogThemeFragment
       controller.currentTheme
           .map((curr) => curr == defaultTheme)
           .unique()
-          .map((isElevated) => _ThemeCard(
-                onPressed: () => controller.changeCurrentIndex(i),
+          .map((isSelected) => _ThemeCard(
+                onPressed:
+                    isSelected ? null : () => controller.changeCurrentIndex(i),
                 colorScheme: colorSchemeFromSudokuTheme(context, defaultTheme),
-                isElevated: isElevated,
+                isSelected: isSelected,
                 child: Text(
                   defaultTheme.visit(
                     sudokuMaterialYouTheme: (mu) {
@@ -125,10 +126,12 @@ class PreferencesDialogThemeFragment
           .map((curr) => curr == userTheme)
           .unique()
           .map(
-            (isElevated) => _ThemeCard(
-              onPressed: () => controller
-                  .changeCurrentIndex(i + controller.defaultThemes.length),
-              isElevated: isElevated,
+            (isSelected) => _ThemeCard(
+              onPressed: isSelected
+                  ? null
+                  : () => controller
+                      .changeCurrentIndex(i + controller.defaultThemes.length),
+              isSelected: isSelected,
               colorScheme: colorSchemeFromSudokuTheme(context, userTheme),
               child: Text(userTheme.name),
               action: _UserThemeActionWidget(
@@ -292,7 +295,7 @@ class __AddThemeButtonState extends State<_AddThemeButton>
     return _ThemeCard(
         onPressed: widget.onPressed,
         colorScheme: colorScheme,
-        isElevated: true,
+        isSelected: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -314,36 +317,42 @@ class __AddThemeButtonState extends State<_AddThemeButton>
 class _ThemeCard extends StatelessWidget {
   const _ThemeCard({
     Key? key,
-    required this.onPressed,
+    this.onPressed,
     required this.colorScheme,
-    required this.isElevated,
+    required this.isSelected,
     required this.child,
     this.action,
   }) : super(key: key);
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final MonetColorScheme colorScheme;
   final Widget? action;
-  final bool isElevated;
+  final bool isSelected;
   final Widget child;
 
   static const _kCardHeight = 96.0;
 
   @override
   Widget build(BuildContext context) {
+    final isDisabled = onPressed == null;
     final color = CustomColorScheme(
-      color: colorScheme.primary,
+      color: colorScheme.primary.withOpacity(isDisabled ? 0.6 : 1.0),
       onColor: colorScheme.onPrimary,
-      colorContainer: colorScheme.background,
-      onColorContainer: colorScheme.primary,
+      colorContainer: isDisabled
+          ? colorScheme.surfaceVariant.withOpacity(0.6)
+          : colorScheme.background,
+      onColorContainer: colorScheme.primary.withOpacity(isDisabled ? 0.6 : 1.0),
     );
     return SizedBox(
       height: _kCardHeight,
       child: Stack(
         children: [
           Positioned.fill(
-            child: ColoredCard(
-              onPressed: onPressed,
-              style: CardStyle(
+            child: Semantics(
+              selected: isSelected,
+              enabled: !isDisabled,
+              child: ColoredCard(
+                onPressed: onPressed,
+                style: CardStyle(
                   padding: MaterialStateProperty.all(
                     EdgeInsets.symmetric(
                       horizontal: 8.0,
@@ -357,18 +366,14 @@ class _ThemeCard extends StatelessWidget {
                     ),
                   ),
                   elevation: MD3MaterialStateElevation(
-                    isElevated
-                        ? context.elevation.level2
-                        : context.elevation.level0,
-                    isElevated
-                        ? context.elevation.level3
-                        : context.elevation.level1,
-                    pressed: isElevated
-                        ? context.elevation.level4
-                        : context.elevation.level2,
-                  )),
-              color: color,
-              child: child,
+                    context.elevation.level0,
+                    context.elevation.level1,
+                    pressed: context.elevation.level2,
+                  ),
+                ),
+                color: color,
+                child: child,
+              ),
             ),
           ),
           if (action != null)
