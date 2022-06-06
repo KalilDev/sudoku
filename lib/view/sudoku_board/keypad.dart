@@ -74,14 +74,19 @@ class KeypadButton extends StatelessWidget {
       Actions.invoke<PressFreeNumber>(context, PressFreeNumber(number));
     }
 
-    return SizedBox.fromSize(
-      size: minKeypadSquare,
-      child: OutlinedButton(
-        onPressed: isLocked(context) ? null : invokeAction,
-        style:
-            (isSelected ? selectedkeypadStyle : unselectedkeypadStyle)(context),
-        child: _KeypadButtonChildWrapper(
-          child: child,
+    return MergeSemantics(
+      child: SizedBox.fromSize(
+        size: minKeypadSquare,
+        child: OutlinedButton(
+          onPressed: isLocked(context) ? null : invokeAction,
+          style: (isSelected
+              ? selectedkeypadStyle
+              : unselectedkeypadStyle)(context),
+          child: _KeypadButtonChildWrapper(
+            child: BlockSemantics(
+              child: child,
+            ),
+          ),
         ),
       ),
     );
@@ -107,7 +112,11 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
             .map((isSelected) => KeypadButton(
                   isSelected: isSelected,
                   number: n,
-                  child: Text(n.toString()),
+                  child: Text(
+                    n.toString(),
+                    semanticsLabel:
+                        context.l10n.board_keypad_number.replaceAll('%n', '$n'),
+                  ),
                 ))
             .build(),
       );
@@ -120,15 +129,18 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
             .map((s) => s == 0)
             .unique()
             .map((isSelected) => Tooltip(
-                  message: context.l10n.clear_tile,
+                  message: context.l10n.board_keypad_clear,
                   child: KeypadButton(
                     isSelected: isSelected,
                     number: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: const Icon(
-                        Icons.close,
-                        size: 20,
+                    child: Semantics(
+                      label: context.l10n.board_keypad_clear,
+                      child: const Padding(
+                        padding: EdgeInsets.all(2.0),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
