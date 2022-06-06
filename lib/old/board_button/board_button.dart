@@ -48,7 +48,6 @@ class BoardButton extends StatelessWidget {
           child: Focus(
             canRequestFocus: !isInitial,
             descendantsAreFocusable: !isInitial,
-            skipTraversal: isInitial,
             child: BoardButtonBase(
               onPressed: onTap,
               child: BoardButtonTextAnimation(
