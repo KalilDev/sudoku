@@ -43,13 +43,15 @@ class MD3SwitchTile extends StatelessWidget {
   final Widget? subtitle;
 
   @override
-  Widget build(BuildContext context) => ListTile(
-        onTap: () => setValue(!value),
-        title: title,
-        subtitle: subtitle,
-        trailing: MD3Switch(
-          value: value,
-          onChanged: setValue,
+  Widget build(BuildContext context) => MergeSemantics(
+        child: ListTile(
+          onTap: () => setValue(!value),
+          title: title,
+          subtitle: subtitle,
+          trailing: MD3Switch(
+            value: value,
+            onChanged: setValue,
+          ),
         ),
       );
 }
