@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:app/module/base.dart';
 import 'package:app/old/board_button/board_button.dart';
+import 'package:app/util/l10n.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:app/widget/animation_options.dart';
 import 'package:app/widget/decoration.dart';
@@ -10,18 +11,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'flutter_intents.dart';
 import 'locking.dart';
+
+extension on AppLocalizations {
+  String tileIndexedInfo(int r, int c, String state) =>
+      board_board_tile_indexed_info
+          .replaceAll('%r', '$r')
+          .replaceAll('%c', '$c')
+          .replaceAll('%ps_const_or_n', state);
+  String boardTileState(SudokuTile tile) => tile.visit(
+        permanent: (n) => board_tile_permanent.replaceAll('%n', '$n'),
+        number: (n, v) => board_tile_number
+            .replaceAll('%n', '$n')
+            .replaceAll('%v', boardTileValidation(v)),
+        possibilities: (ps) => ps.isEmpty
+            ? board_tile_no_possibilities
+            : board_tile_possibilities.replaceAll('%ps', ps.join(' ')),
+      );
+  String boardTileValidation(Validation validation) {
+    switch (validation) {
+      case Validation.unknown:
+        return board_tile_not_validated;
+      case Validation.valid:
+        return board_tile_valid;
+      case Validation.invalid:
+        return board_tile_invalid;
+    }
+  }
+}
 
 class _TileWidget extends StatelessWidget {
   const _TileWidget({
     Key? key,
+    required this.index,
     required this.tile,
     required this.isSelected,
     required this.onPressed,
   }) : super(key: key);
 
+  final SudokuBoardIndex index;
   final SudokuTile tile;
   final bool? isSelected;
   final PressTileIntent onPressed;
@@ -29,20 +59,35 @@ class _TileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void invokeIntent() => Actions.invoke<PressTileIntent>(context, onPressed);
-    return BoardButton(
-      onTap: tile is Permanent ? null : invokeIntent,
-      isLoading: isLocked(context),
-      isSelected: isSelected ?? false,
-      text: tile.visit(
-        permanent: (n) => n.toString(),
-        number: (n, _) => n.toString(),
-        possibilities: (ps) => (ps.toList()..sort()).join(' '),
+    return MergeSemantics(
+      child: Semantics(
+        selected: isSelected ?? false,
+        label: context.l10n.tileIndexedInfo(
+          index.y + 1,
+          index.x + 1,
+          context.l10n.boardTileState(tile),
+        ),
+        button: tile.visit(
+          permanent: (_) => false,
+          number: (_, __) => true,
+          possibilities: (_) => true,
+        ),
+        child: BoardButton(
+          onTap: tile is Permanent ? null : invokeIntent,
+          isLoading: isLocked(context),
+          isSelected: isSelected ?? false,
+          text: tile.visit(
+            permanent: (n) => n.toString(),
+            number: (n, _) => n.toString(),
+            possibilities: (ps) => (ps.toList()..sort()).join(' '),
+          ),
+          isBottomText: tile is Possibilities,
+          isInvalid: tile is Number &&
+              (tile as Number).validation == Validation.invalid,
+          animationOptions: animationOptions(context),
+          isInitial: tile is Permanent,
+        ),
       ),
-      isBottomText: tile is Possibilities,
-      isInvalid:
-          tile is Number && (tile as Number).validation == Validation.invalid,
-      animationOptions: animationOptions(context),
-      isInitial: tile is Permanent,
     );
   }
 }
@@ -127,6 +172,7 @@ class _SudokuViewBoardWidgetState extends State<SudokuViewBoardWidget> {
           .map((selected) => selected == null ? null : selected == index)
           .unique()
           .map((isSelected) => _TileWidget(
+                index: index,
                 tile: tile,
                 isSelected: isSelected,
                 onPressed: PressTileIntent(index),
