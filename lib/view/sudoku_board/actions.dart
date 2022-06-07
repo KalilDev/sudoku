@@ -87,13 +87,16 @@ class SudokuBoardActionsWidget extends StatelessWidget {
         ),
       );
 
-  @override
-  Widget build(BuildContext context) {
+  List<Widget> _buildChildren(
+    BuildContext context,
+    ValueListenable<SudokuPlacementMode> placementMode,
+    ValueListenable<bool> canUndo,
+  ) {
     final padding = context.sizeClass.minimumMargins;
     final paddingSquare = SizedBox.square(
       dimension: padding,
     );
-    final children = [
+    return [
       paddingSquare,
       _ActionButton(
         tooltip: context.l10n.board_actions_reset_sudoku,
@@ -130,6 +133,15 @@ class SudokuBoardActionsWidget extends StatelessWidget {
           .build(),
       paddingSquare,
     ];
+  }
+
+  Widget _build(
+    BuildContext context,
+    ValueListenable<SudokuPlacementMode> placementMode,
+    ValueListenable<bool> canUndo,
+  ) {
+    final padding = context.sizeClass.minimumMargins;
+    final children = _buildChildren(context, placementMode, canUndo);
 
     switch (viewLayoutOrientation(context)) {
       case Orientation.portrait:
@@ -150,6 +162,21 @@ class SudokuBoardActionsWidget extends StatelessWidget {
           ),
         );
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableOwnerBuilder<SudokuPlacementMode>(
+      valueListenable: placementMode,
+      builder: (context, placementMode) => ValueListenableOwnerBuilder<bool>(
+        valueListenable: canUndo,
+        builder: (context, canUndo) => _build(
+          context,
+          placementMode(),
+          canUndo(),
+        ),
+      ),
+    );
   }
 }
 
