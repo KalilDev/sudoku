@@ -153,7 +153,7 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
     final padding = context.sizeClass.minimumMargins;
     final gutter = padding / 2;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: padding),
+      padding: EdgeInsets.all(padding),
       child: ValueListenableOwnerBuilder<int?>(
         valueListenable: selectedNumber,
         builder: (context, selectedNumber) => Wrap(
