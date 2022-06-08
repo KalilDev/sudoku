@@ -622,7 +622,7 @@ packages:
       name: utils
       url: "http://localhost:4000"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.3"
   value_notifier:
     dependency: "direct main"
     description:
