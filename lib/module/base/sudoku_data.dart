@@ -162,6 +162,8 @@ extension AAA on SudokuAppBoardState {
           possibility,
         )),
       );
+// boardState -> boardState
+  Maybe<ClearBoard> clearBoardE() => isEmpty ? None() : Just(ClearBoard(this));
 }
 
 TileState tileStateAtWith(
@@ -231,6 +233,10 @@ class SudokuAppBoardState
   @override
   SudokuAppBoardStateBuilder toBuilder() =>
       SudokuAppBoardStateBuilder(side)..replace(this);
+
+  bool get isEmpty =>
+      currentNumbers.every((r) => r.every((e) => e == 0)) &&
+      currentPossibilities.every((r) => r.every((e) => e.isEmpty));
 }
 
 SudokuBoard sudokuBoardCopyLocked(SudokuBoard b) => UnmodifiableListView(b
@@ -250,6 +256,11 @@ class SudokuAppBoardStateBuilder
             SudokuAppBoardStateBuilder, SudokuAppBoardChange> {
   final int side;
   SudokuAppBoardStateBuilder(this.side);
+
+  void clear() {
+    _currentNumbers = null;
+    _currentPossibilities = null;
+  }
 
   SudokuBoard? _solvedBoard;
   SudokuBoard get solvedBoard => _solvedBoard ??= emptySudokuBoard(side);
@@ -393,6 +404,9 @@ typedef TileStateMatrix = Matrix<TileState>;
         #index: T(#SudokuBoardIndex),
         #oldNumber: T(#int),
         #possibility: T(#int),
+      },
+      #ClearBoard: {
+        #oldState: T(#SudokuAppBoardState),
       }
     },
     deriveMode: adt.UnionVisitDeriveMode.data,
@@ -483,6 +497,10 @@ mixin SudokuAppBoardChangeUndoable
           bdr.changeTileStateAt(
               changeFromNumberToPossibility.index, newTileState);
         },
+        // boardState -> boardState
+        (clearBoard) {
+          bdr.clear();
+        },
       );
 
   @override
@@ -556,6 +574,10 @@ mixin SudokuAppBoardChangeUndoable
               NumberTileState(changeFromNumberToPossibility.oldNumber);
           bdr.changeTileStateAt(
               changeFromNumberToPossibility.index, newTileState);
+        },
+        // boardState -> boardState
+        (clearBoard) {
+          bdr.replace(clearBoard.oldState);
         },
       );
 }

@@ -31,6 +31,7 @@ void sudokuDbInitialize() {
   Hive.registerAdapter(_CommitNumberAdapter());
   Hive.registerAdapter(_ClearTileAdapter());
   Hive.registerAdapter(_ChangeFromNumberToPossibility());
+  Hive.registerAdapter(_ClearBoardAdapter());
   _sudokuDbWasInitialized = true;
 }
 

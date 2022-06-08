@@ -209,3 +209,23 @@ class _ChangeFromNumberToPossibility
     );
   }
 }
+
+class _ClearBoardAdapter extends TypeAdapter<ClearBoard> {
+  @override
+  int get typeId => 17;
+
+  @override
+  void write(BinaryWriter writer, ClearBoard obj) {
+    writer
+      ..writeInt(0)
+      ..write(obj.oldState);
+  }
+
+  @override
+  ClearBoard read(BinaryReader reader) {
+    final version = reader.readInt();
+    return ClearBoard(
+      reader.read() as SudokuAppBoardState,
+    );
+  }
+}

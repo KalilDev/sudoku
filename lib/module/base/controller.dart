@@ -113,10 +113,14 @@ extension AAAA on SudokuController {
     SudokuBoardIndex index,
   ) =>
       maybeAddE(snapshot.value!.clearTileE(index));
+
   Maybe<SudokuAppBoardModel> changeFromNumberToPossibility(
           SudokuBoardIndex index, int possibility) =>
       maybeAddE(
           snapshot.value!.changeFromNumberToPossibilityE(index, possibility));
+
+  Maybe<SudokuAppBoardModel> clearBoard() =>
+      maybeAddE(snapshot.value!.clearBoardE());
 }
 
 class SudokuController extends ControllerBase<SudokuController> {
@@ -174,17 +178,14 @@ class SudokuController extends ControllerBase<SudokuController> {
     }
   }
 
-  // TODO: improve this
   void reset() {
-    bool didUndo = false;
-    final model = modelOrNull.value;
-    while (model?.canUndo() ?? false) {
-      didUndo = (model!.undo()) || didUndo;
-    }
-    if (didUndo) {
-      _didModifyModel.notify();
-      _db.requestSave(model!);
-    }
+    clearBoard().fmap(
+      (model) {
+        _didModifyModel.notify();
+        _db.requestSave(model);
+        return model;
+      },
+    );
   }
 
   void init() {
