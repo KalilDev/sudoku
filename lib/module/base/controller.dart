@@ -175,7 +175,7 @@ class SudokuController extends ControllerBase<SudokuController> {
     bool didUndo = false;
     final model = modelOrNull.value;
     while (model?.canUndo() ?? false) {
-      didUndo = didUndo || (model!.undo());
+      didUndo = (model!.undo()) || didUndo;
     }
     if (didUndo) {
       _didModifyModel.notify();
