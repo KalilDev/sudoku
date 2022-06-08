@@ -188,9 +188,7 @@ class SudokuViewController extends ControllerBase<SudokuViewController> {
                   ? _sudokuController.removePossibility(index, number)
                   : _sudokuController.addPossibility(index, number),
               numberTileState: (_) {
-                // TODO: Single event for this
-                _sudokuController.clearTile(index);
-                _sudokuController.addPossibility(index, number);
+                _sudokuController.changeFromNumberToPossibility(index, number);
               },
             );
         break;

@@ -184,3 +184,28 @@ class _ClearTileAdapter extends TypeAdapter<ClearTile> {
     );
   }
 }
+
+class _ChangeFromNumberToPossibility
+    extends TypeAdapter<ChangeFromNumberToPossibility> {
+  @override
+  int get typeId => 16;
+
+  @override
+  void write(BinaryWriter writer, ChangeFromNumberToPossibility obj) {
+    writer
+      ..writeInt(0)
+      ..writeIndex(obj.index)
+      ..writeInt(obj.oldNumber)
+      ..writeInt(obj.possibility);
+  }
+
+  @override
+  ChangeFromNumberToPossibility read(BinaryReader reader) {
+    final version = reader.readInt();
+    return ChangeFromNumberToPossibility(
+      reader.readIndex(),
+      reader.readInt(),
+      reader.readInt(),
+    );
+  }
+}

@@ -113,6 +113,10 @@ extension AAAA on SudokuController {
     SudokuBoardIndex index,
   ) =>
       maybeAddE(snapshot.value!.clearTileE(index));
+  Maybe<SudokuAppBoardModel> changeFromNumberToPossibility(
+          SudokuBoardIndex index, int possibility) =>
+      maybeAddE(
+          snapshot.value!.changeFromNumberToPossibilityE(index, possibility));
 }
 
 class SudokuController extends ControllerBase<SudokuController> {

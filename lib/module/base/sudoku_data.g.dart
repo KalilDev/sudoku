@@ -137,13 +137,16 @@ R visitSudokuAppBoardChange<R extends Object?>(
         R Function(AddPossibility) addPossibility,
         R Function(RemovePossibility) removePossibility,
         R Function(CommitNumber) commitNumber,
-        R Function(ClearTile) clearTile) =>
+        R Function(ClearTile) clearTile,
+        R Function(ChangeFromNumberToPossibility)
+            changeFromNumberToPossibility) =>
     union.visit(
         changeNumber: changeNumber,
         addPossibility: addPossibility,
         removePossibility: removePossibility,
         commitNumber: commitNumber,
-        clearTile: clearTile);
+        clearTile: clearTile,
+        changeFromNumberToPossibility: changeFromNumberToPossibility);
 
 abstract class SudokuAppBoardChange
     with SudokuAppBoardChangeUndoable
@@ -161,6 +164,9 @@ abstract class SudokuAppBoardChange
   const factory SudokuAppBoardChange.clearTile(
           SudokuBoardIndex index, List<int> oldPossibilities, int oldNumber) =
       ClearTile;
+  const factory SudokuAppBoardChange.changeFromNumberToPossibility(
+          SudokuBoardIndex index, int oldNumber, int possibility) =
+      ChangeFromNumberToPossibility;
 
   @override
   SumRuntimeType get runtimeType => SumRuntimeType([
@@ -168,7 +174,8 @@ abstract class SudokuAppBoardChange
         AddPossibility,
         RemovePossibility,
         CommitNumber,
-        ClearTile
+        ClearTile,
+        ChangeFromNumberToPossibility
       ]);
 
   R visit<R extends Object?>(
@@ -176,7 +183,9 @@ abstract class SudokuAppBoardChange
       required R Function(AddPossibility) addPossibility,
       required R Function(RemovePossibility) removePossibility,
       required R Function(CommitNumber) commitNumber,
-      required R Function(ClearTile) clearTile});
+      required R Function(ClearTile) clearTile,
+      required R Function(ChangeFromNumberToPossibility)
+          changeFromNumberToPossibility});
 
   @override
   int get hashCode => throw UnimplementedError(
@@ -220,7 +229,9 @@ class ChangeNumber extends SudokuAppBoardChange {
           required R Function(AddPossibility) addPossibility,
           required R Function(RemovePossibility) removePossibility,
           required R Function(CommitNumber) commitNumber,
-          required R Function(ClearTile) clearTile}) =>
+          required R Function(ClearTile) clearTile,
+          required R Function(ChangeFromNumberToPossibility)
+              changeFromNumberToPossibility}) =>
       changeNumber(this);
 }
 
@@ -249,7 +260,9 @@ class AddPossibility extends SudokuAppBoardChange {
           required R Function(AddPossibility) addPossibility,
           required R Function(RemovePossibility) removePossibility,
           required R Function(CommitNumber) commitNumber,
-          required R Function(ClearTile) clearTile}) =>
+          required R Function(ClearTile) clearTile,
+          required R Function(ChangeFromNumberToPossibility)
+              changeFromNumberToPossibility}) =>
       addPossibility(this);
 }
 
@@ -278,7 +291,9 @@ class RemovePossibility extends SudokuAppBoardChange {
           required R Function(AddPossibility) addPossibility,
           required R Function(RemovePossibility) removePossibility,
           required R Function(CommitNumber) commitNumber,
-          required R Function(ClearTile) clearTile}) =>
+          required R Function(ClearTile) clearTile,
+          required R Function(ChangeFromNumberToPossibility)
+              changeFromNumberToPossibility}) =>
       removePossibility(this);
 }
 
@@ -311,7 +326,9 @@ class CommitNumber extends SudokuAppBoardChange {
           required R Function(AddPossibility) addPossibility,
           required R Function(RemovePossibility) removePossibility,
           required R Function(CommitNumber) commitNumber,
-          required R Function(ClearTile) clearTile}) =>
+          required R Function(ClearTile) clearTile,
+          required R Function(ChangeFromNumberToPossibility)
+              changeFromNumberToPossibility}) =>
       commitNumber(this);
 }
 
@@ -346,6 +363,45 @@ class ClearTile extends SudokuAppBoardChange {
           required R Function(AddPossibility) addPossibility,
           required R Function(RemovePossibility) removePossibility,
           required R Function(CommitNumber) commitNumber,
-          required R Function(ClearTile) clearTile}) =>
+          required R Function(ClearTile) clearTile,
+          required R Function(ChangeFromNumberToPossibility)
+              changeFromNumberToPossibility}) =>
       clearTile(this);
+}
+
+class ChangeFromNumberToPossibility extends SudokuAppBoardChange {
+  final SudokuBoardIndex index;
+  final int oldNumber;
+  final int possibility;
+
+  const ChangeFromNumberToPossibility(
+      this.index, this.oldNumber, this.possibility)
+      : super._();
+
+  @override
+  int get hashCode => Object.hash(
+      (ChangeFromNumberToPossibility), index, oldNumber, possibility);
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is ChangeFromNumberToPossibility &&
+          true &&
+          this.index == other.index &&
+          this.oldNumber == other.oldNumber &&
+          this.possibility == other.possibility);
+
+  @override
+  String toString() =>
+      "ChangeFromNumberToPossibility { $index, $oldNumber, $possibility }";
+
+  @override
+  R visit<R extends Object?>(
+          {required R Function(ChangeNumber) changeNumber,
+          required R Function(AddPossibility) addPossibility,
+          required R Function(RemovePossibility) removePossibility,
+          required R Function(CommitNumber) commitNumber,
+          required R Function(ClearTile) clearTile,
+          required R Function(ChangeFromNumberToPossibility)
+              changeFromNumberToPossibility}) =>
+      changeFromNumberToPossibility(this);
 }

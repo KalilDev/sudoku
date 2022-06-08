@@ -149,6 +149,19 @@ extension AAA on SudokuAppBoardState {
           n,
         )),
       );
+
+// number -> ChangeFromNumberToPossibility -> possibilities
+  Maybe<ChangeFromNumberToPossibility> changeFromNumberToPossibilityE(
+          SudokuBoardIndex index, int possibility) =>
+      tileStateAt(index).visit(
+        constTileState: (_) => const None(),
+        possibilitiesTileState: (ps) => None(),
+        numberTileState: (n) => Just(ChangeFromNumberToPossibility(
+          index,
+          n,
+          possibility,
+        )),
+      );
 }
 
 TileState tileStateAtWith(
@@ -322,6 +335,7 @@ class SudokuAppBoardStateBuilder
 // possibilities -> ClearTile -> possiblities
 // number -> ChangeNumber -> number
 // number -> ClearTile -> possibilities
+// number -> ChangeFromNumberToPossibilities -> possibilities
 @data(
   #TileState,
   [],
@@ -374,6 +388,11 @@ typedef TileStateMatrix = Matrix<TileState>;
             args: [T(#int)], asserts: ['{}.length != 0 || oldNumber != 0']),
         #oldNumber:
             T(#int, asserts: ['{} != 0 || oldPossibilities.length != 0']),
+      },
+      #ChangeFromNumberToPossibility: {
+        #index: T(#SudokuBoardIndex),
+        #oldNumber: T(#int),
+        #possibility: T(#int),
       }
     },
     deriveMode: adt.UnionVisitDeriveMode.data,
@@ -451,7 +470,18 @@ mixin SudokuAppBoardChangeUndoable
           }
           const newTileState = PossibilitiesTileState([]);
           bdr.changeTileStateAt(clearTile.index, newTileState);
-          ;
+        },
+// number -> ChangeFromNumberToPossibilities -> possibilities
+        (changeFromNumberToPossibility) {
+          final currentState =
+              bdr.tileStateAt(changeFromNumberToPossibility.index);
+          assert(currentState is NumberTileState);
+          assert((currentState as NumberTileState).number ==
+              changeFromNumberToPossibility.oldNumber);
+          final newTileState = PossibilitiesTileState(
+              [changeFromNumberToPossibility.possibility]);
+          bdr.changeTileStateAt(
+              changeFromNumberToPossibility.index, newTileState);
         },
       );
 
@@ -513,6 +543,19 @@ mixin SudokuAppBoardChangeUndoable
           }
           bdr.changeTileStateAt(clearTile.index, newTileState);
           ;
+        },
+// number <- ChangeFromNumberToPossibilities <- possibilities
+        (changeFromNumberToPossibility) {
+          final currentState =
+              bdr.tileStateAt(changeFromNumberToPossibility.index);
+          assert(currentState is PossibilitiesTileState);
+          assert(
+              (currentState as PossibilitiesTileState).possibilities.single ==
+                  changeFromNumberToPossibility.possibility);
+          final newTileState =
+              NumberTileState(changeFromNumberToPossibility.oldNumber);
+          bdr.changeTileStateAt(
+              changeFromNumberToPossibility.index, newTileState);
         },
       );
 }
