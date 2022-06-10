@@ -41,7 +41,7 @@ ffi.DynamicLibrary _openLib(
 }
 
 final libsudoku = () {
-  final libsudoku = _openLib('libsudoku', '2.0.1');
+  final libsudoku = _openLib('libsudoku', '2.0.4');
   // Initialize the random state.
   final s_rand_set_state = libsudoku.lookupFunction<
       s_rand_set_state_signature_native,
