@@ -2,7 +2,7 @@ library app.widget.decoration;
 
 import 'dart:math';
 
-import 'package:app/old/board_button/board_button.dart';
+import 'board_button.dart';
 import 'package:app/util/monadic.dart';
 import 'package:flutter/material.dart';
 

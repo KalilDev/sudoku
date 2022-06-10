@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:app/module/base.dart';
-import 'package:app/old/board_button/board_button.dart';
+import 'package:app/widget/board_button.dart';
 import 'package:app/util/l10n.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:app/widget/animation_options.dart';
@@ -13,7 +13,6 @@ import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'flutter_intents.dart';
-import 'locking.dart';
 
 extension on AppLocalizations {
   String tileIndexedInfo(int r, int c, String state) =>
