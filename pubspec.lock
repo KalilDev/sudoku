@@ -629,7 +629,7 @@ packages:
       name: value_notifier
       url: "http://localhost:4000"
     source: hosted
-    version: "0.0.2-prerelease.19"
+    version: "0.0.2-prerelease.20"
   vector_math:
     dependency: transitive
     description:
