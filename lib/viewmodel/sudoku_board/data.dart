@@ -17,37 +17,48 @@ TileMatrix emptyTileMatrix(int side) => List.generate(
       growable: false,
     );
 
-printMatrix(Matrix<Object> m) => m.map((l) => l.toString()).join('\n');
+typedef ValidationMatrix = Matrix<Validation>;
 
-TileMatrix tileMatrixFromState(SudokuAppBoardState state) {
-  final side = state.side;
-  final m = emptyTileMatrix(side);
-  for (int j = 0; j < side; j++) {
-    for (int i = 0; i < side; i++) {
-      final index = SudokuBoardIndex(i, j);
-      {
-        final permanent = sudokuBoardGetAt(state.fixedNumbers, index);
-        if (permanent != 0) {
-          matrixSetAt<SudokuTile>(m, index, Permanent(permanent));
-          continue;
-        }
-      }
-      {
-        final current = sudokuBoardGetAt(state.currentNumbers, index);
-        if (current != 0) {
-          matrixSetAt<SudokuTile>(
-              m, index, Number(current, Validation.unknown));
-          continue;
-        }
-      }
-      final ps = matrixGetAt(state.currentPossibilities, index);
-      matrixSetAt<SudokuTile>(m, index, Possibilities(ps));
-    }
-    // lock the current row
-    m[j] = UnmodifiableListView(m[j]);
+TileMatrix? validatedFromValidationAndNotValidated(
+  SudokuBoard? validation,
+  TileStateMatrix? notValidated,
+) {
+  if (validation == null || notValidated == null) {
+    return null;
   }
-  // lock the matrix
-  return UnmodifiableListView(m);
+  final side = notValidated.length;
+  return matrixGenerate(
+      side,
+      (index) => matrixGetAt(notValidated, index).visit(
+            constTileState: Permanent.new,
+            possibilitiesTileState: Possibilities.new,
+            numberTileState: (n) {
+              final Validation result;
+              final validatedNumber = sudokuBoardGetAt(validation, index);
+              if (validatedNumber == 0) {
+                result = Validation.unknown;
+              } else {
+                result = validatedNumber == n
+                    ? Validation.valid
+                    : Validation.invalid;
+              }
+              return Number(n, result);
+            },
+          ));
+}
+
+TileMatrix tileMatrixFromTileStateAndValidation(
+  TileStateMatrix tileStates,
+  ValidationMatrix validation,
+) {
+  final side = tileStates.length;
+  return matrixGenerate(
+      side,
+      (index) => matrixGetAt(tileStates, index).visit(
+            constTileState: Permanent.new,
+            possibilitiesTileState: Possibilities.new,
+            numberTileState: (n) => Number(n, matrixGetAt(validation, index)),
+          ));
 }
 
 typedef IndexedTile = Tuple<SudokuBoardIndex, SudokuTile>;
@@ -71,10 +82,6 @@ enum Validation {
   valid,
   invalid,
 }
-
-// TODO: loading????????
-// ig an SudokuTile + an inherited widget would be the best option, no
-// additional complexity on the data
 
 // data SudokuTile = Permanent Int
 //                 | Number Int Validation

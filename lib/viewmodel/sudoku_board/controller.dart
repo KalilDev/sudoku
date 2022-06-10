@@ -5,9 +5,16 @@ import 'package:utils/event_sourcing.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
+// We need this so we can differentiate from null (no lastEvent) to an
+// _ValidationToken
+class _ValidationToken {
+  const _ValidationToken();
+}
+
 class SudokuViewBoardController
     extends SubcontrollerBase<SudokuViewController, SudokuViewBoardController> {
   final EventNotifier<SudokuBoardIndex> _didPressTile = EventNotifier();
+  final EventNotifier<_ValidationToken> _didValidate = EventNotifier();
   final ValueListenable<SudokuBoardIndex?> _selectedIndex;
   final int side;
   final SudokuController _sudokuController;
@@ -18,27 +25,57 @@ class SudokuViewBoardController
     ControllerHandle<SudokuController> sudokuController,
   ) : _sudokuController = sudokuController.unwrap;
 
-  // TODO: how tf do i represent validation? maybe another matrix that i can
-  // modify, and binding it together with this board? Yeah, defo. Using an proxy
-  // value listenable will allow me to swap between an oneshot valdation and an
-  // always correct validator.
-  ValueListenable<TileMatrix> get _notValidatedBoard =>
-      _sudokuController.snapshot
-          .map((snap) => snap == null ? null : tileMatrixFromState(snap))
-          .map((tiles) => tiles ?? emptyTileMatrix(side));
+  ValueListenable<SudokuBoard?> get _solvedBoard => _sudokuController.snapshot
+      .map((snap) => snap?.solvedBoard)
+      .unique(sudokuBoardEquals);
+  ValueListenable<TileStateMatrix?> get _notValidatedBoard =>
+      _sudokuController.snapshot.map((snap) => snap?.tileStates);
 
-  ValueListenable<TileMatrix> get board => _notValidatedBoard;
+  ValueListenable<_ValidationToken?> get didValidate => _didValidate.view();
+
+  late final ValueListenable<SudokuBoard> __validationBoard = didValidate
+      .bind((token) => token == null ? null.asValueListenable : _solvedBoard)
+      .bind((solvedBoard) {
+    print("gonna start folding");
+    return solvedBoard == null
+        ? emptySudokuBoard(side).asValueListenable
+        : _didPressTile.view().fold(solvedBoard, (board, event) {
+            print("gonna fold");
+            if (event == null) {
+              return board;
+            }
+            if (sudokuBoardGetAt(board, event) == 0) {
+              return board;
+            }
+            // The validation was not touched. Therefore, we zero it
+            final newBoard = cloneSudokuBoard(board);
+            sudokuBoardSetAt(newBoard, event, 0);
+            return sudokuBoardCopyLocked(newBoard);
+          });
+  });
+
+  ValueListenable<SudokuBoard> get _validationBoard => __validationBoard.view();
+  ValueListenable<TileMatrix?> get _validatedBoard =>
+      validatedFromValidationAndNotValidated.curry.asValueListenable >>
+      _validationBoard >>
+      _notValidatedBoard;
+
+  ValueListenable<TileMatrix> get board =>
+      _validatedBoard.map((board) => board ?? emptyTileMatrix(side));
 
   ValueListenable<SudokuBoardIndex?> get selectedIndex => _selectedIndex.view();
   ValueListenable<SudokuBoardIndex> get didPressTile =>
       _didPressTile.viewNexts();
 
   late final pressTile = _didPressTile.add;
+  void validate() => _didValidate.add(const _ValidationToken());
 
   void dispose() {
     IDisposable.disposeAll([
+      _didValidate,
       _didPressTile,
       _selectedIndex,
+      __validationBoard,
     ]);
     super.dispose();
   }
@@ -246,6 +283,9 @@ class SudokuViewController extends ControllerBase<SudokuViewController> {
       actions.didValidate.tap(_validate);
       actions.didToggleMode.tap(_toggleMode);
       actions.didUndo.tap(_undo);
+    }
+    {
+      actions.didValidate.listen(board.validate);
     }
   }
 

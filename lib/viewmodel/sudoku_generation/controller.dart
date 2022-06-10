@@ -19,7 +19,7 @@ class GenerationController extends ControllerBase<GenerationController> {
         .map((snap) => snap.hasData ? snap.data : null);
     _currentChallengeBoard = generationEvents.fold(
       null,
-      (e, currentBoard) {
+      (currentBoard, e) {
         if (e is! SudokuGenerationFoundSquare) {
           return currentBoard;
         }
@@ -54,7 +54,7 @@ class GenerationController extends ControllerBase<GenerationController> {
   );
 
   late final ValueListenable<List<SudokuGenerationEvent>> _events =
-      generationEvents.fold([], (e, acc) => e == null ? acc : [...acc, e]);
+      generationEvents.fold([], (acc, e) => e == null ? acc : [...acc, e]);
 
   late final ValueListenable<SudokuBoard?> _currentChallengeBoard;
 
@@ -79,7 +79,7 @@ class GenerationController extends ControllerBase<GenerationController> {
       _generationEvents.view();
   ValueListenable<int?> get filledTiles => generationEvents.fold(
         null,
-        (e, filled) =>
+        (filled, e) =>
             filled ??
             0 + ((e is SudokuGenerationFoundSquare && e.number != 0) ? 1 : 0),
       );

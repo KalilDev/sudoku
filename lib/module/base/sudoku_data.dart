@@ -33,6 +33,26 @@ int sudokuBoardGetAt(SudokuBoard board, SudokuBoardIndex index) =>
     board[index.y][index.x];
 void sudokuBoardSetAt(SudokuBoard board, SudokuBoardIndex index, int value) =>
     board[index.y][index.x] = value;
+bool sudokuBoardEquals(SudokuBoard? a, SudokuBoard? b) {
+  if (identical(a, b)) {
+    return true;
+  }
+  if (a == null || b == null) {
+    return false;
+  }
+  if (a.length != b.length) {
+    return false;
+  }
+  for (var r = 0; r < a.length; r++) {
+    for (var c = 0; c < a.length; c++) {
+      final index = SudokuBoardIndex(r, c);
+      if (sudokuBoardGetAt(a, index) != sudokuBoardGetAt(b, index)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 SudokuBoard emptySudokuBoard(int side) =>
     List.generate(side, (_) => Uint8List(side), growable: false);
