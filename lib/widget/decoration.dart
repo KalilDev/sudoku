@@ -97,7 +97,7 @@ class _SudokuBoardDecorationPainter extends BoxPainter {
     final sideInCells = sideSqrt * sideSqrt;
     final cellSmallGridDecorationSize = min(
       sideOfCell * 0.8,
-      BoardButtonBase.maxButtonSize * 0.8,
+      BoardButton.maxButtonSize * 0.8,
     );
     final cellSmallGridPadding = (sideOfCell - cellSmallGridDecorationSize) / 2;
     for (var i = 1; i < sideSqrt; i++) {

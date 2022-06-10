@@ -74,18 +74,9 @@ class _TileWidget extends StatelessWidget {
         ),
         child: BoardButton(
           onTap: tile is Permanent ? null : invokeIntent,
-          isLoading: isLocked(context),
+          tile: tile,
           isSelected: isSelected ?? false,
-          text: tile.visit(
-            permanent: (n) => n.toString(),
-            number: (n, _) => n.toString(),
-            possibilities: (ps) => (ps.toList()..sort()).join(' '),
-          ),
-          isBottomText: tile is Possibilities,
-          isInvalid: tile is Number &&
-              (tile as Number).validation == Validation.invalid,
           animationOptions: animationOptions(context),
-          isInitial: tile is Permanent,
         ),
       ),
     );
