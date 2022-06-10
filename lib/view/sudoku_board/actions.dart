@@ -193,6 +193,20 @@ class SudokuBoardActions extends ControllerWidget<SudokuViewActionsController> {
   Widget build(ControllerContext<SudokuViewActionsController> context) {
     final placementMode = context.use(controller.placementMode);
     final canUndo = context.use(controller.canUndo);
+    void onResetBoard() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.board_actions_reseted)),
+      );
+    }
+
+    void onRequestValidation() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.board_actions_validated)),
+      );
+    }
+
+    context.useActionHandler(controller.didReset, onResetBoard);
+    context.useActionHandler(controller.didValidate, onRequestValidation);
 
     return SudokuBoardActionsWidget(
       placementMode: placementMode,
