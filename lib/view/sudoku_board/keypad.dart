@@ -157,92 +157,92 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
       padding: EdgeInsets.all(padding),
       child: ValueListenableOwnerBuilder<int?>(
         valueListenable: selectedNumber,
-        builder: (context, selectedNumber) => CustomMultiChildLayout(
-          delegate: _KeypadLayoutDelegate(
-            gutter,
-            side + 1,
-            viewLayoutOrientation(context) == Orientation.portrait
-                ? Directionality.of(context) == TextDirection.ltr
-                    ? _EndAlignment.right
-                    : _EndAlignment.left
-                : _EndAlignment.center,
-          ),
-          children: [
-            for (int i = 0; i < side; i++)
-              LayoutId(
-                  id: i, child: _buildNumber(context, i + 1, selectedNumber())),
-            LayoutId(id: side, child: _buildClear(context, selectedNumber())),
-          ],
-        ),
+        builder: (context, selectedNumber) => _KeypadLayout(
+            spacing: gutter,
+            endAlignment: viewLayoutOrientation(context) == Orientation.portrait
+                ? mediaQuery(context).size.aspectRatio < 3 / 4
+                    ? _Alignment.center
+                    : _Alignment.end
+                : mediaQuery(context).size.aspectRatio < 5 / 4
+                    ? _Alignment.end
+                    : _Alignment.center,
+            children: [
+              for (int i = 0; i < side; i++)
+                _buildNumber(context, i + 1, selectedNumber()),
+              _buildClear(context, selectedNumber()),
+            ]),
       ),
     );
   }
 }
 
-enum _EndAlignment {
-  left,
+enum _Alignment {
+  start,
   center,
-  right,
+  end,
 }
 
-class _KeypadLayoutDelegate extends MultiChildLayoutDelegate {
+class _KeypadLayout extends StatelessWidget {
+  const _KeypadLayout({
+    Key? key,
+    required this.spacing,
+    required this.endAlignment,
+    required this.children,
+  }) : super(key: key);
   final double spacing;
-  final int count;
-  final _EndAlignment endAligment;
+  final _Alignment endAlignment;
+  final List<Widget> children;
 
-  _KeypadLayoutDelegate(this.spacing, this.count, this.endAligment);
+  int _countPerRowFor(double width) {
+    for (var c = 1; c <= children.length; c++) {
+      final spaceOccupied = c * minKeypadDimension + (c - 1) * spacing;
+      if (spaceOccupied > width) {
+        return c - 1;
+      }
+    }
+    return children.length;
+  }
 
-  @override
-  Size getSize(BoxConstraints constraints) {
-    final maxInEachRow =
-        (constraints.maxWidth - (count - 1) * spacing) / minKeypadDimension;
-    final rows = (count / maxInEachRow).ceil();
-    return Size(
-      constraints.maxWidth,
-      rows * minKeypadDimension + (rows - 1) * spacing,
+  CrossAxisAlignment _crossAxisAlignment() {
+    switch (endAlignment) {
+      case _Alignment.start:
+        return CrossAxisAlignment.start;
+      case _Alignment.center:
+        return CrossAxisAlignment.center;
+      case _Alignment.end:
+        return CrossAxisAlignment.end;
+    }
+  }
+
+  Widget _buildLayout(BuildContext context, BoxConstraints constraints) {
+    final width = constraints.maxWidth;
+    final maxCountPerRow = _countPerRowFor(width);
+    final rows = (children.length / maxCountPerRow).ceil();
+    final inRow = (children.length / rows).ceil();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: _crossAxisAlignment(),
+      children: [
+        for (var r = 0; r < rows; r++) ...[
+          if (r != 0) SizedBox(height: spacing),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = r * inRow;
+                  i < (r + 1) * inRow && i < children.length;
+                  i++) ...[
+                if (i != r * inRow) SizedBox(width: spacing),
+                children[i]
+              ],
+            ],
+          )
+        ]
+      ],
     );
   }
 
   @override
-  void performLayout(Size size) {
-    final childConstraints = BoxConstraints.loose(size);
-    final childSize = layoutChild(0, childConstraints);
-    for (var i = 1; i < count; i++) {
-      final size = layoutChild(i, childConstraints);
-      assert(size == childSize);
-    }
-    final maxInEachRow = (size.width - (count - 1) * spacing) / childSize.width;
-    final rows = (count / maxInEachRow).ceil();
-    final inEachRegularRow = count ~/ rows;
-    final inLastRow = count % inEachRegularRow;
-    for (var r = 0; r < rows; r++) {
-      final regularRowStartOffset = (size.width -
-              inEachRegularRow * childSize.width -
-              (inEachRegularRow - 1) * spacing) /
-          2;
-      if (r == rows - 1 && inLastRow != inEachRegularRow) {
-        //TODO:
-        break;
-      }
-      for (var c = 0; c < inEachRegularRow; c++) {
-        final i = r * inEachRegularRow + c;
-        positionChild(
-          i,
-          Offset(
-            regularRowStartOffset + c * (childSize.width + spacing),
-            r * (childSize.height + spacing),
-          ),
-        );
-        ;
-      }
-    }
-  }
-
-  @override
-  bool shouldRelayout(_KeypadLayoutDelegate oldDelegate) =>
-      oldDelegate.spacing != spacing ||
-      oldDelegate.count != count ||
-      oldDelegate.endAligment != endAligment;
+  Widget build(BuildContext context) => LayoutBuilder(builder: _buildLayout);
 }
 
 class SudokuBoardKeypad extends ControllerWidget<SudokuViewKeypadController> {
