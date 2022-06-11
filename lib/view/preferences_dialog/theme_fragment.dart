@@ -372,7 +372,12 @@ class _ThemeCard extends StatelessWidget {
                   ),
                 ),
                 color: color,
-                child: child,
+                child: Center(
+                  child: DefaultTextStyle.merge(
+                    style: context.textTheme.titleSmall,
+                    child: child,
+                  ),
+                ),
               ),
             ),
           ),
