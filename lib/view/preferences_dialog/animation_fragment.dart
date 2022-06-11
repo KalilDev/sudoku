@@ -2,7 +2,7 @@ import 'package:app/module/animation.dart';
 import 'package:app/util/l10n.dart';
 import 'package:app/viewmodel/preferences_dialog.dart';
 import 'package:app/widget/slider_with_title.dart';
-import 'package:app/widget/switch_tile.dart';
+import 'package:app/widget/tile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
