@@ -5,8 +5,7 @@ import 'package:app/module/animation.dart';
 import 'package:app/module/base.dart';
 import 'package:app/module/theme.dart';
 import 'package:app/navigation/src/navigation.dart';
-import 'package:app/view/home.dart';
-import 'package:app/view/preferences_dialog.dart';
+import 'package:app/text_theme.dart';
 import 'package:app/viewmodel/home.dart';
 import 'package:app/widget/animation_options.dart';
 import 'package:flutter/foundation.dart';
@@ -160,6 +159,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
               .map((theme) => theme.visit(
                     sudokuMaterialYouTheme: (theme) => MD3Themes(
                       monetThemeForFallbackPalette: MonetTheme.baseline3p,
+                      textTheme: textTheme,
                       builder: (context, light, dark) => MaterialApp(
                         theme: light,
                         darkTheme: dark,
@@ -183,6 +183,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                         usePlatformPalette: false,
                         monetThemeForFallbackPalette:
                             seededThemeToMonetTheme(theme),
+                        textTheme: textTheme,
                         builder: (context, light, dark) => MaterialApp(
                           theme: light,
                           darkTheme: dark,
@@ -192,10 +193,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                           locale: _locale,
                           localizationsDelegates: _localizationsDelegates,
                           supportedLocales: _supportedLocales,
-                          color: _color(
-                            context,
-                            themeMode,
-                          ),
+                          color: _color(context, themeMode),
                           builder: _builder(themeMode),
                           home: SudokuNavigation.homeView,
                           showSemanticsDebugger: kDebugSemantics,

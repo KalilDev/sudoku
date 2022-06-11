@@ -1,5 +1,6 @@
 import 'package:app/main.dart';
 import 'package:app/module/theme.dart';
+import 'package:app/text_theme.dart';
 import 'package:app/view/sudoku_board/layout.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
@@ -69,6 +70,7 @@ class ThemeOverride extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MD3Themes(
+        textTheme: textTheme,
         monetThemeForFallbackPalette: theme.visit(
           sudokuMaterialYouTheme: (_) => MonetTheme.baseline3p,
           sudokuSeededTheme: (seeded) => seededThemeToMonetTheme(seeded),
