@@ -1,8 +1,11 @@
+import 'dart:ui';
+
 import 'package:app/util/l10n.dart';
 import 'package:app/util/monadic.dart' hide colorScheme;
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:value_notifier/value_notifier.dart';
 
@@ -81,8 +84,12 @@ class KeypadButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: isLocked(context) ? null : invokeAction,
           style: (isSelected
-              ? selectedkeypadStyle
-              : unselectedkeypadStyle)(context),
+                  ? selectedkeypadStyle
+                  : unselectedkeypadStyle)(context)
+              .copyWith(
+                  textStyle: MaterialStateProperty.all(
+            context.textTheme.headlineSmall,
+          )),
           child: _KeypadButtonChildWrapper(
             child: BlockSemantics(
               child: child,
