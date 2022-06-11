@@ -29,6 +29,53 @@ class MD3ValueListenableSwitchTile extends StatelessWidget {
       .build();
 }
 
+class MD3ListTile extends StatelessWidget {
+  const MD3ListTile({
+    Key? key,
+    this.onTap,
+    this.title,
+    this.subtitle,
+    this.trailing,
+    this.contentPadding,
+  }) : super(key: key);
+  final VoidCallback? onTap;
+  final Widget? title;
+  final Widget? subtitle;
+  final Widget? trailing;
+  final EdgeInsets? contentPadding;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        onTap: onTap,
+        title: title != null
+            ? DefaultTextStyle(
+                style: context.textTheme.titleMedium.copyWith(
+                  color: context.colorScheme.onSurface,
+                ),
+                child: title!,
+              )
+            : null,
+        subtitle: subtitle != null
+            ? DefaultTextStyle(
+                style: context.textTheme.labelLarge.copyWith(
+                  color: context.colorScheme.onSurfaceVariant,
+                ),
+                child: subtitle!,
+              )
+            : null,
+        trailing: trailing != null
+            ? IconTheme.merge(
+                data: IconThemeData(
+                  color: context.colorScheme.onSurface,
+                  opacity: 1,
+                ),
+                child: trailing!,
+              )
+            : null,
+        contentPadding: contentPadding,
+      );
+}
+
 class MD3SwitchTile extends StatelessWidget {
   const MD3SwitchTile({
     Key? key,
@@ -44,7 +91,7 @@ class MD3SwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MergeSemantics(
-        child: ListTile(
+        child: MD3ListTile(
           onTap: () => setValue(!value),
           title: title,
           subtitle: subtitle,
