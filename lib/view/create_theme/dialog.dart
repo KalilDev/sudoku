@@ -3,7 +3,7 @@ import 'package:app/util/l10n.dart';
 import 'package:app/util/monadic.dart';
 import 'package:app/viewmodel/create_theme.dart';
 import 'package:app/widget/hue_picker.dart';
-import 'package:app/widget/switch_tile.dart';
+import 'package:app/widget/tile.dart';
 import 'package:app/widget/theme_override.dart';
 import 'package:app/widget/value_listenable_text_field.dart';
 import 'package:flutter/material.dart';
@@ -132,7 +132,7 @@ class _CreateThemeDialogBody extends ControllerWidget<CreateThemeController> {
               isDark ? Brightness.dark : Brightness.light,
             ),
           ),
-          ListTile(title: Text(context.l10n.theme_primary)),
+          MD3ListTile(title: Text(context.l10n.theme_primary)),
           controller.seed
               .map(_hueFromColor)
               .map(
