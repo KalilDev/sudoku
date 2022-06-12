@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:app/widget/decoration.dart';
@@ -206,18 +207,16 @@ class _SplashScreenAnimationLayout extends StatelessWidget {
   final Widget decoration;
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-        child: CustomMultiChildLayout(
-          delegate: _SplashScreenLayoutDelegate(
-            textPosition,
-            sudokuSize,
-            sudokuPosition,
-          ),
-          children: [
-            LayoutId(id: _Layout.text, child: text),
-            LayoutId(id: _Layout.decoration, child: decoration),
-          ],
+  Widget build(BuildContext context) => CustomMultiChildLayout(
+        delegate: _SplashScreenLayoutDelegate(
+          textPosition,
+          sudokuSize,
+          sudokuPosition,
         ),
+        children: [
+          LayoutId(id: _Layout.text, child: text),
+          LayoutId(id: _Layout.decoration, child: decoration),
+        ],
       );
 }
 
@@ -240,8 +239,8 @@ class _SplashScreenLayoutDelegate extends MultiChildLayoutDelegate {
     const maxDistanceFromTextToSudoku = 24.0;
     final distanceFromTextToSudoku = lerpDouble(minDistanceFromTextToSudoku,
         maxDistanceFromTextToSudoku, 1 - textPosition)!;
-    const minSudokuWidth = 72.0;
-    final maxSudokuWidth = size.width - 4;
+    const minSudokuWidth = 88.0;
+    final maxSudokuWidth = min(size.width, 400) - 4;
     final sudokuWidth = lerpDouble(minSudokuWidth, maxSudokuWidth, sudokuSize)!;
     // TODO: final finalSudokuPosition = 64.0;
     final textWSize = layoutChild(_Layout.text, BoxConstraints.loose(size));
