@@ -19,6 +19,7 @@ import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import 'widget/splash_screen.dart';
 import 'widget/theme_override.dart';
 
 const COLOR_CHANNEL_NAME = "io.kalildev.github.sudoku/splash_colors";
@@ -169,7 +170,10 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
     ThemeMode themeMode,
   ) =>
       (context, home) => AnimatedMonetColorSchemes<NoAppScheme, NoAppTheme>(
-            child: home!,
+            child: SplashScreen(
+              home: home!,
+              initialColors: widget.splashColors,
+            ),
             themeMode: themeMode,
           );
 
