@@ -39,11 +39,9 @@ class GenerationView extends ControllerWidget<GenerationController> {
   static Widget _loadingView(
     BuildContext context,
     GlobalKey sudokuBoardKey,
-    double? progress,
     SudokuBoard challengeBoard,
   ) =>
       _LoadingGenerationView(
-        progress: progress,
         board: _tileMatrixFromSudokuBoard(challengeBoard),
         side: challengeBoard.length,
         sudokuBoardKey: sudokuBoardKey,
@@ -89,7 +87,6 @@ class GenerationView extends ControllerWidget<GenerationController> {
         // board would be used more than once, violating the ownership contract
         final loadingViewW =
             (_loadingView.curry(context)(sudokuBoardKey).asValueListenable >>
-                    controller.generationProgress >>
                     controller.challengeBoard)
                 .build();
         return generatedBoard
@@ -118,12 +115,10 @@ class GenerationView extends ControllerWidget<GenerationController> {
 class _LoadingGenerationView extends StatelessWidget {
   const _LoadingGenerationView({
     Key? key,
-    required this.progress,
     required this.board,
     required this.side,
     required this.sudokuBoardKey,
   }) : super(key: key);
-  final double? progress;
   final TileMatrix board;
   final int side;
   final GlobalKey sudokuBoardKey;
@@ -136,7 +131,7 @@ class _LoadingGenerationView extends StatelessWidget {
           top: 0,
           left: 0,
           right: 0,
-          child: LinearProgressIndicator(value: progress),
+          child: LinearProgressIndicator(value: null),
         ),
         Positioned.fill(
           child: Actions(

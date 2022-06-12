@@ -66,23 +66,8 @@ class GenerationController extends ControllerBase<GenerationController> {
 
   ValueListenable<SudokuBoard> get challengeBoard =>
       currentChallengeBoard.map((b) => b ?? emptySudokuBoard(side));
-
-  ValueListenable<double?> get generationProgress =>
-      currentChallengeBoard.view().bind<double?>(
-            (currentBoard) => currentBoard != null
-                ? 1.0.asValueListenable.cast()
-                : filledTiles.map((filledTiles) => filledTiles == null
-                    ? null
-                    : filledTiles / targetFilledTiles),
-          );
   ValueListenable<SudokuGenerationEvent?> get generationEvents =>
       _generationEvents.view();
-  ValueListenable<int?> get filledTiles => generationEvents.fold(
-        null,
-        (filled, e) =>
-            filled ??
-            0 + ((e is SudokuGenerationFoundSquare && e.number != 0) ? 1 : 0),
-      );
 
   void init() {
     super.init();
