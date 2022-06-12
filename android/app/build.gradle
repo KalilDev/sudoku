@@ -55,6 +55,7 @@ android {
 
     defaultConfig {
         applicationId "kalildev.github.io.sudoku"
+        minSdkVersion 21 //flutter.minSdkVersion splashscreen needs 21
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -88,4 +89,17 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    def core_version = "1.8.0"
+
+    // Java language implementation
+    implementation "androidx.core:core:$core_version"
+    // Kotlin
+    implementation "androidx.core:core-ktx:$core_version"
+
+    // Optional - APIs for SplashScreen, including compatiblity helpers on devices prior Android 12
+    implementation "androidx.core:core-splashscreen:1.0.0-rc01"
+
+
+
 }
