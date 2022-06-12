@@ -10,14 +10,32 @@ import 'package:app/viewmodel/home.dart';
 import 'package:app/widget/animation_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:path_provider/path_provider.dart' as pp;
+import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'widget/theme_override.dart';
+
+const COLOR_CHANNEL_NAME = "io.kalildev.github.sudoku/splash_colors";
+const COLOR_CHANNEL_GET_COLORS_NAME = "get_colors";
+
+final splashColorsMethodChannel = MethodChannel(COLOR_CHANNEL_NAME);
+Future<Tuple2<Color, Color>?> getSplashColors() async {
+  final colors = await splashColorsMethodChannel
+      .invokeMapMethod<String, int>(COLOR_CHANNEL_GET_COLORS_NAME);
+  if (colors == null || colors.isEmpty) {
+    return null;
+  }
+  return Tuple2(
+    Color(colors['ic_launcher_background']!),
+    Color(colors['ic_launcher_foreground']!),
+  );
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,11 +58,16 @@ void main() async {
     }
   });
   await untilThemeControllerIsReady;
+  // Get the splash colors for a seamless transition
+  final splashColors = await getSplashColors();
   // Now run the app with this theme controller and inject it into the tree.
   // Use injector because it disposes the controller later.
   final app = InheritedControllerInjector<SudokuThemeController>(
     factory: (_) => themeController,
-    child: SudokuApp(controller: themeController.handle),
+    child: SudokuApp(
+      controller: themeController.handle,
+      splashColors: splashColors,
+    ),
   );
   // Also inject an animation controller
   final appWithAnimation = ControllerInjectorBuilder<SudokuAnimationController>(
@@ -70,10 +93,12 @@ class SudokuApp extends StatefulWidget {
   const SudokuApp({
     Key? key,
     required this.controller,
+    this.splashColors,
   }) : super(
           key: key,
         );
   final ControllerHandle<SudokuThemeController> controller;
+  final Tuple2<Color, Color>? splashColors;
 
   @override
   State<SudokuApp> createState() => _SudokuAppState();
