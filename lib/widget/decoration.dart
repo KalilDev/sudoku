@@ -11,10 +11,16 @@ class SudokuBoardDecoration extends StatelessWidget {
     Key? key,
     required this.sideSqrt,
     required this.secondaryOpacity,
+    this.largeStrokeWidth = const AlwaysStoppedAnimation(2.0),
+    this.color,
+    this.secondaryColor,
     this.child,
   }) : super(key: key);
   final int sideSqrt;
   final Animation<double> secondaryOpacity;
+  final Animation<double> largeStrokeWidth;
+  final Color? color;
+  final Color? secondaryColor;
   final Widget? child;
 
   static const maxNoChildDecorationSide = 400.0;
@@ -22,14 +28,16 @@ class SudokuBoardDecoration extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decoratedChild = AnimatedBuilder(
-      animation: secondaryOpacity,
+      animation: Listenable.merge([secondaryOpacity, largeStrokeWidth]),
       builder: (context, child) => DecoratedBox(
         decoration: _SudokuBoardDecoration(
             sideSqrt: sideSqrt,
-            color: colorScheme(context).primary,
-            secondaryColor: colorScheme(context)
-                .secondary
-                .withOpacity(secondaryOpacity.value)),
+            color: color ?? colorScheme(context).primary,
+            largeStrokeWidth: largeStrokeWidth.value,
+            secondaryColor: secondaryColor ??
+                colorScheme(context)
+                    .secondary
+                    .withOpacity(secondaryOpacity.value)),
         child: child,
       ),
       child: child,
@@ -56,36 +64,40 @@ class SudokuBoardDecoration extends StatelessWidget {
 
 class _SudokuBoardDecoration extends Decoration {
   final int sideSqrt;
+  final double largeStrokeWidth;
   final Color color;
   final Color secondaryColor;
 
   const _SudokuBoardDecoration({
     required this.sideSqrt,
+    required this.largeStrokeWidth,
     required this.color,
     required this.secondaryColor,
   });
 
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) =>
-      _SudokuBoardDecorationPainter(sideSqrt, color, secondaryColor);
+      _SudokuBoardDecorationPainter(
+          sideSqrt, largeStrokeWidth, color, secondaryColor);
 }
 
 class _SudokuBoardDecorationPainter extends BoxPainter {
   final int sideSqrt;
+  final double largeStrokeWidth;
   final Color color;
   final Color secondaryColor;
 
-  _SudokuBoardDecorationPainter(this.sideSqrt, this.color, this.secondaryColor);
+  _SudokuBoardDecorationPainter(
+      this.sideSqrt, this.largeStrokeWidth, this.color, this.secondaryColor);
 
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
     canvas.save();
     canvas.translate(offset.dx, offset.dy);
-    const largeGridStrokeWidth = 2.0;
     final largeGridPaint = Paint()
       ..color = color
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = largeGridStrokeWidth;
+      ..strokeWidth = largeStrokeWidth;
     const smallGridStrokeWidth = 0.0;
     final smallGridPaint = Paint()
       ..color = secondaryColor
@@ -103,16 +115,16 @@ class _SudokuBoardDecorationPainter extends BoxPainter {
     for (var i = 1; i < sideSqrt; i++) {
       // rows
       canvas.drawLine(
-        Offset(largeGridStrokeWidth / 2, sideOfSquare * i),
-        Offset(side - largeGridStrokeWidth / 2, sideOfSquare * i),
+        Offset(largeStrokeWidth / 2, sideOfSquare * i),
+        Offset(side - largeStrokeWidth / 2, sideOfSquare * i),
         largeGridPaint,
       );
     }
     for (var j = 1; j < sideSqrt; j++) {
       // cols
       canvas.drawLine(
-        Offset(sideOfSquare * j, largeGridStrokeWidth / 2),
-        Offset(sideOfSquare * j, side - largeGridStrokeWidth / 2),
+        Offset(sideOfSquare * j, largeStrokeWidth / 2),
+        Offset(sideOfSquare * j, side - largeStrokeWidth / 2),
         largeGridPaint,
       );
     }
