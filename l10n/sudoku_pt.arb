@@ -65,6 +65,8 @@
     "finish_congratulations": "Parabéns",
     "finish_text": "Você completou o sudoku!",
     "finish_action": "Aeee!",
+    "invalid_description": "O sudoku está invalido",
+    "invalid_action": "Validar",
     "create_theme": "Criar tema",
     "theme_name": "Nome do tema",
     "theme_dark": "Escuro",

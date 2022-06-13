@@ -226,7 +226,25 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
       Navigator.of(context).pop();
     }
 
-    context.useActionHandler(controller.didComplete, onFinished);
+    void onInvalid() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: context.colorScheme.errorContainer,
+          content: Text(
+            context.l10n.invalid_description,
+            style: TextStyle(color: context.colorScheme.onErrorContainer),
+          ),
+          action: SnackBarAction(
+            onPressed: controller.validate,
+            label: context.l10n.invalid_action,
+            textColor: context.colorScheme.error,
+          ),
+        ),
+      );
+    }
+
+    context.useActionHandler(controller.isComplete, onFinished);
+    context.useActionHandler(controller.isInvalid, onInvalid);
 
     return SudokuViewBoardWidget(
       key: sudokuBoardKey,
