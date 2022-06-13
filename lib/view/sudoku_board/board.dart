@@ -9,6 +9,7 @@ import 'package:app/widget/decoration.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_widgets/material_widgets.dart';
 import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -207,6 +208,26 @@ class SudokuViewBoard extends ControllerWidget<SudokuViewBoardController> {
   Widget build(ControllerContext<SudokuViewBoardController> context) {
     final board = context.useLazy((c) => c.board);
     final selected = context.use(controller.selectedIndex);
+    void onFinished() async {
+      await showDialog(
+        context: context,
+        builder: (context) => MD3BasicDialog(
+          icon: const Icon(Icons.celebration_outlined),
+          title: Text(context.l10n.finish_congratulations),
+          content: Text(context.l10n.finish_text),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(context.l10n.finish_action),
+            ),
+          ],
+        ),
+      );
+      Navigator.of(context).pop();
+    }
+
+    context.useActionHandler(controller.didComplete, onFinished);
+
     return SudokuViewBoardWidget(
       key: sudokuBoardKey,
       board: board,

@@ -11,6 +11,30 @@ class _ValidationToken {
   const _ValidationToken();
 }
 
+SudokuBoard _sudokuBoardFromSnap(SudokuAppBoardState state) {
+  final result = emptySudokuBoard(state.side);
+  for (var i = 0; i < state.side; i++) {
+    for (var j = 0; j < state.side; j++) {
+      final index = SudokuBoardIndex(i, j);
+      final permanent = sudokuBoardGetAt(state.fixedNumbers, index);
+      sudokuBoardSetAt(
+          result,
+          index,
+          permanent == 0
+              ? sudokuBoardGetAt(state.currentNumbers, index)
+              : permanent);
+    }
+  }
+  return result;
+}
+
+bool _sudokuBoardEqualsAndNotNull(SudokuBoard? a, SudokuBoard? b) {
+  if (a == null || b == null) {
+    return false;
+  }
+  return sudokuBoardEquals(a, b);
+}
+
 class SudokuViewBoardController
     extends SubcontrollerBase<SudokuViewController, SudokuViewBoardController> {
   final EventNotifier<SudokuBoardIndex> _didPressTile = EventNotifier();
@@ -67,6 +91,16 @@ class SudokuViewBoardController
   ValueListenable<SudokuBoardIndex> get didPressTile =>
       _didPressTile.viewNexts();
 
+  late final ValueListenable<void> _didComplete =
+      (_sudokuBoardEqualsAndNotNull.curry.asValueListenable >>
+              _solvedBoard >>
+              _sudokuController.snapshot
+                  .map((s) => s == null ? null : _sudokuBoardFromSnap(s)))
+          .where((areEqual) => areEqual)
+          .withInitial(false)
+          .unique();
+  ValueListenable<void> get didComplete => _didComplete.view();
+
   late final pressTile = _didPressTile.add;
   void validate() => _didValidate.add(const _ValidationToken());
 
@@ -76,6 +110,7 @@ class SudokuViewBoardController
       _didPressTile,
       _selectedIndex,
       __validationBoard,
+      _didComplete
     ]);
     super.dispose();
   }
