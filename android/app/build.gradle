@@ -81,6 +81,17 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+    splits {
+        // Configures multiple APKs based on ABI.
+        abi {
+        // Enables building multiple APKs per ABI.
+        enable true
+
+        // Specifies that we do not want to also generate a universal APK that includes all ABIs.
+        universalApk true
+        }
+    }
 }
 
 flutter {
