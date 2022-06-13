@@ -156,6 +156,21 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
             .build(),
       );
 
+  static int _maxCrossAxiesForSide(int side) {
+    switch (side) {
+      case 1:
+        return 1;
+      case 4:
+        return 1;
+      case 9:
+        return 2;
+      case 16:
+        return 4;
+      default:
+        throw UnimplementedError();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final padding = context.sizeClass.minimumMargins;
@@ -173,6 +188,8 @@ class SudokuBoardKeypadWidget extends StatelessWidget {
                 : mediaQuery(context).size.aspectRatio < 5 / 4
                     ? _Alignment.end
                     : _Alignment.center,
+            axis: _MainAxis.vertical,
+            maxCrossAxies: _maxCrossAxiesForSide(side),
             children: [
               for (int i = 0; i < side; i++)
                 _buildNumber(context, i + 1, selectedNumber()),
@@ -189,21 +206,33 @@ enum _Alignment {
   end,
 }
 
+enum _MainAxis { vertical, horizontal }
+
+typedef _AxisBuilder = Widget Function({
+  MainAxisSize mainAxisSize,
+  CrossAxisAlignment crossAxisAlignment,
+  required List<Widget> children,
+});
+
 class _KeypadLayout extends StatelessWidget {
   const _KeypadLayout({
     Key? key,
     required this.spacing,
     required this.endAlignment,
     required this.children,
+    required this.axis,
+    required this.maxCrossAxies,
   }) : super(key: key);
   final double spacing;
   final _Alignment endAlignment;
+  final _MainAxis axis;
+  final int maxCrossAxies;
   final List<Widget> children;
 
-  int _countPerRowFor(double width) {
+  int _countPerCrossAxisFor(double crossAxis) {
     for (var c = 1; c <= children.length; c++) {
       final spaceOccupied = c * minKeypadDimension + (c - 1) * spacing;
-      if (spaceOccupied > width) {
+      if (spaceOccupied > crossAxis) {
         return c - 1;
       }
     }
@@ -221,30 +250,39 @@ class _KeypadLayout extends StatelessWidget {
     }
   }
 
+  _AxisBuilder get _mainAxisBuilder =>
+      axis == _MainAxis.vertical ? Column.new : Row.new;
+  _AxisBuilder get _crossAxisBuilder =>
+      axis == _MainAxis.vertical ? Row.new : Column.new;
+
   Widget _buildLayout(BuildContext context, BoxConstraints constraints) {
-    final width = constraints.maxWidth;
-    final maxCountPerRow = _countPerRowFor(width);
-    final rows = (children.length / maxCountPerRow).ceil();
-    final inRow = (children.length / rows).ceil();
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: _crossAxisAlignment(),
-      children: [
-        for (var r = 0; r < rows; r++) ...[
-          if (r != 0) SizedBox(height: spacing),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = r * inRow;
-                  i < (r + 1) * inRow && i < children.length;
-                  i++) ...[
-                if (i != r * inRow) SizedBox(width: spacing),
-                children[i]
+    final crossAxis = axis == _MainAxis.vertical
+        ? constraints.maxWidth
+        : constraints.maxHeight;
+    final maxCountPerCrossAxis = _countPerCrossAxisFor(crossAxis);
+    final crossAxises =
+        (children.length / maxCountPerCrossAxis).ceil().clamp(0, maxCrossAxies);
+    final inCrossAxis = (children.length / crossAxises).ceil();
+    final spacingW = SizedBox.square(dimension: spacing);
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: _mainAxisBuilder(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: _crossAxisAlignment(),
+        children: [
+          for (var c = 0; c < crossAxises; c++) ...[
+            if (c != 0) spacingW,
+            _crossAxisBuilder(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = c * inCrossAxis;
+                    i < (c + 1) * inCrossAxis && i < children.length;
+                    i++) ...[if (i != c * inCrossAxis) spacingW, children[i]],
               ],
-            ],
-          )
-        ]
-      ],
+            )
+          ]
+        ],
+      ),
     );
   }
 
