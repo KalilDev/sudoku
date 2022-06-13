@@ -127,6 +127,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  static const _debugShowCheckedModeBanner = false;
   static const _debugLocale = Locale('en');
   static const _locale = kDebugMode ? _debugLocale : null;
   static const _localizationsDelegates = [
@@ -137,6 +138,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
   static const _supportedLocales = AppLocalizations.supportedLocales;
   static String _onGenerateTitle(BuildContext context) =>
       AppLocalizations.of(context)!.sudoku;
+  static const _showSemanticsDebugger = false;
 
   static Color _primaryContainerColor(
     MonetTheme theme,
@@ -179,7 +181,6 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final kDebugSemantics = false;
     return ControllerWidgetBuilder<SudokuThemeController>(
         controller: widget.controller,
         builder: (context, controller) {
@@ -193,6 +194,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                         theme: light,
                         darkTheme: dark,
                         themeMode: theme.themeMode,
+                        debugShowCheckedModeBanner: _debugShowCheckedModeBanner,
                         onGenerateTitle: _onGenerateTitle,
                         onGenerateRoute: SudokuNavigation.onGenerateRoute,
                         locale: _locale,
@@ -201,7 +203,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                         color: _color(context, theme.themeMode),
                         builder: _builder(theme.themeMode),
                         home: SudokuNavigation.homeView,
-                        showSemanticsDebugger: kDebugSemantics,
+                        showSemanticsDebugger: _showSemanticsDebugger,
                       ),
                     ),
                     sudokuSeededTheme: (theme) {
@@ -217,6 +219,8 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                           theme: light,
                           darkTheme: dark,
                           themeMode: themeMode,
+                          debugShowCheckedModeBanner:
+                              _debugShowCheckedModeBanner,
                           onGenerateTitle: _onGenerateTitle,
                           onGenerateRoute: SudokuNavigation.onGenerateRoute,
                           locale: _locale,
@@ -225,7 +229,7 @@ class _SudokuAppState extends State<SudokuApp> with WidgetsBindingObserver {
                           color: _color(context, themeMode),
                           builder: _builder(themeMode),
                           home: SudokuNavigation.homeView,
-                          showSemanticsDebugger: kDebugSemantics,
+                          showSemanticsDebugger: _showSemanticsDebugger,
                         ),
                       );
                     },
