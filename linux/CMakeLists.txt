@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
-set(BINARY_NAME "app")
-set(APPLICATION_ID "com.example.app")
+include(ExternalProject)
+
+set(BINARY_NAME "sudoku_app")
+set(APPLICATION_ID "io.kalildev.github.sudoku")
 
 cmake_policy(SET CMP0063 NEW)
 
@@ -77,6 +79,18 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
 endif()
 
+ExternalProject_Add(libsudoku 
+    GIT_REPOSITORY "https://www.github.com/kalildev/sudoku"
+    GIT_TAG "71abe16301f46df4741f6e997b493045b09c2b19"
+    SOURCE_SUBDIR "libsudoku"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" )
+
+ExternalProject_Get_Property(libsudoku binary_dir)
+add_library(sudoku SHARED IMPORTED)
+set(LIBSUDOKU_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}sudoku${CMAKE_SHARED_LIBRARY_SUFFIX}.2.0.4)
+set_property(TARGET sudoku PROPERTY IMPORTED_LOCATION "${LIBSUDOKU_LIBRARY}")
+add_dependencies(sudoku libsudoku)
+
 # Start with a clean build bundle directory every time.
 install(CODE "
   file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
@@ -84,6 +98,9 @@ install(CODE "
 
 set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
 set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+
+install(FILES "${LIBSUDOKU_LIBRARY}"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
 install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
   COMPONENT Runtime)
