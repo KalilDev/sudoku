@@ -358,7 +358,7 @@ packages:
       name: material_widgets
       url: "http://localhost:4000"
     source: hosted
-    version: "0.4.0-preview.6"
+    version: "0.4.0-preview.7"
   material_you:
     dependency: transitive
     description:
