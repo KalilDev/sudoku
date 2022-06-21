@@ -1,3 +1,6 @@
 [submodule "app/libsudoku"]
 	path = libsudoku
 	url = https://www.github.com/kalildev/libsudoku
+[submodule "linux/libsudoku"]
+	path = linux/libsudoku
+	url = https://www.github.com/kalildev/libsudoku
