@@ -250,10 +250,36 @@ class _KeypadLayout extends StatelessWidget {
     }
   }
 
-  _AxisBuilder get _mainAxisBuilder =>
-      axis == _MainAxis.vertical ? Column.new : Row.new;
-  _AxisBuilder get _crossAxisBuilder =>
-      axis == _MainAxis.vertical ? Row.new : Column.new;
+  Widget _mainAxisBuilder(
+          {MainAxisSize mainAxisSize = MainAxisSize.max,
+          CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center,
+          required List<Widget> children}) =>
+      axis == _MainAxis.vertical
+          ? Column(
+              mainAxisSize: mainAxisSize,
+              crossAxisAlignment: crossAxisAlignment,
+              children: children,
+            )
+          : Row(
+              mainAxisSize: mainAxisSize,
+              crossAxisAlignment: crossAxisAlignment,
+              children: children,
+            );
+  Widget _crossAxisBuilder(
+          {MainAxisSize mainAxisSize = MainAxisSize.max,
+          CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center,
+          required List<Widget> children}) =>
+      axis == _MainAxis.vertical
+          ? Row(
+              mainAxisSize: mainAxisSize,
+              crossAxisAlignment: crossAxisAlignment,
+              children: children,
+            )
+          : Column(
+              mainAxisSize: mainAxisSize,
+              crossAxisAlignment: crossAxisAlignment,
+              children: children,
+            );
 
   Widget _buildLayout(BuildContext context, BoxConstraints constraints) {
     final crossAxis = axis == _MainAxis.vertical
