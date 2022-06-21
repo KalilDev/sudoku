@@ -18,25 +18,9 @@ import 'package:utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import 'get_splash_colors/get_splash_colors.dart';
 import 'widget/splash_screen.dart';
 import 'widget/theme_override.dart';
-
-const COLOR_CHANNEL_NAME = "io.kalildev.github.sudoku/splash_colors";
-const COLOR_CHANNEL_GET_COLORS_NAME = "get_colors";
-
-final splashColorsMethodChannel = MethodChannel(COLOR_CHANNEL_NAME);
-Future<Tuple2<Color, Color>?> getSplashColors() async {
-  final colors = await splashColorsMethodChannel
-      .invokeMapMethod<String, int>(COLOR_CHANNEL_GET_COLORS_NAME);
-  if (colors == null || colors.isEmpty) {
-    return null;
-  }
-  return Tuple2(
-    Color(colors['ic_launcher_background']!),
-    Color(colors['ic_launcher_foreground']!),
-  );
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +28,9 @@ void main() async {
   sudokuHomeDbInitialize();
   sudokuUserThemesDbInitialize();
   sudokuAnimationDbInitialize();
-  Hive.init(await pp.getApplicationSupportDirectory().then((d) => d.path));
+  if (!kIsWeb) {
+    Hive.init(await pp.getApplicationSupportDirectory().then((d) => d.path));
+  }
 
   // We need to initialize the theme module and ensure it is ready before
   // running the app so that we do not flicker when the theme is loaded.
