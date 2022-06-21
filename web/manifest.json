@@ -1,11 +1,11 @@
 {
-    "name": "app",
-    "short_name": "app",
+    "name": "Sudoku",
+    "short_name": "Sudoku",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFBFE",
+    "theme_color": "#6750a4",
+    "description": "An beautiful sudoku application",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
