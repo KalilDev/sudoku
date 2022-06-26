@@ -34,6 +34,7 @@ class SudokuBoardDecoration extends StatelessWidget {
             sideSqrt: sideSqrt,
             color: color ?? colorScheme(context).primary,
             largeStrokeWidth: largeStrokeWidth.value,
+            smallStrokeWidth: 1 / MediaQuery.of(context).devicePixelRatio,
             secondaryColor: secondaryColor ??
                 colorScheme(context)
                     .secondary
@@ -65,12 +66,14 @@ class SudokuBoardDecoration extends StatelessWidget {
 class _SudokuBoardDecoration extends Decoration {
   final int sideSqrt;
   final double largeStrokeWidth;
+  final double smallStrokeWidth;
   final Color color;
   final Color secondaryColor;
 
   const _SudokuBoardDecoration({
     required this.sideSqrt,
     required this.largeStrokeWidth,
+    required this.smallStrokeWidth,
     required this.color,
     required this.secondaryColor,
   });
@@ -78,17 +81,28 @@ class _SudokuBoardDecoration extends Decoration {
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) =>
       _SudokuBoardDecorationPainter(
-          sideSqrt, largeStrokeWidth, color, secondaryColor);
+        sideSqrt,
+        largeStrokeWidth,
+        smallStrokeWidth,
+        color,
+        secondaryColor,
+      );
 }
 
 class _SudokuBoardDecorationPainter extends BoxPainter {
   final int sideSqrt;
   final double largeStrokeWidth;
+  final double smallStrokeWidth;
   final Color color;
   final Color secondaryColor;
 
   _SudokuBoardDecorationPainter(
-      this.sideSqrt, this.largeStrokeWidth, this.color, this.secondaryColor);
+    this.sideSqrt,
+    this.largeStrokeWidth,
+    this.smallStrokeWidth,
+    this.color,
+    this.secondaryColor,
+  );
 
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
@@ -98,11 +112,10 @@ class _SudokuBoardDecorationPainter extends BoxPainter {
       ..color = color
       ..strokeCap = StrokeCap.round
       ..strokeWidth = largeStrokeWidth;
-    const smallGridStrokeWidth = 0.0;
     final smallGridPaint = Paint()
       ..color = secondaryColor
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = smallGridStrokeWidth;
+      ..strokeWidth = smallStrokeWidth;
     final side = configuration.size!.width;
     final sideOfSquare = side / sideSqrt;
     final sideOfCell = sideOfSquare / sideSqrt;
