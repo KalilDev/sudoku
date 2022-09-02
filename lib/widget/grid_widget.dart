@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 enum GridLayoutMode {
   intrinsic,

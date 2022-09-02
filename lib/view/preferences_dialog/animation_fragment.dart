@@ -6,7 +6,7 @@ import 'package:app/widget/tile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 

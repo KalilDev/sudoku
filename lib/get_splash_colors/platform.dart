@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 const COLOR_CHANNEL_NAME = "io.kalildev.github.sudoku/splash_colors";
 const COLOR_CHANNEL_GET_COLORS_NAME = "get_colors";

@@ -1,6 +1,7 @@
-import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
-import 'package:adt_annotation/adt_annotation.dart' as adt;
-import 'package:utils/utils.dart';
+import 'package:kalil_adt_annotation/kalil_adt_annotation.dart'
+    show data, T, Tp, NoMixin;
+import 'package:kalil_adt_annotation/kalil_adt_annotation.dart' as adt;
+import 'package:kalil_utils/utils.dart';
 
 part 'data.g.dart';
 

@@ -14,7 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:material_widgets/material_widgets.dart';
 import 'package:path_provider/path_provider.dart' as pp;
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -69,10 +69,9 @@ void main() async {
         .build(),
   );
 
-  runPlatformThemedApp(
+  runDynamicallyThemedApp(
     appWithAnimation,
-    initialOrFallback: () =>
-        PlatformPalette.fallback(primaryColor: Color(0xDEADBEEF)),
+    fallback: () => baseline3PCorePalette,
   );
 }
 

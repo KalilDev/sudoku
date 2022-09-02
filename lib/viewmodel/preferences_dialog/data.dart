@@ -1,6 +1,6 @@
 import 'package:app/module/animation.dart';
 import 'package:app/module/theme.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 typedef PreferencesDialogAnimationResult = AnimationOptions;
 typedef PreferencesDialogThemeResult = TupleN2<int, List<SudokuSeededTheme>>;

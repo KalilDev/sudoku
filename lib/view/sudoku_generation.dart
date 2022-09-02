@@ -9,7 +9,7 @@ import 'package:app/viewmodel/sudoku_generation.dart';
 import 'package:app/widget/memo.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'sudoku_board/actions.dart';

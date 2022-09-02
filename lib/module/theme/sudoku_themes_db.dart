@@ -1,9 +1,10 @@
-import 'package:adt_annotation/adt_annotation.dart' show data, T, Tp, NoMixin;
-import 'package:adt_annotation/adt_annotation.dart' as adt;
+import 'package:kalil_adt_annotation/kalil_adt_annotation.dart'
+    show data, T, Tp, NoMixin;
+import 'package:kalil_adt_annotation/kalil_adt_annotation.dart' as adt;
 import 'package:app/util/hive_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 import 'data.dart';
 

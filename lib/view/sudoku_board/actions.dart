@@ -5,8 +5,8 @@ import 'package:app/util/monadic.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:material_widgets/material_widgets.dart';
-import 'package:utils/utils.dart';
+import 'package:material_widgets/material_widgets.dart' hide FilledButton;
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'flutter_intents.dart';
@@ -28,8 +28,8 @@ final ContextfulAction<ButtonStyle> filledStyle = (BuildContext context) {
   return FilledButton.styleFrom(
     backgroundColor: scheme.primary,
     foregroundColor: scheme.onPrimary,
-    disabledColor: scheme.onSurface,
-    stateLayerOpacityTheme: context.stateOverlayOpacity,
+    disabledForegroundColor: scheme.onSurfaceVariant,
+    disabledBackgroundColor: scheme.onSurface,
   );
 };
 
@@ -40,8 +40,8 @@ final ContextfulAction<ButtonStyle> filledTonalStyle = (BuildContext context) {
   return FilledButton.styleFrom(
     backgroundColor: scheme.secondary,
     foregroundColor: scheme.onSecondary,
-    disabledColor: scheme.onSurface,
-    stateLayerOpacityTheme: context.stateOverlayOpacity,
+    disabledForegroundColor: scheme.onSurfaceVariant,
+    disabledBackgroundColor: scheme.onSurface,
   );
 };
 

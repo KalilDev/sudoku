@@ -3,7 +3,7 @@ library app.view.sudoku_board;
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'sudoku_board/actions.dart';

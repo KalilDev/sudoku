@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:app/widget/decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({

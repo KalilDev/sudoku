@@ -1,7 +1,7 @@
 import 'dart:html';
 
 import 'package:flutter/material.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 Color? parseHexColor(String color) {
   if (!color.startsWith('#')) {

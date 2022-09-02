@@ -1,7 +1,7 @@
 library app.util.hive_adapter;
 
 import 'package:hive/hive.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 
 void writeTupleN2<L, R>(
   BinaryWriter writer,

@@ -1,5 +1,5 @@
-import 'package:adt_annotation/adt_annotation.dart' show data, T;
-import 'package:adt_annotation/adt_annotation.dart' as adt;
+import 'package:kalil_adt_annotation/kalil_adt_annotation.dart' show data, T;
+import 'package:kalil_adt_annotation/kalil_adt_annotation.dart' as adt;
 import 'package:app/module/base.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

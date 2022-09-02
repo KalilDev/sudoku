@@ -7,7 +7,7 @@ import 'package:app/widget/grid_widget.dart';
 import 'package:app/widget/theme_override.dart';
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -52,17 +52,7 @@ class PreferencesDialogThemeFragment
           BuildContext context, SudokuTheme theme) =>
       theme.visit(
         sudokuMaterialYouTheme: (mu) {
-          final palette = context.palette;
-          MonetTheme monetTheme;
-          switch (palette.source) {
-            case PaletteSource.platform:
-              monetTheme = monetThemeFromPalette(palette);
-              break;
-            case PaletteSource.fallback:
-            case PaletteSource.errorHandler:
-              monetTheme = MonetTheme.baseline3p;
-              break;
-          }
+          final monetTheme = monetThemeFromCorePalette(context.dynamicColor);
           final brightness = mu.themeMode == ThemeMode.system
               ? mediaQuery(context).platformBrightness
               : mu.themeMode == ThemeMode.dark

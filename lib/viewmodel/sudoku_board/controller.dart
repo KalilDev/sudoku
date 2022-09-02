@@ -1,8 +1,8 @@
 import 'package:app/module/base.dart';
 import 'package:app/viewmodel/sudoku_board.dart';
 import 'package:flutter/foundation.dart';
-import 'package:utils/event_sourcing.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/event_sourcing.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 // We need this so we can differentiate from null (no lastEvent) to an

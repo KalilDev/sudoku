@@ -2,7 +2,7 @@ library app.util.monadic;
 
 import 'package:flutter/material.dart';
 import 'package:material_widgets/material_widgets.dart';
-import 'package:utils/curry.dart';
+import 'package:kalil_utils/curry.dart';
 
 typedef ContextfulAction<T> = T Function(BuildContext);
 

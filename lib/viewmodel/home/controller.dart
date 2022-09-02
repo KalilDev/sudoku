@@ -1,7 +1,7 @@
 import 'package:app/module/base.dart';
 import 'package:app/sudoku_generation/sudoku_generation.dart';
 import 'package:flutter/foundation.dart';
-import 'package:utils/utils.dart';
+import 'package:kalil_utils/utils.dart';
 import 'package:value_notifier/value_notifier.dart';
 
 import 'data.dart';
