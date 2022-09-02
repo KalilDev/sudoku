@@ -227,7 +227,7 @@ packages:
       name: flutter_monet_theme
       url: "http://localhost:4000"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.4"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -337,14 +337,14 @@ packages:
       name: matcher
       url: "http://localhost:4000"
     source: hosted
-    version: "0.12.11"
+    version: "0.12.12"
   material_color_utilities:
     dependency: transitive
     description:
       name: material_color_utilities
       url: "http://localhost:4000"
     source: hosted
-    version: "0.1.5"
+    version: "0.2.0"
   material_widgets:
     dependency: "direct main"
     description:
@@ -379,7 +379,7 @@ packages:
       name: monet_theme
       url: "http://localhost:4000"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   package_config:
     dependency: transitive
     description:
@@ -545,7 +545,7 @@ packages:
       name: source_span
       url: "http://localhost:4000"
     source: hosted
-    version: "1.9.0"
+    version: "1.9.1"
   stack_trace:
     dependency: transitive
     description:
@@ -601,7 +601,7 @@ packages:
       name: test_api
       url: "http://localhost:4000"
     source: hosted
-    version: "0.4.9"
+    version: "0.4.13"
   timing:
     dependency: transitive
     description:
@@ -643,7 +643,7 @@ packages:
       name: vector_math
       url: "http://localhost:4000"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.3"
   watcher:
     dependency: transitive
     description:
@@ -680,5 +680,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.17.0-0 <3.0.0"
-  flutter: ">=2.10.0-0"
+  dart: ">=2.18.0-146.0.dev <3.0.0"
+  flutter: ">=3.3.0"
